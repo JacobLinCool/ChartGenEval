@@ -1,0 +1,444 @@
+% =====================================================================
+% 01-evaluation-protocol — "Calibrate Before You Rank" (v2.1 structure)
+% ISMIR 2026 template, camera-ready mode for arXiv release.
+%
+% RELEASE GATE — resolve every \PENDING before arXiv submission:
+%   P7  author block; verify all .bib fields against publisher pages
+%   P8  make code/records repo public and fill the artifact URL
+%   P9  re-run all experiments on the clean-split dataset via the
+%       chartgeneval reproduction scripts and refresh every number in
+%       this paper (current numbers are from the pre-release split;
+%       per user decision the paper does not discuss the old split)
+%   (polish, optional) seed/decode robustness runs; level-conditioned bands
+% =====================================================================
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{ismir} % camera-ready: no [submission] option
+\usepackage{amsmath,cite,url}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{color}
+
+\newcommand{\PENDING}[1]{\textcolor{red}{[PENDING: #1]}}
+
+\title{Calibrate Before You Rank: Corruption-Validated Quality Metrics for Rhythm-Game Chart Generation}
+
+% ---- P7: replace with real author block before release -------------
+\oneauthor
+  {TODO Author Name}
+  {TODO Affiliation \\ \texttt{jacoblincool@gmail.com}}
+\def\authorname{TODO Author Name}
+% ---------------------------------------------------------------------
+
+\sloppy
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Rhythm-game charts are designed artifacts with many valid realizations per
+song, yet generated charts are still evaluated with metrics borrowed from
+other tasks: F-measure against one reference chart, corpus language-model
+(LM) perplexity, and unreferenced statistics such as entropy,
+distinct-$n$, and self-similarity. We validate metrics the way one would
+test a smoke detector: by setting controlled fires. Applying eight
+targeted corruption probes at increasing doses to 167 human charts
+(4{,}175 scored variants), we find that borrowed metrics fail in ways
+invisible to spot checks: $n$-gram perplexity \emph{improves} by 31\%
+when charts are flattened toward the LM's modal patterns, self-similarity
+structureness \emph{rises} by 50\% under copy-paste collapse, and every
+chart-only metric we tested (35 of 35) is completely blind to a global
+60\,ms audio misalignment that would be fatal in play. A two-layer
+protocol---raw diagnostics normalized against per-difficulty target bands
+calibrated on the official-chart corpus, plus an audio-anchored timing
+family whose anchors come from an estimated beat grid---repairs these
+failures: six of six targeted band scores degrade monotonically with dose
+(Spearman $\rho$ $-0.33$ to $-0.80$), the band scores resist the attack
+that fools perplexity, and the fixed-grid timing metric recovers injected
+15/30/60\,ms shifts to within 0.2\,ms without any reference chart. We
+release the probes, calibration artifacts, per-chart records, and an
+installable evaluation package.
+\end{abstract}
+
+\section{Introduction}\label{sec:intro}
+
+Automatic chart generation for rhythm games---mapping audio to a playable
+sequence of timed, typed notes---has progressed from onset-detection
+pipelines to conditional sequence
+models~\cite{donahue2017ddc,halina2021taikonation,takada2023genelive,
+hanzen2025tcp}. Evaluation has not kept pace. Because a chart is a
+creative artifact rather than an annotation, the same song admits many
+valid charts, and the field's dominant tool---F-measure against the
+single official chart---penalizes every valid alternative equally and
+cannot be computed at all for songs without charts. The natural
+complement is reference-free measurement, for which authors borrow from
+symbolic music and text generation: LM perplexity~\cite{donahue2017ddc},
+pattern-space congruence~\cite{halina2021taikonation}, event entropy,
+distinct-$n$~\cite{li2016diversity}, Self-BLEU~\cite{zhu2018texygen},
+feature-distribution comparison~\cite{yang2020evaluation,dong2020muspy},
+and self-similarity structureness~\cite{wu2020jazz}.
+
+This paper asks whether those borrowed metrics measure chart quality at
+all, and answers with a validation method that requires no listening
+test: \emph{targeted corruption}. Starting from human (official) charts,
+we apply eight damage operators---timing jitter, global anchor shift,
+color shuffling, copy-paste collapse, LM-argmax blandification, density
+scaling, burst insertion, bar shuffling---at three doses each. On
+average, corrupting a human chart cannot make it better, so a usable
+quality metric must respond in the right direction, and the response must
+grow with dose. Metric validation thus becomes a fully automated,
+reproducible procedure that requires neither human raters nor model
+training, and applies unchanged to any proposed chart metric.
+
+The audit yields a negative result with a constructive core. Borrowed
+metrics fail structurally (\secref{sec:reductio}): perplexity rewards the
+blandness it should punish, structureness mistakes degenerate repetition
+for form, several statistics are near-proxies for chart length, and all
+chart-only metrics are blind to global audio misalignment. But the
+underlying raw quantities carry signal; what is missing is calibration
+and grounding. We show that (i) normalizing each diagnostic against
+per-difficulty target bands estimated from the official corpus restores a
+consistent ``better'' direction and resists gaming, and (ii) anchoring a
+timing family on a beat grid \emph{estimated from audio} closes the
+misalignment blind spot with no reference chart and no measurable
+accuracy cost.
+
+Our contributions are:
+\begin{enumerate}
+\item \textbf{A corruption-probe audit harness} for chart-quality
+  metrics: eight dose-controlled damage operators with acceptance
+  criteria (monotone dose response; anti-gaming; published coupling
+  structure) and fairness rules, applicable to any future metric
+  (\secref{sec:probes}).
+\item \textbf{A structural failure analysis} of 14 borrowed metrics,
+  including two reductio exhibits---perplexity improves under
+  blandification; structureness improves under collapse---and an
+  all-blind result for chart-only metrics under anchor shift
+  (\secref{sec:results}).
+\item \textbf{A two-layer, reference-free evaluation protocol}: raw
+  diagnostics plus corpus-calibrated band scores with an empirically
+  assigned role taxonomy, extended with an audio-anchored timing family
+  whose fixed-grid offset detector recovers injected shifts to sub-ms
+  accuracy (\secref{sec:protocol}, \secref{sec:timing}).
+\item \textbf{Released artifacts}: an installable evaluation package,
+  probe implementations, calibration bands, all per-chart records, and
+  the grouped song-level dataset splits. \PENDING{P8: public repo URL.}
+\end{enumerate}
+
+The probes establish what metrics detect: \emph{damage}. Whether the
+surviving metrics also track player experience is a distinct question
+that requires perception studies; we address it in
+\secref{sec:limits}.
+
+\section{Related Work}\label{sec:related}
+
+\textbf{Chart generation and its evaluation.} Dance Dance Convolution
+evaluates step placement by F-measure against a reference chart and step
+selection by LM perplexity~\cite{donahue2017ddc}; later systems inherit
+this template~\cite{takada2023genelive,hanzen2025tcp}. TaikoNation adds
+pattern-congruence measures against human charts~\cite{halina2021taikonation}.
+None of these metrics has been audited against controlled damage.
+
+\textbf{Generative-music evaluation.} Yang and Lerch compare feature
+distributions between generated and reference sets~\cite{yang2020evaluation};
+MusPy popularized symbolic statistics~\cite{dong2020muspy}; the Jazz
+Transformer introduced self-similarity structureness
+indicators~\cite{wu2020jazz}. These are set-level or direction-ambiguous
+quantities; we audit their behavior when used as per-chart quality signals.
+
+\textbf{Metric critiques.} Theis et al.\ showed that likelihood and
+sample quality can diverge arbitrarily~\cite{theis2016note}; our
+blandification result is a sharp corpus-LM instance. NLG research
+documented pathologies of distinct-$n$ and
+Self-BLEU~\cite{li2016diversity,zhu2018texygen}. Unlike pure critiques we
+supply the repair, and unlike human-anchored metric studies our harness
+needs no raters. Onset F-measure follows
+\texttt{mir\_eval}~\cite{raffel2014mireval}.
+
+\section{Two-Layer Evaluation Protocol}\label{sec:protocol}
+
+\textbf{Data.} We use a corpus of 1{,}155 taiko-style chart files
+covering 1{,}013 unique songs (grouped by audio identity and normalized
+title), split at the song level into 813/80/120
+training/validation/test songs so that no song appears in more than one
+split. Calibration uses official chart-courses from the training split;
+evaluation uses 40 held-out test songs across all difficulty courses.
+\PENDING{P9: refresh counts and all downstream numbers from the
+clean-split re-run.}
+
+\textbf{Layer 1: raw diagnostics.} Each chart is a sequence of timed,
+typed events. We compute quantities with native units and no claimed
+direction: note density and local-density percentiles, inter-onset
+entropy, color-switch rate, $n$-gram LM negative log-likelihood (trigram,
+trained on the calibration corpus), unseen-transition rate,
+unique/repeated 4-gram rates, and windowed LM surprisal percentiles.
+These deliberately coincide with the borrowed metrics: the audit compares
+\emph{normalization strategies}, not measurement choices.
+
+\textbf{Layer 2: calibrated band scores.} For each diagnostic and
+difficulty course we estimate a target band $[p_{10},p_{90}]$ over the
+calibration corpus. Scores are $1$ inside the band and decay smoothly
+outside; error-type quantities use exponential penalties. This resolves
+direction ambiguity by construction---``more entropy'' is neither good
+nor bad, but ``entropy within the range human charters use at this
+difficulty'' is well defined---and it is reference-free at the song
+level: scoring a chart for a novel song requires only the fixed corpus
+calibration.
+
+\textbf{Role taxonomy.} Scores are assigned roles empirically by the
+audit, not a priori: \emph{rankers} respond to damage and separate
+systems (pattern-IC, transition validity, repetition and variety
+adequacy, rhythm complexity); \emph{constraints} saturate near 1 for all
+reasonable charts and flag only gross violations (density, strain,
+overload); \emph{diagnostics} carry signal but immature calibration (the
+current boredom heuristic; the hypersensitive rare-$n$-gram rate). We
+report score profiles, not a single aggregate: fixing trade-off weights
+between axes is exactly the judgment we defer to human data.
+
+\section{The Corruption-Probe Harness}\label{sec:probes}
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Probe (dose knob) & Damages & Designated target \\
+\midrule
+C1 timing jitter ($\pm$10/20/30\,ms) & micro-timing & rhythm complexity \\
+C2 anchor shift (+15/30/60\,ms) & audio alignment & timing family (\secref{sec:timing}) \\
+C3 type shuffle ($p$=.2/.4/.8) & note grammar & transition validity \\
+C4 loop collapse ($p$=.3/.6/1) & structure & repetition adequacy \\
+C5 blandification ($p$=.3/.6/1) & interestingness & (anti-gaming exhibit) \\
+C6 density scale ($\times$.5/1.5/2) & difficulty fit & density adequacy \\
+C7 burst insert (2/4/8 clusters) & playability & density-spike score \\
+C8 bar shuffle ($p$=.3/.6/1) & global form & repetition adequacy \\
+\bottomrule
+\end{tabular}
+\caption{Eight corruption probes applied to 167 official charts at three
+doses each (4{,}175 scored variants incl.\ originals; deterministic
+seeds; operators verified by independent re-execution). Every probe
+preserves what it does not target: C3--C5 preserve all note times
+exactly; C4 and C6 preserve or control density.}
+\label{tab:probes}
+\end{table}
+
+\tabref{tab:probes} lists the probes. Corruption direction is guaranteed
+at the population level: since band scores are two-sided, a corruption
+can push an individual off-band chart \emph{toward} its band (measured:
+4--14\% of charts per probe at max dose), so all criteria are evaluated
+on means over 167 charts. Acceptance requires (a) \emph{sensitivity}:
+the designated target score decreases monotonically with dose; (b)
+\emph{anti-gaming}: no score family should reward damage; and (c)
+\emph{disclosed coupling}: the full probe$\times$metric response matrix
+is published rather than summarized by its diagonal.
+
+Fairness rules fixed in advance: identical probes for baselines and
+calibrated scores; identity pairs across layers (distinct-4 $\equiv$
+unique-4-gram rate; transition validity $\leftrightarrow$
+unseen-transition rate) are never counted as independent agreement;
+length confounds are checked against note count; and the LM's provenance
+is audited (below), with the blandification attack additionally run
+\emph{cross-LM} (drive and measure LMs trained on disjoint corpus
+halves).
+
+\section{Results}\label{sec:results}
+
+\subsection{Sensitivity: targeted damage moves the right scores}
+\label{sec:sensitivity}
+
+All six probes with calibrated targets pass: dose--response Spearman
+$\rho$ (dose, target score) is negative and significant for C1 rhythm
+complexity ($-0.36$), C3 transition validity ($-0.33$), C4 repetition
+adequacy ($-0.52$), C6 density/strain adequacy ($-0.65$), C7 density
+spike ($-0.78$), and C8 repetition adequacy ($-0.42$), with monotone mean
+trajectories (all $p<10^{-15}$). C2's target is the timing family
+(\secref{sec:timing}); C5's designated band target holding steady is the
+anti-gaming property, reported next.
+
+\subsection{Reductio: borrowed metrics reward damage}
+\label{sec:reductio}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figs/fig1_reductio.pdf}
+\caption{Borrowed metrics reward damage; calibrated scores respond
+correctly. Values are relative to the intact chart (dotted line = no
+change); red = borrowed baselines, blue = calibrated scores.
+\textbf{Left (C4 loop collapse):} replacing charts with their own most
+common 4-gram loop raises structureness by 50\% (0.096$\to$0.144) and
+Self-BLEU from 0.860 to 0.892---both read as improvement---while
+repetition and variety adequacy correctly fall. \textbf{Right (C5
+blandification):} rewriting notes to the LM argmax lowers perplexity by
+31\% (7.98$\to$5.48), i.e.\ ``better'' under the standard reading, while
+the pattern-IC band score refuses to improve and repetition adequacy
+catches the induced looping. The same reversal holds when the attack is
+driven by an LM trained on a disjoint corpus half (7.98$\to$5.55).}
+\label{fig:reductio}
+\end{figure}
+
+\figref{fig:reductio} shows the two reductio exhibits.
+\emph{Perplexity rewards blandness}: official charts are more surprising
+(perplexity 7.98) than greedy machine output, and flattening human
+charts toward the LM's modal patterns drives perplexity \emph{down} by
+31\%. Read as ``lower is better''~\cite{donahue2017ddc}, perplexity
+prefers the damaged chart---a corpus-LM instance of the
+likelihood/quality dissociation~\cite{theis2016note}. The band score
+built on the \emph{same} LM statistic is not fooled (0.892$\to$0.900),
+because official charts sit near the band's upper edge and flattening
+moves NLL toward the band center, not out of it; meanwhile the
+repetition-adequacy score catches the damage the attack actually does.
+This robustness survives a cross-LM version of the attack (drive on a
+held-half LM, measure on the full LM), upgrading it from an in-sample
+worst case to evidence that perplexity's failure is not an artifact of
+attacking its own model. \emph{Structureness rewards collapse}:
+replacing charts with their own dominant 4-gram loop raises
+self-similarity structureness~\cite{wu2020jazz} monotonically---copy-paste
+is maximally self-similar---and set-level Self-BLEU rises in lockstep.
+On real systems the same failures appear in the wild: across eight
+generators spanning a known quality range, perplexity separates official
+from generated charts with AUC 0.32 (i.e., backwards), and several
+borrowed statistics are near-proxies for chart length (Spearman vs.\
+note count up to 0.97, vs.\ $\le$0.09 for the calibrated rankers).
+
+\subsection{Closing the anchor blind spot without references}
+\label{sec:timing}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figs/fig2_anchor_flip.pdf}
+\caption{C2 anchor shift. \textbf{Left:} a constant +15/30/60\,ms shift
+of every note against the audio is invisible to all 35 chart-only
+metrics (max response 0.0004 SD) \emph{and} to the standard
+matching-based offset statistic, which re-matches shifted notes to
+neighboring anchors on a dense subdivision lattice ($\approx$14\,ms
+spacing at 180\,BPM). The fixed-grid phase offset---support maximization
+on an eighth-note lattice anchored to a beat grid \emph{estimated from
+audio}---recovers the injected shift to within 0.2\,ms. \textbf{Right:}
+the calibrated anchor score collapses from 0.54 to 0.01 across doses.
+Results on the 129 charts whose estimated grid passes its own confidence
+gate; the estimated grid agrees with metadata grids on period exactly
+(31/31 songs) and on phase to $\approx$10\,ms median.}
+\label{fig:anchor}
+\end{figure}
+
+A chart can be idiomatic on every chart-only axis and still be shifted
+off the music entirely---C2 makes this concrete
+(\figref{fig:anchor}). Two findings matter beyond the headline. First,
+the blindness extends to the obvious fix: a matching-based signed offset
+(match each note to its nearest meter anchor, average the residuals) is
+itself C2-blind, because a fine subdivision lattice re-matches every
+shifted note; detecting global misalignment requires estimating the
+phase that maximizes lattice support over a wrap-free window. Second,
+the anchors come from a beat grid estimated from audio by a beat-tracking
+model, not from any chart metadata, so the timing family is
+reference-free like the rest of the protocol; the estimation costs
+nothing measurable (period exact on all gated songs, phase agreement
+$\approx$10\,ms, matching the estimator's published precision). One
+honest caveat: a $\approx$15\,ms grid-phase error on a single song can
+saturate that song's unsupported-note rate, so per-song distributions
+(not means) should be reported and the phase-offset detector, not the
+unsupported rate, is the primary C2 signal.
+
+\subsection{Coupling structure: what specificity we do not claim}
+\label{sec:coupling}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figs/fig3_coupling.pdf}
+\caption{The full probe$\times$score response matrix (official-SD units
+at max dose, clipped at $\pm$4; black boxes = designated targets).
+Targeted probes move their targets, but responses are \emph{not}
+diagonal: timing jitter (C1) propagates into pattern scores because
+pattern tokens are IOI-quantized---in a rhythm game, timing damage
+\emph{is} pattern damage---and the rare-$n$-gram diagnostic is
+hypersensitive to any token change. We publish the matrix as a coupling
+map rather than claiming orthogonality.}
+\label{fig:coupling}
+\end{figure}
+
+We explicitly do not claim that each probe moves \emph{only} its target.
+\figref{fig:coupling} publishes the full response matrix: no probe
+passes a strict diagonal-dominance test, for two identifiable reasons.
+Shared tokenization couples axes---jittered timings change IOI bins and
+therefore every $n$-gram statistic downstream---which is partly domain
+truth (mistimed notes damage patterns as played) and partly a suite
+limitation. And one diagnostic-tier score (rare-$n$-gram rate) reacts to
+almost any token edit, which is why the taxonomy keeps it out of the
+ranker tier. Practitioners should read the suite as a coupled profile
+with a published response map, not as independent orthogonal axes.
+
+\subsection{Application: scoring real systems}
+\label{sec:application}
+
+Applied to eight generators from a controlled ablation family of
+conditional chart models (grid-conditioned and gridless decoding modes;
+two configurations whose training-budget allocation is known to starve
+the gridless task, F-measure 0.58 and 0.36 vs.\ 0.66--0.67 for healthy
+configurations), the calibrated profile reproduces the known ordering
+with graded response (chart-quality profile 0.83--0.86 healthy, 0.79
+semi-collapsed, 0.68 collapsed; official 0.916), while the audio-anchored
+family exposes a failure no chart-only score sees: the collapsed system
+carries a 38.5\,ms systematic offset against the music (healthy systems
+$\approx$10\,ms). Because calibration bands are fixed corpus artifacts,
+scores are comparable across studies: re-scoring a two-generations-older
+system family under the same bands shows transition validity rising from
+0.37 to 0.75--0.82---a cross-generation progress statement that
+single-reference F-measure cannot make. Two dissociations illustrate what
+F-measure misses: a dedicated gridless model scores higher onset F1 than
+a multi-task model (0.673 vs.\ 0.659) yet lower transition validity
+(0.753 vs.\ 0.785--0.791), and greedy decoding pushes band-adequacy
+scores \emph{above} official values on some axes---band scores reward
+in-distribution blandness and must be read jointly with the
+variety/repetition axes (which is what the profile is for).
+
+\section{Limitations and Future Work}\label{sec:limits}
+
+\textbf{No human validation.} The probes certify damage detection, not
+experience prediction; validating the surviving metrics against player
+judgments remains future work.
+\textbf{Population-level direction.} 4--14\% of individual charts move
+toward their band under corruption; per-chart verdicts need the profile,
+not one score.
+\textbf{Coupling.} The suite is a coupled profile
+(\secref{sec:coupling}); attribution between timing and pattern damage
+is smeared by shared tokenization.
+\textbf{Scope.} One game domain for the calibration corpus (the
+cross-game study covers only the game-agnostic families), greedy
+decoding for the real-system study, and course-level (not
+level-conditioned) calibration bands.
+\textbf{Ceiling.} Among healthy systems the profile differences sit
+within evaluation noise; distinguishing good from slightly-better
+remains a human question.
+
+\section{Conclusion}\label{sec:conclusion}
+
+Chart generation needs evaluation it can trust more than it needs another
+metric. Corruption probes make metric validation systematic and
+reproducible: the borrowed metrics did not merely underperform---they
+rewarded blandness, rewarded collapse, and missed a fatal global
+misalignment entirely.
+Corpus-calibrated band scores over the same raw quantities, extended
+with an audio-anchored timing family, pass the same probes with
+monotone dose response and sub-ms shift recovery, with their coupling
+structure published rather than hidden. The harness, calibration
+artifacts, per-chart records, and evaluation package are released so
+that future chart-quality metrics can be validated under the same
+protocol. \PENDING{P8: artifact URL.}
+
+\section{Ethics Statement}
+The corpus consists of community-created charts used under research
+terms; no personal data is involved. Better automated evaluation chiefly
+benefits players and small developers; we see no direct misuse vector
+beyond automated content farming, which platform moderation already
+addresses.
+
+\section{AI Usage Statement}
+AI assistants were used for experiment orchestration, drafting, and
+editing under author direction; all numbers were produced by the
+released code, adversarially re-derived, and verified by the authors.
+
+\bibliography{references}
+
+\end{document}

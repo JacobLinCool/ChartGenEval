@@ -1,8 +1,8 @@
 # ChartGenEval 發佈 Checklist
 
 目標狀態：`chartgeneval` 套件可安裝可重現、評估論文（arXiv → ISMIR）與
-artifact 同步發佈。上游研究紀錄在 SoftChart repo 的
-`papers/01-evaluation-protocol/OUTLINE.md`。
+artifact 同步發佈。論文 LaTeX 原始檔與研究紀錄在本 repo `paper/`
+（`paper/paper.tex`＋`paper/OUTLINE.md`，2026-07-10 自 SoftChart 遷入）。
 
 ## A. 實驗／分析（數字凍結前）
 
@@ -38,7 +38,7 @@ artifact 同步發佈。上游研究紀錄在 SoftChart repo 的
 - [ ] （選配）boredom heuristic 修復或維持 diagnostic 降級說明
 - [ ] （選配）seed／解碼穩健性小跑
 
-## B. 論文寫作（英文版：SoftChart/papers/01-evaluation-protocol/paper.tex）
+## B. 論文寫作（英文版：本 repo paper/paper.tex）
 
 - [ ] §3 改寫為 **5＋1 家族 × 3 層角色** 矩陣呈現＋探針覆蓋表
       （互補性的證明）
@@ -49,7 +49,7 @@ artifact 同步發佈。上游研究紀錄在 SoftChart repo 的
 - [ ] 應用節：撤下自家模型內容 → 換既有模型結果＋適用性矩陣
 - [ ] suite v2 四指標寫入對應家族（待 A 組修復完成）
 - [ ] 系統性敵意審稿輪（論證鏈→主張校準→敵意→句法→一致性 多 pass）
-- [ ] 中文版（本 repo `PAPER.zh-TW.md`）與英文版同步更新
+- [ ] 中文版（`paper/PAPER.zh-TW.md`）與英文版同步更新
 - [ ] 圖打磨（fig1 圖例位置、fig3 字級）＋6 頁排版
 
 ## C. 套件發佈（本 repo）
@@ -84,7 +84,7 @@ artifact 同步發佈。上游研究紀錄在 SoftChart repo 的
 - [ ] 作者署名／單位（paper.tex 現為 TODO 佔位）
 - [ ] arXiv 分類（cs.SD＋eess.AS？）與授權（CC BY？）
 - [ ] TaikoNation 無 license 宣告——推論評估的引用措辭確認
-- [ ] checklist.md 與 PAPER.zh-TW.md 是否留在公開 artifact repo
+- [ ] checklist.md 與 paper/{OUTLINE.md,PAPER.zh-TW.md} 是否留在公開 artifact repo
       （驗證員建議公開發佈前移出或 gitignore；作者拍板）
 - [ ] Mapperatorinator 非同儕評審的定位措辭確認
       （"widely-used community system"）
