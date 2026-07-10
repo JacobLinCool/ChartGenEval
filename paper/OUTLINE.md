@@ -384,6 +384,28 @@ density_energy_response、energy_peak(正規化)、**boredom_v2**；
 DROP＝self_similarity、MDI。真 C5 有效劑量為名目 1/3（實改
 9.7/21.4/42.4% 音符，官方譜貼近 LM mode）——劑量標註照實際值。
 
+## 設計澄清（2026-07-11，使用者定案）
+
+**1. Band 語義＝typicality 不是 quality（單向推論）**：探針證明
+damage→out-of-band；逆命題不宣稱。指標分兩類——**defect 型**
+（invalid_transition、constraints：遊戲語法違反，方向無條件）vs
+**typicality 型**（density/entropy/repetition/manifold：band 偏離＝
+觸發審查的旗子，非懲罰）。裁決矩陣（Boden creativity=novelty+value）：
+out-of-band＋value 成立（constraints 過＋coupling/structure 好）＝
+「新穎而自洽」候選創造力，不罰；out-of-band＋value 崩潰＝與劣化一致。
+同一 manifold_gap 讀數由 profile 其餘部分裁決語義——profile 不可壓縮的
+第四論證。呈現層：帶外格畫 flag 不畫紅；全文禁用「掉出人類範圍＝不好」
+句式。C5 的方向合法性來自「建構保證的資訊移除」，非帶偏離本身。
+
+**2. 跨遊戲泛化定位**：timing/coupling 完全遊戲無關（已實測跨遊戲組）；
+grammar/structure 框架通用、換 tokenizer adapter（lane/位置bin/方向×IOI）；
+gap 構造通用、φ 重選；constraints 形式通用、數值重校。移植介面三件套：
+tokenizer adapter＋官方語料＋authored timing metadata。誠實邊界：
+位置型遊戲（osu!/maimai）需要新增 **spatial/ergonomics 家族**（移動
+成本/交叉/旋轉），現有家族吃不下。最強泛化主張＝**認證協定本身**
+（C1–C8 作用於 (t,class) 流，原樣可移植）——論文定位「節奏遊戲譜面
+評估協定，以太鼓實例化」。
+
 ## 風險
 
 - 「劣化是人造的」→ 劣化操作與 04 篇的人類操縱同源（時值抖動/錨偏），
