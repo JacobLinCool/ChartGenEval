@@ -203,8 +203,11 @@ downbeat 列表會弄丟拍號資訊而誤錨變拍譜**。套件 `timing.comput
    淨方向 +0.86~+0.88、density 沉默 −0.02——與舊 split 逐項一致，
    band 統計對切分穩健的直接證據
 3. ✅ timing：cert（6ms 制）與外部系統評估本來就在 clean 上
-4. ⬜ 剩餘：meta-eval 借用基線重跑、圖表終版重出（等 Mapperatorinator
-   齊後一次做）、隨附校準 artifact 替換（C 組）
+4. ✅ meta-eval 借用基線（2026-07-11，metric_baselines_clean_20260711b：
+   official 170＋Mapp 170＋TN 40；official perplexity 7.936 複現舊 split
+   7.98）——**P9 計算件全部完成，A 組全綠、數字凍結**
+5. ⬜ 收尾：figA/figC 換 clean 探針數據重出、適用性矩陣熱圖組裝
+   （B 組開場件）、隨附校準 artifact 替換＋v2 band 條目（C 組）
 
 ### Clean-40 外部系統 timing 結果（2026-07-10 初步，
 experiments/timing_integration_v1/runs/raw/records/ext_clean_timing_20260710.jsonl，
