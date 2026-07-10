@@ -79,13 +79,17 @@ artifact 同步發佈。論文 LaTeX 原始檔與研究紀錄在本 repo `paper/
       `--limit` 貫穿 LM 建置（現全量 ~9 分鐘）、
       **P9 後以 clean split 重校準並替換隨附 artifact**（同時消除
       「預設資料集≠golden 語料」的陷阱，README 已先加警語）
-- [ ] **bpm≤0 防呆進套件層**（2026-07-10 發現：無 BPM 檔案以 0 fallback
-      評估時 IOI tokenization 靜默壞掉、grammar 全家垃圾且
-      invalid_transition=1.0——`evaluate_chart_quality` 應在 bpm 無效時
-      令 grammar 分數回 None＋警告；腳本層 --bpm-map 已補）
+- [ ] **bpm≤0 防呆進 grammar 家族**（新指標已循 NaN 哨兵契約；
+      殘餘：既有 grammar 家族在 bpm 無效時仍會出垃圾 token——
+      `evaluate_chart_quality` 補 NaN 短路；腳本層 --bpm-map 已補）
 - [ ] README 補：格線參照層級與適用時機、自宣稱 grid 警告、
       指標適用性矩陣（哪些家族需要哪種輸入/語料）
-- [ ] suite v2 指標隨 A 組修復同步進套件（含 gauntlet 通過紀錄）
+- [x] **suite v2 五指標進套件**（2026-07-11，commit 4ab1f9a）：
+      manifold_gap(φv2)→gap、reciprocity v2＋boredom_v2→structure、
+      density_energy＋energy_peak(run-head)→coupling；等價驗證
+      **1,302 key 逐位 0.0**（11 合成＋12 真實譜）；pytest 60 過
+      （44 舊＋16 新）；docstring 含知覺錨＋gauntlet 數字；無效輸入
+      一律 NaN 哨兵（兼銷 bpm≤0 防呆項的套件層行為）
 - [ ] LICENSE 定案（現為 MIT 佔位，待作者確認）
 - [ ] 版本號 0.1.0＋CHANGELOG
 - [ ] （選配）CI（pytest＋pip install 煙霧測試）
