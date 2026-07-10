@@ -50,13 +50,19 @@ artifact 同步發佈。論文 LaTeX 原始檔與研究紀錄在本 repo `paper/
 - [ ] suite v2 四指標寫入對應家族（待 A 組修復完成）
 - [ ] 系統性敵意審稿輪（論證鏈→主張校準→敵意→句法→一致性 多 pass）
 - [ ] 中文版（`paper/PAPER.zh-TW.md`）與英文版同步更新
-- [ ] 圖打磨（fig1 圖例位置、fig3 字級）＋6 頁排版
+- [ ] 圖選定與打磨：新圖組已產（figA 互補性／figB 三階堆疊／figC
+      耦合+C1s 欄，`experiments/make_paper_figures.py`）——與 fig1/fig2
+      的取捨定案＋6 頁排版；figB 待系統重評估後換終版數字
 
 ## C. 套件發佈（本 repo）
 
 - [x] 保真驗證通過（2026-07-10，verdict **sound**）：乾淨 venv 安裝、
       34 pytest 全過、三個 golden 錨 max diff = 0.0（3,528＋28,350 值＋
       校準逐位元）、探針決定性雙跑一致
+- [x] **視覺化庫**（2026-07-10）：`chartgeneval.plots`——L0–L3 視覺協定
+      （profile 熱圖含 n/a＋constraint 玻片／雷達僅 demo 不填色、timing
+      三階堆疊條＋逐譜分位帶、淨方向劑量圖、official-manifold 散點、
+      單譜診斷條）；`[plots]` extra、10 項煙霧測試（共 44 過）
 - [ ] 驗證員 MINOR 修復：pytest 入 [dev] 說明（README 已補）、
       `--limit` 貫穿 LM 建置（現全量 ~9 分鐘）、
       **P9 後以 clean split 重校準並替換隨附 artifact**（同時消除
