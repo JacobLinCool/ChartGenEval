@@ -553,16 +553,18 @@ def compute(events, ctx):
         beat_period = 60.0 / bpm
         phase = note_times[0]
 
-    # Fixed-lattice global offset (C2 witness), scipy-free. Each grid tier
-    # gets the witness matching its generative process: authored segments are
-    # exact bar lines (piecewise lattice, tempo-change robust); an estimated
-    # grid is a constant-period fit whose downbeats are noisy samples of it
-    # (constant combined eighth+beat objective).
+    # Fixed-lattice global offset (C2 witness), scipy-free. Any bar-line list
+    # (authored segments or estimated downbeats) gets the piecewise lattice
+    # witness (tempo-change robust, +-250 ms unique window); the constant
+    # combined eighth+beat objective is the BPM-only fallback.
     go = gsupport = gstep = None
     if segments:
         bars, beats = _segment_bars(segments)
         if bars:
             go, gsupport, gstep = lattice_phase_offset(note_times, bars, beats)
+    elif downbeats and len(downbeats) >= 2:
+        db = sorted(float(x) for x in downbeats)
+        go, gsupport, gstep = lattice_phase_offset(note_times, db, [meter] * (len(db) - 1))
     if go is None and beat_period is not None and phase is not None:
         go, gsupport, gstep = grid_phase_offset(note_times, beat_period, phase)
     out["grid_phase_offset_ms"] = go
