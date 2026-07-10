@@ -329,28 +329,133 @@ def _percentile_ms(x, q):
 
 
 def grid_phase_offset(note_times, beat_period, phase, subdiv=2, tol_ms=12.0, n_steps=241):
-    """Global signed anchor offset against a FIXED eighth-note grid.
+    """Global signed anchor offset against fixed eighth + beat lattices.
 
-    This is the C2-sensitive detector that the re-matching offset is blind to. A
-    constant anchor shift moves the whole stream off the grid; grid-support
-    maximization on the eighth lattice recovers a unique wrap-free peak for
-    shifts up to ~+-75 ms. Returns ``(offset_ms, support_frac, step_ms)``.
+    This is the C2-sensitive detector that the re-matching offset is blind to.
+    A constant anchor shift moves the whole stream off the grid; the support
+    objective averages eighth-lattice and beat-lattice agreement, so its
+    period is one full beat and the argmax is unique over +-beat/2. (An
+    eighth-only objective wraps at +-eighth/2 and misreads >=60 ms shifts on
+    high-BPM charts.) Returns ``(offset_ms, support_frac, step_ms)`` with
+    ``step_ms`` the fine (eighth) lattice step.
     """
     t = np.asarray(note_times, dtype=np.float64)
     if len(t) < 4 or not beat_period or beat_period <= 0:
         return None, None, None
-    step = float(beat_period) / float(subdiv)
+    beat = float(beat_period)
+    step = beat / float(subdiv)
     step_ms = step * 1000.0
-    tol = min(tol_ms / 1000.0, 0.45 * step)
-    half = step / 2.0
-    cands = np.linspace(-half, half, int(n_steps))
-    best_d, best_s = 0.0, -1.0
-    for d in cands:
-        r = np.abs(((t - d - float(phase) + half) % step) - half)
-        support = float(np.mean(np.maximum(0.0, 1.0 - r / tol)))
-        if support > best_s:
-            best_s, best_d = support, float(d)
+    tol_f = min(tol_ms / 1000.0, 0.45 * step)
+    tol_b = min(tol_ms / 1000.0, 0.45 * beat)
+    half_f = step / 2.0
+    half_b = beat / 2.0
+    rel = t - float(phase)
+    # Odd candidate count so d = 0 sits exactly on the search grid; otherwise
+    # an on-grid chart loses a sliver of support to the endpoint aliases.
+    n_c = int(round(n_steps * beat / step)) | 1
+    cands = np.linspace(-half_b, half_b, n_c)
+    sup = np.empty(len(cands))
+    for i, d in enumerate(cands):
+        r_f = np.abs(((rel - d + half_f) % step) - half_f)
+        r_b = np.abs(((rel - d + half_b) % beat) - half_b)
+        sup[i] = 0.5 * np.mean(np.maximum(0.0, 1.0 - r_f / tol_f)) + 0.5 * np.mean(
+            np.maximum(0.0, 1.0 - r_b / tol_b)
+        )
+    best_s = float(sup.max())
+    # Near-ties (e.g. beat-symmetric charts, where d and d±beat/2 are truly
+    # indistinguishable) resolve to the minimum-norm offset.
+    near = sup >= best_s - 1e-9
+    best_d = float(cands[near][np.argmin(np.abs(cands[near]))])
     return best_d * 1000.0, best_s, step_ms
+
+
+def lattice_phase_offset(
+    note_times,
+    bar_times,
+    beats_per_bar=None,
+    tol_ms=12.0,
+    search_ms=250.0,
+    step_search_ms=0.5,
+):
+    """Piecewise fixed-lattice anchor-shift witness (tempo-change robust).
+
+    The lattice is laid inside each authored bar (eighth + beat + bar-line
+    scales, weights 0.5/0.3/0.2), so it is aperiodic under tempo changes: a
+    constant-period witness accumulates phase drift on BPM ramps and picks a
+    far alias, this one does not. Bar-scale support breaks full-beat aliases;
+    near-ties resolve to the minimum-norm offset. Returns
+    ``(offset_ms, support_frac, fine_step_ms)``.
+    """
+    t = np.asarray(note_times, dtype=np.float64)
+    bars = np.asarray(sorted(float(x) for x in bar_times), dtype=np.float64)
+    if len(t) < 4 or len(bars) < 2:
+        return None, None, None
+
+    fine, beat = [], []
+    for i in range(len(bars) - 1):
+        a, b = bars[i], bars[i + 1]
+        if b <= a:
+            continue
+        m = 4.0
+        if beats_per_bar is not None and i < len(beats_per_bar) and beats_per_bar[i]:
+            m = float(beats_per_bar[i])
+        nb = max(1, int(round(m)))
+        for j in range(nb):
+            beat.append(a + (b - a) * j / nb)
+        for j in range(2 * nb):
+            fine.append(a + (b - a) * j / (2 * nb))
+    if not fine:
+        return None, None, None
+    lattices = (
+        (np.asarray(sorted(set(fine))), 0.5),
+        (np.asarray(sorted(set(beat))), 0.3),
+        (bars, 0.2),
+    )
+    fine_arr = lattices[0][0]
+    fine_step_ms = float(np.median(np.diff(fine_arr)) * 1000.0) if len(fine_arr) > 1 else None
+    tol = tol_ms / 1000.0
+
+    def dist(x, L):
+        idx = np.clip(np.searchsorted(L, x), 1, len(L) - 1)
+        return np.minimum(np.abs(x - L[idx - 1]), np.abs(L[idx] - x))
+
+    search = search_ms / 1000.0
+    step = step_search_ms / 1000.0
+    n_half = int(round(search / step))
+    cands = np.arange(-n_half, n_half + 1) * step  # symmetric, includes 0
+    sup = np.zeros(len(cands))
+    for i, d in enumerate(cands):
+        x = t - d
+        s = 0.0
+        for L, w in lattices:
+            if len(L) < 2:
+                continue
+            s += w * float(np.mean(np.maximum(0.0, 1.0 - dist(x, L) / tol)))
+        sup[i] = s
+    best_s = float(sup.max())
+    # Equivalent aliases (uniform-stream charts, +-one beat) differ by O(1e-4)
+    # support; genuinely distinct peaks differ by >=0.05. Minimum-norm among
+    # near-ties picks the physical offset, not the alias.
+    near = sup >= best_s - 2e-3
+    best_d = float(cands[near][np.argmin(np.abs(cands[near]))])
+    return best_d * 1000.0, best_s, fine_step_ms
+
+
+def _segment_bars(segments):
+    """(bar_times, beats_per_bar) from parsed TJA segments, incl. final end."""
+    segs = [s for s in segments or [] if s.get("timestamp") is not None]
+    segs.sort(key=lambda s: float(s["timestamp"]))
+    if len(segs) < 2:
+        return None, None
+    bars = [float(s["timestamp"]) for s in segs]
+    beats = []
+    for s in segs:
+        num = float(s.get("measure_num") or 4)
+        den = float(s.get("measure_den") or 4)
+        beats.append(num * 4.0 / den)
+    # extend one bar past the last line so trailing notes have a span
+    bars.append(bars[-1] + (bars[-1] - bars[-2] if bars[-1] > bars[-2] else 1.0))
+    return bars, beats
 
 
 def _empty_result():
@@ -448,13 +553,22 @@ def compute(events, ctx):
         beat_period = 60.0 / bpm
         phase = note_times[0]
 
-    # Fixed-grid global offset (C2 witness), scipy-free.
-    if beat_period is not None and phase is not None:
+    # Fixed-lattice global offset (C2 witness), scipy-free. Each grid tier
+    # gets the witness matching its generative process: authored segments are
+    # exact bar lines (piecewise lattice, tempo-change robust); an estimated
+    # grid is a constant-period fit whose downbeats are noisy samples of it
+    # (constant combined eighth+beat objective).
+    go = gsupport = gstep = None
+    if segments:
+        bars, beats = _segment_bars(segments)
+        if bars:
+            go, gsupport, gstep = lattice_phase_offset(note_times, bars, beats)
+    if go is None and beat_period is not None and phase is not None:
         go, gsupport, gstep = grid_phase_offset(note_times, beat_period, phase)
-        out["grid_phase_offset_ms"] = go
-        out["grid_phase_offset_abs_ms"] = abs(go) if go is not None else None
-        out["grid_phase_support_frac"] = gsupport
-        out["grid_phase_step_ms"] = gstep
+    out["grid_phase_offset_ms"] = go
+    out["grid_phase_offset_abs_ms"] = abs(go) if go is not None else None
+    out["grid_phase_support_frac"] = gsupport
+    out["grid_phase_step_ms"] = gstep
 
     # Lattice matching (needs scipy + segments or a downbeat grid).
     anchors = None
