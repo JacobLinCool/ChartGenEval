@@ -291,7 +291,7 @@ def main():
     probe_rec = root / "experiments/corruption_probes_v1/runs/raw/records/corruption_probes_20260710.jsonl"
     cert_rec = root / "experiments/timing_integration_v1/runs/raw/records/certify_timing_tail_6ms.jsonl"
     c1s_rec = root / "experiments/corruption_probes_v1/runs/raw/records/c1s_full_profile.jsonl"
-    ext_rec = root / "experiments/timing_integration_v1/runs/raw/records/ext_clean_timing_20260710.jsonl"
+    ext_rec = root / "experiments/timing_integration_v1/runs/raw/records/ext_clean_timing_final_20260711.jsonl"
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
 
