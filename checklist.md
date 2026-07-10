@@ -30,9 +30,11 @@ artifact 同步發佈。上游研究紀錄在 SoftChart repo 的
       dose1 違規率 0.40=理論值）；**C1s 發現結構性盲區**（72.3% 被密格
       re-matching 吸收，timing 家族僅 35–45% 譜觸發）——舊 10ms 紀錄
       不可與新 6ms 紀錄混讀（P9 全面重跑後統一）
-- [ ] **C1s 家族歸屬**：C1s × 全家族 profile 跑完後補耦合矩陣 C1s 行
-      （grammar/pattern 是否接住錯格位移；無人接住則記錄為
-      reference-free 邊界＋official-reference tier 動機）
+- [x] **C1s 家族歸屬**（2026-07-10）：grammar 家族強接（淨方向 d3：
+      ioi_entropy +0.87、pattern_nll +0.86、4gram ±0.85、
+      window_nll_p95 +0.82），density/structure 沉默——耦合矩陣補
+      C1s 行；「timing 被吸收/grammar 接住」與 C5、C2 構成互補性
+      雙向展品組（進 §complementarity）
 - [ ] （選配）boredom heuristic 修復或維持 diagnostic 降級說明
 - [ ] （選配）seed／解碼穩健性小跑
 
