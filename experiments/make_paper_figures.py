@@ -157,16 +157,16 @@ def fig2(ti, out):
 # ---------------- figA: bidirectional blindness ----------------
 
 
-def figA(probe_records, cert_records, c1s_records, out):
+def figA(probe_records, cert_records, out):
     fig, axes = plt.subplots(1, 2, figsize=(6.9, 2.4), sharey=True)
 
     plot_dose_response(
         probe_records,
-        ["pattern_ngram_perplexity", "pattern_ic_adequacy_score"],
+        ["pattern_nll", "pattern_ic_adequacy_score"],
         probe="C5_blandification",
         styles={
-            "pattern_ngram_perplexity": {
-                "label": "n-gram perplexity (baseline) — falls: “better”",
+            "pattern_nll": {
+                "label": "n-gram NLL (perplexity baseline) — falls: “better”",
                 "color": BASE_C, "marker": "o"},
             "pattern_ic_adequacy_score": {
                 "label": "pattern-IC band score (ours) — holds",
@@ -187,13 +187,13 @@ def figA(probe_records, cert_records, c1s_records, out):
                 "label": "mean timing summary — blind",
                 "color": BASE_C, "ls": "--", "marker": "o"},
             "clean_rate": {
-                "label": "clean rate (timing) — partial: lattice absorbs 72%",
+                "label": "clean rate (timing) — partial: lattice absorbs ~70%",
                 "color": "#7fb3d5"},
         },
         ax=axes[1],
         title="C1s sparse outliers: timing lattice absorbs",
     )
-    nd = net_direction(c1s_records, "pattern_nll", "C1s_sparse_jitter")
+    nd = net_direction(probe_records, "pattern_nll", "C1s_sparse_jitter")
     ds = sorted(nd)
     axes[1].plot([0] + ds, [0.0] + [nd[d] for d in ds], "-", color=OURS_C, marker="s",
                  label="pattern NLL (grammar) — catches")
@@ -234,25 +234,34 @@ def figB(ext_records, out):
 # ---------------- figC: coupling heatmap + C1s row ----------------
 
 
-def figC(cp, c1s_records, out):
-    spec = rows(cp / "specificity_matrix.csv")
-    AGG = {"chart_quality_proxy_score", "local_pattern_score",
-           "surface_structure_proxy_score", "playability_proxy_score"}
-    cells = defaultdict(dict)
-    targets = set()
-    for r in spec:
-        if r["metric_kind"] != "incumbent" or r["metric"] in AGG:
-            continue
-        cells[r["metric"]][r["probe"]] = float(r["std_delta_maxdose"])
-        if r["is_target"] == "True":
-            targets.add((r["metric"], r["probe"]))
+PROBE_TARGET_SCORES = {
+    "C1_timing_jitter": "rhythm_complexity_adequacy_score",
+    "C3_type_shuffle": "transition_validity_score",
+    "C4_loop_collapse": "repetition_adequacy_score",
+    "C5_blandification": "pattern_ic_adequacy_score",
+    "C6_density_scale": "density_adequacy_score",
+    "C7_burst_insert": "overload_score",
+    "C8_bar_shuffle": "surface_structure_proxy_score",
+    # C2's designated target is the audio-anchored witness (not chart-only);
+    # C1s has no designated chart-only target (discovered coupling).
+}
 
-    # C1s column from the raw C1s profile run, same standardized-delta
-    # semantics (audit.coupling_matrix). Its grammar response is discovered
-    # coupling: C1s has no designated chart-only target, so no box.
-    for cell in coupling_matrix(c1s_records, sorted(cells)):
-        if cell["probe"] == "C1s_sparse_jitter" and cell["std_delta_maxdose"] is not None:
-            cells[cell["metric"]]["C1s_sparse_jitter"] = cell["std_delta_maxdose"]
+
+def figC(probe_records, out):
+    """Probe x calibrated-score coupling heatmap, built entirely from the
+    clean-split probe run (audit.coupling_matrix standardized deltas)."""
+    AGG = {"chart_quality_proxy_score", "local_pattern_score",
+           "playability_proxy_score"}
+    r0 = next(r for r in probe_records if r["probe"] == "official")
+    metrics_all = sorted(
+        k for k in r0
+        if k.endswith("_score") and k not in AGG and isinstance(r0[k], (int, float))
+    )
+    cells = defaultdict(dict)
+    for cell in coupling_matrix(probe_records, metrics_all):
+        if cell["std_delta_maxdose"] is not None:
+            cells[cell["metric"]][cell["probe"]] = cell["std_delta_maxdose"]
+    targets = {(m, p) for p, m in PROBE_TARGET_SCORES.items()}
 
     probes = sorted({p for m in cells.values() for p in m})
     metrics = sorted(cells, key=lambda m: -max(abs(v) for v in cells[m].values()))
@@ -273,9 +282,62 @@ def figC(cp, c1s_records, out):
                                            edgecolor="black", lw=1.4))
     cb = fig.colorbar(im, ax=ax, shrink=0.85)
     cb.set_label("Δ score at max dose (official-SD units, clipped ±4)")
-    ax.set_title("Metric coupling under targeted corruption "
-                 "(boxes = designated targets; C1s: discovered coupling)")
+    ax.set_title("Metric coupling under targeted corruption, clean split "
+                 "(boxes = designated targets; C1s/C2: no chart-only target)")
     save(fig, out, "figC_coupling")
+
+
+# ---------------- figD: profile heatmap / applicability matrix ----------------
+
+
+def figD(probe_records, ext_records, profiles, out):
+    """System x metric profile heatmap. Cells are 0-1 scores (timing clean
+    rate + calibrated band scores); grey dashes are genuine n/a (chart
+    vocabulary outside taiko) -- the applicability matrix is part of the
+    data. Constraint glyphs: pass = band score >= 0.5."""
+    from chartgeneval.plots import plot_profile
+
+    cols = [
+        ("timing clean", None),
+        ("density", "density_adequacy_score"),
+        ("strain", "strain_adequacy_score"),
+        ("trans. validity", "transition_validity_score"),
+        ("pattern IC", "pattern_ic_adequacy_score"),
+        ("repetition", "repetition_adequacy_score"),
+        ("variety", "surface_variety_adequacy_score"),
+    ]
+    con_keys = {"overload": "overload_score", "spike": "density_spike_score",
+                "playable": "playability_proxy_score"}
+
+    timing = defaultdict(list)
+    for r in ext_records:
+        if r.get("anchor_source") == "metadata" and r.get("clean_rate") is not None:
+            timing[r["system"]].append(r["clean_rate"])
+
+    chartside = {"official": [r for r in probe_records if r["probe"] == "official"]}
+    chartside.update(profiles)
+
+    def med(rows_, key):
+        v = [r[key] for r in rows_ if r.get(key) is not None]
+        return float(np.median(v)) if v else None
+
+    order = ["official", "mapperatorinator", "taikonation", "ddconset", "genelive", "autoosu"]
+    scores, constraints = {}, {}
+    for s in order:
+        row = {}
+        row["timing clean"] = float(np.median(timing[s])) if timing.get(s) else None
+        cs = chartside.get(s)
+        for label, key in cols[1:]:
+            row[label] = med(cs, key) if cs else None
+        scores[s] = row
+        constraints[s] = {
+            name: (med(cs, key) >= 0.5 if cs and med(cs, key) is not None else None)
+            for name, key in con_keys.items()
+        }
+    fig, ax = plot_profile(scores, columns=[c for c, _ in cols], constraints=constraints)
+    ax.set_title("system profiles on the clean test set "
+                 "(— = family not applicable to the chart vocabulary)", fontsize=8)
+    save(fig, out, "figD_profile_matrix")
 
 
 def main():
@@ -288,28 +350,35 @@ def main():
     root = Path(args.softchart_root)
     cp = root / "experiments/corruption_probes_v1/runs/reports/corruption_probes_20260710"
     ti = root / "experiments/timing_integration_v1/runs/reports/timing_integration_20260710"
-    probe_rec = root / "experiments/corruption_probes_v1/runs/raw/records/corruption_probes_20260710.jsonl"
-    cert_rec = root / "experiments/timing_integration_v1/runs/raw/records/certify_timing_tail_6ms.jsonl"
-    c1s_rec = root / "experiments/corruption_probes_v1/runs/raw/records/c1s_full_profile.jsonl"
+    probe_rec = root / "experiments/corruption_probes_v1/runs/raw/records/clean_probes_20260710.jsonl"
+    cert_rec = root / "experiments/timing_integration_v1/runs/raw/records/certify_timing_tail_6ms_clean.jsonl"
     ext_rec = root / "experiments/timing_integration_v1/runs/raw/records/ext_clean_timing_final_20260711.jsonl"
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
 
-    only = set(args.only.split(",")) if args.only else None
+    # fig1/fig2 read old-split report CSVs; superseded by figA and the C2 dual
+    # table -- regenerate only on explicit request.
+    only = set(args.only.split(",")) if args.only else {"figA", "figB", "figC", "figD"}
 
     def want(name):
-        return only is None or name in only
+        return name in only
 
     if want("fig1"):
         fig1(cp, out)
     if want("fig2"):
         fig2(ti, out)
     if want("figA"):
-        figA(jrows(probe_rec), jrows(cert_rec), jrows(c1s_rec), out)
+        figA(jrows(probe_rec), jrows(cert_rec), out)
     if want("figB"):
         figB(jrows(ext_rec), out)
     if want("figC"):
-        figC(cp, jrows(c1s_rec), out)
+        figC(jrows(probe_rec), out)
+    if want("figD"):
+        profiles = {
+            "mapperatorinator": jrows(root / "experiments/chart_quality_metrics_v1/runs/ext_mapperatorinator_clean_profile.jsonl"),
+            "taikonation": jrows(root / "experiments/chart_quality_metrics_v1/runs/ext_taikonation_clean_profile.jsonl"),
+        }
+        figD(jrows(probe_rec), jrows(ext_rec), profiles, out)
 
 
 if __name__ == "__main__":
