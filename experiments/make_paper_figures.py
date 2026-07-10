@@ -166,16 +166,15 @@ def figA(probe_records, cert_records, out):
         probe="C5_blandification",
         styles={
             "pattern_nll": {
-                "label": "n-gram NLL (perplexity baseline) — falls: “better”",
+                "label": "n-gram NLL (baseline) — decreases under damage",
                 "color": BASE_C, "marker": "o"},
             "pattern_ic_adequacy_score": {
-                "label": "pattern-IC band score (ours) — holds",
+                "label": "pattern-IC band score — bounded, no dose-consistent reward",
                 "color": OURS_C},
         },
         ax=axes[0],
-        title="C5 blandification: grammar baseline fooled",
+        title="C5 flattening (LM-argmax rewrite)",
     )
-    axes[0].annotate("fooled", xy=(2.5, -0.85), color=BASE_C, fontsize=7, ha="center")
 
     cert_meta = [r for r in cert_records if r.get("anchor_source") == "metadata"]
     plot_dose_response(
@@ -184,19 +183,19 @@ def figA(probe_records, cert_records, out):
         probe="C1s_sparse_jitter",
         styles={
             "absolute_error_mean_ms": {
-                "label": "mean timing summary — blind",
+                "label": "mean timing summary (median response 0 ms)",
                 "color": BASE_C, "ls": "--", "marker": "o"},
             "clean_rate": {
-                "label": "clean rate (timing) — partial: lattice absorbs ~70%",
+                "label": "clean rate — partial (lattice re-matches ~70%)",
                 "color": "#7fb3d5"},
         },
         ax=axes[1],
-        title="C1s sparse outliers: timing lattice absorbs",
+        title="C1s sparse outliers",
     )
     nd = net_direction(probe_records, "pattern_nll", "C1s_sparse_jitter")
     ds = sorted(nd)
     axes[1].plot([0] + ds, [0.0] + [nd[d] for d in ds], "-", color=OURS_C, marker="s",
-                 label="pattern NLL (grammar) — catches")
+                 label="pattern NLL (grammar) — detects")
     axes[1].legend(frameon=False, fontsize=6.4)
     axes[0].set_ylabel("per-chart net direction vs intact")
     axes[1].set_ylabel("")
@@ -215,7 +214,7 @@ def figB(ext_records, out):
     # official first, then descending median clean rate.
     order = sorted(
         (s for s in by_system if s != "official"),
-        key=lambda s: -np.median([r["clean_rate"] for r in by_system[s]]),
+        key=lambda s: -np.mean([r["clean_rate"] for r in by_system[s]]),
     )
     systems = ["official"] + order
     tier_rows, labels, strips = [], [], {}
@@ -227,7 +226,7 @@ def figB(ext_records, out):
         labels.append(label)
         strips[label] = np.array([r["clean_rate"] for r in rs if r.get("clean_rate") is not None])
     fig, ax = plot_timing_tiers(tier_rows, labels=labels, chart_clean_rates=strips)
-    ax.set_title("timing profile of published systems (clean test, authored grid)", fontsize=8)
+    ax.set_title("timing profiles of published systems (held-out test songs, authored grid)", fontsize=8)
     save(fig, out, "figB_timing_tiers")
 
 
@@ -240,8 +239,8 @@ PROBE_TARGET_SCORES = {
     "C4_loop_collapse": "repetition_adequacy_score",
     "C5_blandification": "pattern_ic_adequacy_score",
     "C6_density_scale": "density_adequacy_score",
-    "C7_burst_insert": "overload_score",
-    "C8_bar_shuffle": "surface_structure_proxy_score",
+    "C7_burst_insert": "density_spike_score",
+    "C8_bar_shuffle": "repetition_adequacy_score",
     # C2's designated target is the audio-anchored witness (not chart-only);
     # C1s has no designated chart-only target (discovered coupling).
 }
@@ -273,7 +272,7 @@ def figC(probe_records, out):
     ax.set_xticks(range(len(probes)))
     ax.set_xticklabels([p.split("_", 1)[0] for p in probes])
     ax.set_yticks(range(len(metrics)))
-    ax.set_yticklabels([m.replace("_score", "").replace("_adequacy", "") for m in metrics],
+    ax.set_yticklabels([m.replace("_score", "").replace("_adequacy", "").replace("_", " ") for m in metrics],
                        fontsize=6.5)
     for i, m in enumerate(metrics):
         for j, p in enumerate(probes):
@@ -282,7 +281,7 @@ def figC(probe_records, out):
                                            edgecolor="black", lw=1.4))
     cb = fig.colorbar(im, ax=ax, shrink=0.85)
     cb.set_label("Δ score at max dose (official-SD units, clipped ±4)")
-    ax.set_title("Metric coupling under targeted corruption, clean split "
+    ax.set_title("Band-score responses under targeted corruption "
                  "(boxes = designated targets; C1s/C2: no chart-only target)")
     save(fig, out, "figC_coupling")
 

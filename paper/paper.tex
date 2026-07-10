@@ -50,19 +50,22 @@ from other tasks: F-measure against one reference chart, language-model
 distinct-$n$, and self-similarity. We validate metrics by measuring
 their response to controlled damage. Applying nine targeted corruption
 operators at increasing doses to 170 human charts (4{,}760 scored
-variants), we find failures that spot checks do not reveal: perplexity
+charts including the originals), we find failures that spot checks
+alone do not reveal: perplexity
 \emph{improves} by 37\% when charts are flattened toward the LM's modal
 patterns, self-similarity structureness \emph{rises} by 62\% under
-copy-paste collapse, and all 56 chart-only quantities we compute are
-insensitive to a global 60\,ms audio misalignment (maximum response
-0.03 standard deviations)---a displacement ten times the perceptual
-threshold. A two-layer protocol repairs these failures: raw diagnostics
+copy-paste collapse, and a global 60\,ms audio misalignment---ten times the
+perceptual threshold---goes unregistered not only by all 56 chart-only
+quantities we compute (a structural translation invariance; maximum
+response 0.03 standard deviations) but also by the standard
+matching-based offset statistic. A two-layer protocol repairs these failures: raw diagnostics
 are normalized against per-difficulty target bands calibrated on the
 official-chart corpus, and a perceptually anchored timing family---a
 6\,ms just-noticeable-difference deadzone, severity tiers at its
 multiples, and a fixed-lattice phase detector over a two-tier
 grid-reference hierarchy---recovers injected 15/30/60\,ms shifts with
-exact medians on at least 99.4\% of charts, without a reference chart.
+exact medians, on at least 99.4\% of charts per grid tier and dose,
+without a reference chart.
 The corruptions also establish complementarity: a sparse-outlier
 corruption that grid matching largely absorbs is detected at the token
 level by the grammar family, while the anchor shift that no chart-only
@@ -96,11 +99,10 @@ This paper asks whether those borrowed metrics measure chart quality,
 and answers with a validation method that requires no listening test:
 \emph{targeted corruption}. Starting from human (official) charts, we
 apply nine damage operators---dense timing jitter, sparse severe
-outliers, global anchor shift, color shuffling, copy-paste collapse,
+outliers, global anchor shift, type shuffling, loop collapse,
 LM-argmax flattening, density scaling, burst insertion, bar
-shuffling---at three doses each. On average, corrupting a human chart
-cannot make it better, so a usable quality metric must respond in the
-correct direction, and the response must grow with dose. Metric
+shuffling---at three doses each. Corrupting a human chart does not, in expectation, improve it, so a
+usable quality metric must respond in the correct direction, and the response must grow with dose. Metric
 validation becomes an automated, reproducible procedure that requires
 neither human raters nor model training, and applies unchanged to any
 proposed chart metric.
@@ -114,19 +116,20 @@ misalignment. The underlying raw quantities carry signal; what is
 missing is calibration and grounding. Normalizing each diagnostic
 against per-difficulty target bands estimated from the official corpus
 restores a consistent, manipulation-resistant reading
-(\secref{sec:layers}), and a timing family anchored on a grid-reference
+(\secref{sec:layers}, \secref{sec:reductio}), and a timing family anchored on a grid-reference
 hierarchy---authored per-bar timing metadata when available, an
 audio-estimated beat grid otherwise, never a generated chart's
 self-declared grid---closes the misalignment gap without a reference
-chart (\secref{sec:timingmethod}).
+chart (\secref{sec:timingmethod}, \secref{sec:anchorresults}).
 
-\textbf{Relation to prior work.} Dance Dance Convolution evaluates step
+\textbf{Relation to prior work.} No metric in the chart-generation
+literature has been audited against controlled damage. Dance Dance
+Convolution evaluates step
 placement by F-measure against a reference chart and step selection by
 LM perplexity~\cite{donahue2017ddc}; later systems inherit this
 template~\cite{takada2023genelive,hanzen2025tcp}, and TaikoNation adds
 pattern-congruence measures against human
-charts~\cite{halina2021taikonation}. None of these metrics has been
-audited against controlled damage. In generative-music evaluation, Yang
+charts~\cite{halina2021taikonation}. In generative-music evaluation, Yang
 and Lerch compare feature distributions between generated and reference
 sets~\cite{yang2020evaluation}, MusPy popularized symbolic
 statistics~\cite{dong2020muspy}, and the Jazz Transformer introduced
@@ -135,8 +138,8 @@ direction-ambiguous quantities, and we audit their behavior when used
 as per-chart quality signals. Theis et al.\ showed that likelihood and
 sample quality can diverge~\cite{theis2016note}; our flattening result
 is a corpus-LM instance of that dissociation with a concrete attack.
-Unlike pure critiques we supply the repair, and unlike human-anchored
-metric studies our harness needs no raters. Onset F-measure follows
+Unlike pure critiques, we pair each failure with a repair; unlike
+human-anchored metric studies, the harness requires no raters. Onset F-measure follows
 \texttt{mir\_eval}~\cite{raffel2014mireval}; timing thresholds follow
 the psychophysics of temporal
 discrimination~\cite{friberg1995jnd,london2012hearing} rather than any
@@ -154,15 +157,15 @@ Our contributions are:
   structureness improves under collapse), an insensitivity result
   covering all 56 chart-only quantities under anchor shift, and a
   direction-instability result---perplexity ranks correctly against
-  systems noisier than the corpus yet inverts against systems blander
-  than it (\secref{sec:reductio}).
+  systems on the high-entropy side of the corpus yet inverts on the
+  low-entropy side, shown constructively by C5 (\secref{sec:reductio}).
 \item \textbf{A two-layer, reference-free protocol} with an empirically
   assigned role taxonomy and a perceptually anchored timing family: one
   6\,ms just-noticeable-difference constant grounds a deadzone,
   severity tiers, and a clean-note rate; a piecewise fixed-lattice
   phase detector recovers injected shifts where matching statistics do
-  not respond (\secref{sec:layers}--\ref{sec:timingmethod},
-  \secref{sec:anchorresults}).
+  not respond (Sections~\ref{sec:layers}--\ref{sec:timingmethod}
+  and \ref{sec:anchorresults}).
 \item \textbf{Complementarity evidence}: three corruptions, each
   undetected by one metric family and strongly detected by another, in
   both directions---the empirical case that chart quality is a profile,
@@ -185,11 +188,13 @@ question that requires perception studies; we return to it in
 \subsection{Data and grid references}\label{sec:data}
 
 We use a corpus of 1{,}155 taiko-style chart files covering 1{,}013
-unique songs, grouped by audio identity and normalized title and split
+unique songs. The files are community transcriptions of each song's
+official difficulty courses; we call them official charts and use them
+as the human reference corpus. Songs are grouped by audio identity and normalized title and split
 at the song level into 813/80/120 training/validation/test song groups,
 so that no song appears in more than one split. Calibration uses the
 official difficulty-course charts of the training songs; evaluation
-uses 40 held-out test songs (170 official course-charts) across all
+uses 40 held-out test songs (170 official course charts) across all
 difficulty courses.
 
 Timing is the one family that cannot be measured from the chart alone:
@@ -202,19 +207,27 @@ authored metadata. A generated chart's self-declared grid is never
 consulted: a system that supplied its own reference could trivially
 zero its own offsets. On our corpus the estimated tier is accurate:
 estimated beat periods agree with authored tempo within 2\% on 40/40
-test songs.
+test songs. Period agreement does not bound downbeat phase; the shift
+recovery reported below is phase-invariant, and absolute offsets are
+reported on the authored tier.
 
 \subsection{Two-layer scoring}\label{sec:layers}
 
 \textbf{Layer 1: raw diagnostics.} Each chart is a sequence of timed,
 typed events. We compute quantities with native units and no claimed
-direction: note density and local-density percentiles, inter-onset
-entropy, color-switch rate, $n$-gram LM negative log-likelihood
+direction: note density and local-density percentiles,
+inter-onset-interval (IOI) entropy, color-switch rate, $n$-gram LM negative log-likelihood
 (trigram, add-$\alpha$ smoothing, trained on the calibration corpus),
 unseen-transition rate, unique/repeated 4-gram rates, and windowed LM
 surprisal percentiles. These deliberately coincide with the borrowed
 metrics: the audit compares \emph{normalization strategies}, not
-measurement choices.
+measurement choices. Score names used later map onto these directly:
+rhythm complexity is the band score over IOI entropy; repetition and
+variety adequacy over the repeated and unique 4-gram rates; density
+adequacy and the spike score over density and local-density
+percentiles; transition validity over the unseen-transition rate; and
+pattern information content (pattern-IC) over the windowed LM
+surprisal percentiles.
 
 \textbf{Layer 2: calibrated band scores.} For each diagnostic and
 difficulty course we estimate a target band $[p_{10},p_{90}]$ over the
@@ -234,14 +247,21 @@ not the sign of a deviation, justifies an interpretation. For
 typicality scores the inference is one-directional: the corruptions
 certify that damage drives charts out of band; they do not certify the
 converse. An out-of-band reading is a flag whose meaning is adjudicated
-by the rest of the profile (\secref{sec:discussion}).
+by the rest of the profile (\secref{sec:discussion}). Because the
+corruptions start from corpus charts, some sensitivity of typicality
+scores is by construction; the certified properties that a bare
+distance-to-corpus statistic would not deliver are boundedness under
+the manipulation attack, the insensitivity results, and the coupling
+structure (\secref{sec:reductio}--\ref{sec:complementarity}).
 
 \textbf{Role taxonomy.} Scores are assigned roles empirically by the
 audit, not a priori: \emph{rankers} respond to damage and separate
 systems (pattern-IC, transition validity, repetition and variety
 adequacy, rhythm complexity); \emph{constraints} saturate near 1 for
-all reasonable charts, flag only gross violations (density, strain,
-overload, spike), and act as vetoes---they never average into a score;
+all reasonable charts---on the held-out official charts, 86--98\% score
+at least 0.99 on each constraint, median 1.0---flag only gross
+violations (density, strain, overload, spike, and an aggregate
+playability gate), and act as vetoes---they never average into a score;
 \emph{diagnostics} carry signal with direction-only interpretation
 (the fixed-lattice phase detector; the hypersensitive rare-$n$-gram
 rate). We report score profiles, not a single aggregate: fixing
@@ -255,7 +275,7 @@ metric families.
 \setlength{\tabcolsep}{2.5pt}
 \begin{tabular}{@{}lllll@{}}
 \toprule
-Family & measures & inputs & type & tier \\
+Family & Measures & Inputs & Type & Tier \\
 \midrule
 timing & placement vs.\ grid & times + grid & defect & diag.+rank \\
 grammar & sequence idiom & tokens + LM & both & ranker \\
@@ -267,7 +287,8 @@ constraints & playability limits & tokens & defect & veto \\
 \end{tabular}
 \caption{The five-plus-one metric families. \emph{Inputs} determine
 cross-vocabulary applicability (\secref{sec:systemresults}): timing and
-coupling read note times only and apply to any rhythm game; grammar,
+coupling read note times only and apply to any timed note stream given
+a grid reference; grammar,
 structure, and gap require a vocabulary tokenizer and a calibration
 corpus. Perceptual constants are fixed from the temporal-discrimination
 literature~\cite{friberg1995jnd,london2012hearing}: a 6\,ms absolute
@@ -284,7 +305,8 @@ All timing thresholds are perceptual, not game-specific: a single
 6\,ms deadzone---the just-noticeable timing distortion for short
 intervals~\cite{friberg1995jnd}---below which deviations are treated as
 imperceptible; severity tiers at $1\times/2\times/3\times$ the
-deadzone; and a relative channel that compares consecutive inter-onset
+deadzone, spanning from this conservative attentive-listening floor up
+to magnitudes relevant in play; and a relative channel that compares consecutive inter-onset
 intervals against a Weber envelope $\max(6\,\mathrm{ms},\,2.5\%\times
 \mathrm{IOI})$, computed on raw offsets before any deadzone is applied.
 The family reports a partition of all notes---\emph{clean} (matched
@@ -315,37 +337,49 @@ songs with meter and tempo variation.
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{@{}lll@{}}
 \toprule
-Operator (dose knob) & Damages & Designated target \\
+Operator (dose parameter) & Damages & Designated target \\
 \midrule
 C1 timing jitter ($\pm$10/20/30\,ms) & micro-timing & rhythm cmplx.\ + timing \\
-C1s sparse outliers (.5/1/2\%, $\pm$60\,ms) & timing tail & (discovered: grammar) \\
+C1s sparse outliers (0.5/1/2\%, $\pm$60\,ms) & timing tail & (discovered: grammar) \\
 C2 anchor shift (+15/30/60\,ms) & audio alignment & timing detector \\
-C3 type shuffle ($p$=.2/.4/.8) & note grammar & transition validity \\
-C4 loop collapse ($p$=.3/.6/1) & structure & repetition adequacy \\
-C5 flattening ($p$=.3/.6/1) & interestingness & (manipulation test) \\
-C6 density scale ($\times$.5/1.5/2) & difficulty fit & density adequacy \\
+C3 type shuffle ($p{=}0.2/0.4/0.8$) & note grammar & transition validity \\
+C4 loop collapse ($p{=}0.3/0.6/1$) & structure & repetition adequacy \\
+C5 flattening ($p{=}0.3/0.6/1$) & interestingness & (manipulation test) \\
+C6 density scale ($\times$0.5/1.5/2) & difficulty fit & density adequacy \\
 C7 burst insert (2/4/8 clusters) & playability & density-spike score \\
-C8 bar shuffle ($p$=.3/.6/1) & global form & repetition adequacy \\
+C8 bar shuffle ($p{=}0.3/0.6/1$) & global form & repetition adequacy \\
 \bottomrule
 \end{tabular}
 \caption{Nine corruption operators applied to 170 official charts at
 three doses each (4{,}760 scored variants including originals;
-deterministic seeds; operators verified by independent re-execution).
+deterministic seeds; operator outputs re-verified bit-identically by a
+separate re-execution script against the archived records).
 Every operator preserves what it does not target: C3--C5 preserve all
 note times exactly; C4 and C6 preserve or control density. C1s
-displaces $\max(1,\lceil np\rceil)$ notes by $\pm$60\,ms ($10\times$
+displaces $\max(1,\lceil np\rceil)$ of a chart's $n$ notes by $\pm$60\,ms ($10\times$
 the deadzone): a few severely misplaced notes in an otherwise intact
 chart, the failure mode that mean statistics cannot register.}
 \label{tab:probes}
 \end{table}
 
-\tabref{tab:probes} lists the operators. Corruption direction is
-guaranteed at the population level: because band scores are two-sided,
-a corruption can push an individual off-band chart \emph{toward} its
-band, so all criteria are evaluated over 170 charts, with per-chart
-paired direction (the fraction of charts moving against their own
-intact version) as the certification statistic---magnitude medians can
-saturate under re-matching effects, paired direction does not.
+Nine operators each damage one chart property at three controlled
+doses (\tabref{tab:probes}); they are chosen to span the family
+taxonomy of \tabref{tab:families}, one to two per family. Band scores
+are two-sided, so a corruption can push an individual off-band chart
+\emph{toward} its band; direction is therefore guaranteed only at the
+population level, and all criteria are evaluated over the 170 charts.
+The certification statistic is the per-chart \emph{net direction}: the
+fraction of charts whose value rises minus the fraction whose value
+falls, each chart paired with its own intact version. With 170 charts
+its null width is roughly $\pm 2/\sqrt{170}\approx\pm0.15$; every
+detection claimed below exceeds this by at least a factor of five, and
+no cell-level significance is claimed for the published response
+matrix. Dose--response correlations summarize sensitivity where
+magnitudes are informative; net direction is used where re-matching
+effects saturate magnitudes. Operators that directly edit a measured
+quantity (C6 on density, C7 on local density) make their diagonal
+response a manipulation check rather than evidence; the informative
+cells are the off-diagonal responses and the insensitivities.
 Acceptance requires (a) \emph{sensitivity}: the designated target
 degrades with dose; (b) \emph{resistance to manipulation}: no score
 family rewards damage without bound; and (c) \emph{disclosed coupling}:
@@ -370,12 +404,24 @@ Mapperatorinator~\cite{mapperatorinator}, an open-source
 osu!-ecosystem generator run in taiko mode \PENDING{E: positioning
 wording}, and TaikoNation~\cite{halina2021taikonation}---plus, for the
 game-agnostic families, Dance Dance Convolution's onset
-pipeline~\cite{donahue2017ddc}, the public timing-only configuration of
+pipeline (ddconset)~\cite{donahue2017ddc}, the public timing-only configuration of
 Gen\'eLive!~\cite{takada2023genelive}, and an osu! difficulty-targeted
-generator~\cite{autoosu}. All systems chart the same 40 held-out songs
-from audio in their public inference configurations; none was trained
-on this corpus. Official charts of the same songs provide the reference
-row.
+generator (autoosu)~\cite{autoosu}. The three vocabularies are taiko
+note types, timing-only onset streams, and osu! position-based
+objects. All systems chart the same 40 held-out songs from audio in
+their public inference configurations; none was trained on this
+corpus, although overlap between these commercial songs and the
+systems' own training data cannot be excluded
+(\secref{sec:discussion}). Difficulty mappings from each system's
+controls onto the five courses were fixed before evaluation and ship
+with the artifacts. Format conversion into the evaluation event stream
+is shared within each vocabulary; the two systems sharing the osu!
+conversion path read different phase offsets below (19 vs.\ 26\,ms),
+which rules out a shared conversion constant, though per-format
+offsets cannot be fully excluded (\secref{sec:discussion}). Official
+charts of the same songs provide the reference row. Systems that
+condition on difficulty produce one chart per official course (170 or
+200 charts); the others produce one per song (40).
 
 \section{Results}\label{sec:results}
 
@@ -387,7 +433,18 @@ Spearman $\rho$(dose, target score) is negative for C1 rhythm
 complexity ($-0.48$), C3 transition validity ($-0.33$), C4 repetition
 adequacy ($-0.41$), C6 density adequacy ($-0.68$), C7 density spike
 ($-0.79$), and C8 repetition adequacy ($-0.48$), with monotone mean
-trajectories (all $p<10^{-18}$). C2's target is the timing detector
+trajectories (all $p<10^{-18}$; the unit of analysis is the
+chart--dose pair, so these $p$ values summarize strength, not
+independent evidence). The same six targets have per-chart net
+direction $-0.55$ to $-0.95$ at maximum dose. The two families whose
+inputs the chart-only run cannot cover are audited in the same way:
+the audio-coupled at-onset statistic detects the anchor shift (net
+direction $-0.74$ to $-0.88$ across C2 doses; median envelope $z$ 1.09
+$\to$ $-0.34$ at 60\,ms) while staying exactly at zero under
+time-preserving flattening, and the manifold-gap score responds to
+every token-editing operator (net direction $-0.19$ to $-0.81$ at
+maximum dose) while being translation-invariant under C2 ($-0.05$),
+as any chart-only quantity must be. C2's target is the timing detector
 (\secref{sec:anchorresults}); C1s's response pattern is the
 complementarity result (\secref{sec:complementarity}); C5's bounded
 response is the manipulation-resistance property, reported next.
@@ -398,90 +455,108 @@ response is the manipulation-resistance property, reported next.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figs/figA_complementarity.pdf}
-\caption{Two corruptions, two blind/detect splits, as per-chart paired
-net direction (fraction of charts moving up minus moving down relative
-to their own intact version). \textbf{Left (C5 flattening):} rewriting
+\caption{Two corruptions that one metric family does not register and
+another detects, as per-chart net direction (fraction of charts moving
+up minus moving down relative to their own intact version; null width
+$\approx\pm0.15$). \textbf{Left (C5 flattening):} rewriting
 notes toward the LM argmax drives $n$-gram NLL \emph{down} in
-essentially every chart (net direction $-1.0$ at full dose)---an
+every chart (net direction $-1.0$ at full dose)---an
 improvement under the standard lower-is-better reading---while the band
-score built on the same LM statistic stays near zero net direction: it
-saturates at typicality instead of rewarding the damage. \textbf{Right
+score built on the same LM statistic shows no dose-consistent reward
+(net direction $+0.18/+0.28/+0.04$ across doses): it is bounded at
+typicality. \textbf{Right
 (C1s sparse outliers):} displacing 0.5--2\% of notes by $\pm$60\,ms
-leaves mean timing summaries at exactly zero median response (dashed),
-moves the timing clean rate in only a fraction of charts (the
+leaves mean timing summaries with zero median response (their dashed
+net-direction curve reflects sub-resolution drift with no usable
+magnitude), moves the timing clean rate in 34--45\% of charts (the
 subdivision lattice re-matches $\approx$70\% of displaced notes within
 the deadzone), but flips the IOI token class of adjacent intervals, so
-grammar NLL responds with net direction $+0.86$ even at one to three
-displaced notes per chart. Timing damage that placement metrics absorb
+grammar NLL responds with net direction $+0.77$ at one to three
+displaced notes per chart, rising to $+0.87$ at higher doses. Timing damage that placement metrics absorb
 is detected as grammar damage.}
 \label{fig:complementarity}
 \end{figure}
 
-\figref{fig:complementarity} (left) and two corpus numbers give the
-sign-reversal results. \emph{Perplexity rewards flattening}: official
-test charts average perplexity 9.4 under the corpus trigram; rewriting
-them toward the LM's modal patterns lowers perplexity by 37\% (9.44
-$\to$ 5.98). Read as lower-is-better~\cite{donahue2017ddc}, perplexity
-prefers the damaged chart---a corpus-LM instance of the
+Two borrowed metrics reverse sign under damage
+(\figref{fig:complementarity}, left). \emph{Perplexity rewards
+flattening}: throughout, perplexity is the exponential of a chart's
+mean per-note trigram NLL, averaged over charts. Official test charts
+average 9.44 under the corpus trigram; rewriting them toward the LM's
+modal patterns lowers perplexity by 37\% (9.44 $\to$ 5.98). Dance
+Dance Convolution reports perplexity as model fit on held-out human
+charts~\cite{donahue2017ddc}; transplanted to generated output as a
+reference-free quality reading---a tempting transfer given its correct
+direction on real systems below---the lower-is-better reading prefers
+the damaged chart---a corpus-LM instance of the
 likelihood/quality dissociation~\cite{theis2016note}---and the reversal
 survives the cross-LM version of the attack (9.44 $\to$ 6.04,
 $-$36\%). The band score over the
-same statistic cannot be driven above typicality (bounded at 1), and
-the damage the attack actually does is registered where it lands:
+same statistic saturates at its ceiling of 1---flattening cannot push
+a chart above typicality---and the damage the attack actually does is
+registered where it lands:
 repetition adequacy falls from 0.99 to 0.84. \emph{Structureness
 rewards collapse}: replacing charts with their own dominant 4-gram loop
-raises self-similarity structureness~\cite{wu2020jazz} by 62\% (0.085
-$\to$ 0.137)---copy-paste output is maximally self-similar---and
+raises self-similarity structureness~\cite{wu2020jazz} by 62\% (0.0848
+$\to$ 0.1370)---copy-paste output is maximally self-similar---and
 set-level Self-BLEU rises from 0.845 to 0.898, while repetition and
 variety adequacy fall (0.99 $\to$ 0.80 and 0.99 $\to$ 0.89).
 
 Two observational results complete the case. \emph{Direction
 instability}: against the two published taiko generators of
-\secref{sec:systemresults}, whose outputs are noisier than the human
-corpus, perplexity separates official from generated charts in the
-correct direction (AUC 0.80)---yet C5 proves the same reading inverts
-for outputs blander than the corpus. A signed quality metric whose sign
+\secref{sec:systemresults}, whose outputs lie on the high-entropy side of the human corpus,
+perplexity separates official from generated charts in the correct
+direction (AUC 0.80 on the two systems available)---yet C5 proves the
+same reading inverts on the low-entropy side. A signed quality metric whose sign
 depends on which side of the human distribution the system sits cannot
 be used for ranking; band scores are stable on both sides by
 construction. \emph{Length confounds}: on the same pool, type--token
 ratio correlates with note count at $|\rho|=0.85$ and distinct-2 at
 $0.56$, against at most $0.28$ for the calibrated rankers.
 
-\subsection{Anchor shift: 56 insensitive metrics, one detector}
+\subsection{Anchor shift: insensitive by construction, undetected in practice}
 \label{sec:anchorresults}
 
 A chart can be idiomatic on every chart-only axis and still be
-displaced from the music entirely---C2 makes this concrete. A constant
-$+15/30/60$\,ms shift of every note changes all 56 chart-only
-quantities by at most 0.03 standard deviations, and the matching-based
-signed offset does not respond either, for the reason given in
-\secref{sec:timingmethod}: a dense subdivision lattice re-matches every
-shifted note. The fixed-lattice phase detector recovers the injected
-shifts with exact medians (15.00/30.00/60.00\,ms) on at least 99.4\% of
-charts on \emph{both} grid tiers. Under dense jitter (C1) the rest of
+displaced from the music entirely---C2 makes this concrete. That the
+56 chart-only quantities do not register the shift is structural, not
+empirical: chart-only statistics are translation-invariant up to
+window-edge effects (measured maximum response 0.03 standard
+deviations; the 56 comprise all Layer-1 diagnostics, their band
+scores, and the borrowed baselines, enumerated in the released
+records). The finding is that the field evaluates almost exclusively
+with such quantities, and that the timing-aware repair fails as well:
+a matching-based signed offset does not respond, for the reason given
+in \secref{sec:timingmethod}---a dense subdivision lattice re-matches
+every shifted note. The fixed-lattice phase detector recovers the injected
+shifts with exact medians (15.00/30.00/60.00\,ms) on both grid tiers,
+on at least 99.4\% of charts (169 or 170 of 170) per tier and dose. Under dense jitter (C1) the rest of
 the timing family also certifies cleanly: the clean rate falls in
 100\% of charts at every dose, and the first-tier exceedance at
 $\pm$10\,ms jitter matches its theoretical value
-($P(|U(-10,10)|>6)=0.4$; measured median 0.39).
+($P(|U(-10,10)|>6)=0.4$; measured median 0.40).
 
 \subsection{Complementarity: the profile cannot be reduced}
 \label{sec:complementarity}
 
-Three corruptions produce three different detection splits
+Three corruptions produce three different detection dissociations,
+each readable directly off the published response matrix
 (\figref{fig:complementarity}, \figref{fig:couplingmap}):
 
 \begin{itemize}
 \item \textbf{C2 anchor shift}: registered by none of the 56
-  chart-only quantities and not by matching-based offsets; detected
-  only by the timing-family phase detector.
+  chart-only quantities and not by matching-based offsets; detected by
+  the timing-family phase detector and by the audio-coupled at-onset
+  statistic (\secref{sec:sensitivity}).
 \item \textbf{C1s sparse outliers}: largely absorbed by lattice
   matching ($\approx$70\% of displaced notes re-match within the
   deadzone; mean summaries show exactly zero median response); detected
-  by the grammar family (net direction $+0.86$ to $+0.88$), because a
+  by the grammar family (net direction $+0.77$ to $+0.87$ across
+  doses), because a
   60\,ms displacement necessarily flips the IOI token class of two
-  adjacent intervals. Density and structure do not respond ($|$net
-  direction$|\le 0.02$)---the response is specific, only not where the
-  operator was aimed.
+  adjacent intervals. Density does not respond ($|$net direction$|\le 0.01$); structure
+  responds weakly ($-0.12$ at maximum dose, an order of magnitude
+  below the grammar response)---the response is concentrated, only not
+  where the operator was aimed.
 \item \textbf{C5 flattening}: rewards the grammar baseline
   (perplexity), is bounded by the band layer, and is detected by the
   structure family.
@@ -494,8 +569,11 @@ between axes that these results show are not exchangeable.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figs/figC_coupling.pdf}
-\caption{The full operator$\times$score response matrix on the test
-set (official-SD units at maximum dose, clipped at $\pm$4; boxes =
+\caption{The operator$\times$band-score response matrix (all 16
+calibrated scores; the raw-layer matrix over all 56 quantities ships
+with the released records). Cells are responses at maximum dose in
+standard deviations of the official-chart distribution, clipped at
+$\pm$4; boxes =
 designated targets; C2 and C1s have no chart-only target). Targeted
 operators move their targets, but responses are \emph{not} diagonal:
 timing jitter (C1) propagates into pattern scores because pattern
@@ -515,12 +593,15 @@ which is the division of labor the role taxonomy prescribes.}
 \centering
 \includegraphics[width=\columnwidth]{figs/figB_timing_tiers.pdf}
 \caption{Timing profiles of published systems on the held-out test set
-(authored grid). Each bar partitions all notes of a system into
-perceptual buckets: clean ($\le$1$\times$ the 6\,ms deadzone), tier
-exceedances, and unmatched. Right strip: per-chart clean-rate
-p10--median--p90 with the worst chart marked $\times$---tail charts
-that corpus means hide. Official charts are the all-clean reference
-row.}
+(authored grid). Bars show the mean over charts of per-chart bucket
+fractions---clean ($\le$1$\times$ the 6\,ms deadzone), tier
+exceedances, and unmatched---with rows ordered by the same statistic;
+$n$ is the number of charts (difficulty-conditioned systems produce
+one chart per official course, others one per song). Right strip:
+per-chart clean-rate p10--median--p90 with the worst chart marked
+$\times$---tail charts that corpus means hide. The official row is
+all-clean by construction (officials are authored on the grid that
+defines cleanliness) and serves as a consistency check.}
 \label{fig:tiers}
 \end{figure}
 
@@ -531,9 +612,15 @@ row.}
 scores (timing clean rate; calibrated band scores); grey dashes mark
 families that do not apply to the system's chart vocabulary; glyphs
 are constraint gates (pass/fail; a failed gate outlines the row: gates
-veto, they do not average in). The two taiko-vocabulary systems fail
-on complementary axes---one row's dark cells are the other's pale
-cells---which is the profile argument on real systems.}
+veto, they do not average in; pass = median band score $\ge$0.5).
+Density and strain adequacy appear as cells for diagnosis; their veto
+role is carried by the playability gate. The two taiko-vocabulary
+systems deviate on complementary axes on four of the six
+chart-vocabulary columns (density and strain against repetition and
+variety); both remain below band on the grammar columns. The official
+row reads 0.75 on transition validity because a fixed training-corpus
+LM assigns nonzero unseen-transition rates to new songs; that value,
+not 1.0, is the human reference level for that column.}
 \label{fig:profiles}
 \end{figure}
 
@@ -542,9 +629,11 @@ five systems of \secref{sec:systems}; three findings illustrate what
 the profile adds over single numbers.
 
 \textbf{Equal scores, different failure mechanisms.} The two taiko
-systems have nearly equal timing clean rates (0.59 vs.\ 0.58), yet
-opposite mechanisms. Mapperatorinator is internally coherent
-(relative-channel violations 0.10, close to officials) but
+systems have nearly equal timing clean rates (medians 0.59 vs.\ 0.58;
+indistinguishable on this axis), yet opposite mechanisms.
+Mapperatorinator is internally the more coherent of the two
+(relative-channel violations 0.10, a quarter of TaikoNation's 0.41;
+officials: 0.00) but
 phase-misanchored: the phase detector reads a 26\,ms median offset,
 while the matching-based statistic reads under 1\,ms---the same
 re-matching failure that C2 demonstrated, measured on a published
@@ -554,31 +643,38 @@ relation to the audio's dynamics: its density--energy correlation is
 $-0.003$ and its notes land on average-energy frames (at-onset envelope
 $z=-0.004$, against 1.09 for officials). The onset pipeline anchors
 accurately (2.5\,ms), which doubles as a control: all five systems
-charted the same audio files, so the 26--55\,ms offsets are model
-behavior, not pipeline artifacts.
+charted the same audio files, so the 26--55\,ms offsets are not
+audio-decoding artifacts (per-format conversion offsets are bounded by
+the control in \secref{sec:systems}).
 
-\textbf{Complementary failures.} On chart-vocabulary families the two
-taiko systems fail on disjoint axes (\figref{fig:profiles}).
-Mapperatorinator writes in-band pattern language (repeated-4-gram rate
-0.51 against a human band of 0.45--0.72; repetition and variety
-adequacy 1.0) but fails difficulty conditioning: its oni and ura
-courses sit inside their density bands while its easy/normal/hard
-courses run $1.5$--$2.5\times$ over theirs (easy: 2.9 notes/s against
-a band of 0.8--1.8). Its ``easy'' does not match the density of a
-taiko easy course---a failure only per-difficulty calibration can
-register, and one that trips the playability gate. TaikoNation shows
-the reverse pattern: density and strain in band, but pattern language
-far outside the corpus (perplexity 161 against 9.4 for officials; 55\%
-of transitions never occur in the human corpus; repeated-4-gram rate
-0.004, i.e.\ no learnable repetition).
+\textbf{Complementary deviations.} On chart-vocabulary families the
+two taiko systems deviate on complementary axes
+(\figref{fig:profiles}). Mapperatorinator writes in-band repetition
+structure (repeated-4-gram rate 0.60 on oni against the oni band
+0.45--0.72; repetition and variety adequacy 1.0) but its difficulty
+conditioning does not transfer: its oni and ura courses sit inside
+their density bands while its easy/normal/hard course medians run
+$1.5$--$1.8\times$ over their bands' upper edges (easy: 2.9 notes/s
+against a band of 0.8--1.8). This is a deviation against the requested
+course's band that also trips the playability gate---under the
+adjudication of \secref{sec:discussion}, a defect, not novelty---and
+only per-difficulty calibration can register it. TaikoNation shows the
+reverse pattern: density and strain in band, but grammar far outside
+the corpus (mean perplexity 158 against 9.4 for officials; 55\% of
+transitions never occur in the human corpus; repeated-4-gram rate
+0.004, i.e.\ no learnable repetition). Training on a different
+charting community's corpus may account for part of that magnitude;
+the defect-type reading (unseen transitions) and the absent audio
+coupling place it on the damage arm of the adjudication regardless.
 
 \textbf{Progress statements need profiles.} Between TaikoNation (2021)
 and Mapperatorinator (2024) the timing clean rate is unchanged---a
 single-number comparison would report three years without progress.
-The profile shows where the progress went: sequence coherence improved
-by a factor of four (relative violations 0.41 $\to$ 0.10) and pattern
-language moved from far outside the corpus to in-band, while anchoring
-and difficulty calibration remain open problems.
+The profile shows where the progress went: relative timing coherence
+improved by a factor of four (violations 0.41 $\to$ 0.10) and
+repetition structure moved from absent (repeated-4-gram rate 0.004) to
+in-band (0.60 on oni), while the grammar axes, anchoring, and
+difficulty calibration remain open problems.
 
 \section{Discussion}\label{sec:discussion}
 
@@ -593,7 +689,11 @@ the magnitude of novelty while the defect-type axes and the rest of
 the profile supply the value judgment; the same out-of-band reading
 means damage when the value axes collapse and material for human
 review when they hold. This adjudication is itself an argument for
-profiles: the meaning of one axis depends on the others.
+profiles: the meaning of one axis depends on the others. It is,
+however, a protocol rather than an exercised instrument: the
+difficulty-conditioning verdict of \secref{sec:systemresults} is its
+only worked example, and instantiating the novelty arm requires human
+judgment data.
 
 \textbf{Beyond one game.} Two families read only note times and were
 applied unchanged across three chart vocabularies here (timing,
@@ -619,21 +719,29 @@ corruption, so per-chart verdicts need the profile, not one score. The
 suite is a coupled profile (\figref{fig:couplingmap}); attribution
 between timing and pattern damage is shared through tokenization,
 which is partly a property of the domain (mistimed notes damage
-patterns as played). One game corpus calibrates the bands; the
+patterns as played). One game corpus, of unstated genre breadth, calibrates the bands; the
 cross-game systems are evaluated on the game-agnostic families only;
 systems are run in their public inference configurations at one seed.
+Overlap between the test songs and the systems' own training corpora
+was not controlled, and per-format conversion offsets, though bounded
+by the shared-path control of \secref{sec:systems}, cannot be fully
+excluded: the system profiles are diagnostic characterizations, not a
+leaderboard. The operator set spans the family taxonomy but not all
+damage classes: chart--audio mismatch (wrong-song coupling),
+salient-note deletion, and intentional off-lattice styles are
+untested.
 
 \section{Conclusion}\label{sec:conclusion}
 
-Chart generation needs evaluation it can trust more than it needs
-another metric. Corruption-based validation is systematic and
+For chart generation, validated evaluation is currently scarcer than
+new metrics. Corruption-based validation is systematic and
 reproducible, and it showed that the borrowed metrics did not merely
 underperform: they rewarded flattening, rewarded collapse, missed a
 global misalignment ten times the perceptual threshold, and inverted
 ranking direction across system regimes. Corpus-calibrated band scores
 over the same raw quantities, extended with a perceptually anchored
 timing family over a grid-reference hierarchy, pass the same
-corruptions---population-exact dose response, bounded response to the
+corruptions---population-level monotone dose response, bounded response to the
 manipulation attack, exact shift recovery---and their coupling
 structure is published rather than hidden. Applied to five published
 systems, the resulting profiles replace rankings with mechanism-level
@@ -646,8 +754,10 @@ metrics---for this game or others---can be validated under the same
 protocol. \PENDING{P8: artifact URL.}
 
 \section*{Ethics Statement}
-The corpus consists of community-created charts used under research
-terms; no personal data is involved. Better automated evaluation
+The corpus consists of the community-transcribed official-course
+charts of \secref{sec:data}, used under research terms; released
+per-chart records contain metric values, not note data, and do not
+reconstruct the charts. No personal data is involved. Better automated evaluation
 chiefly benefits players and small developers; we see no direct misuse
 vector beyond automated content farming, which platform moderation
 already addresses.
