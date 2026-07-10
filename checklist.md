@@ -9,8 +9,11 @@ artifact 同步發佈。上游研究紀錄在 SoftChart repo 的
 - [ ] **既有模型評估（taiko 域）**：Mapperatorinator v32＋TaikoNation
       對 40 首測試歌生成 → 全 profile 評估（管線 agent 執行中，
       GPU 等 v1.6 佇列收官）
-- [ ] **跨遊戲組**：ddc_onset／GenéLive!／AutoOsu（CPU 推論，
-      管線 agent 執行中）→ 只評遊戲無關家族，產出
+- [x] **跨遊戲組生成**（2026-07-10）：ddc_onset／GenéLive!／AutoOsu
+      三系統 40/40 零失敗（CPU）；GenéLive 公開版實測為 timing-only
+      （sym stub 全 lane 0，密度條件化真實）——適用性矩陣照此標註
+- [ ] **跨遊戲組評估**：對上述輸出跑遊戲無關家族（timing/coupling；
+      結構家族僅 ddc 外之多 token 系統）→ 產出
       **指標適用性矩陣**（家族 × 遊戲詞彙）
 - [ ] **suite v2 納入前的三件修復**：
   - [ ] `official_manifold_gap` 用真 LM-C5 重測（現只有 color-flatten
