@@ -68,6 +68,10 @@ artifact 同步發佈。論文 LaTeX 原始檔與研究紀錄在本 repo `paper/
       `--limit` 貫穿 LM 建置（現全量 ~9 分鐘）、
       **P9 後以 clean split 重校準並替換隨附 artifact**（同時消除
       「預設資料集≠golden 語料」的陷阱，README 已先加警語）
+- [ ] **bpm≤0 防呆進套件層**（2026-07-10 發現：無 BPM 檔案以 0 fallback
+      評估時 IOI tokenization 靜默壞掉、grammar 全家垃圾且
+      invalid_transition=1.0——`evaluate_chart_quality` 應在 bpm 無效時
+      令 grammar 分數回 None＋警告；腳本層 --bpm-map 已補）
 - [ ] README 補：格線參照層級與適用時機、自宣稱 grid 警告、
       指標適用性矩陣（哪些家族需要哪種輸入/語料）
 - [ ] suite v2 指標隨 A 組修復同步進套件（含 gauntlet 通過紀錄）
