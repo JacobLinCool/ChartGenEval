@@ -247,6 +247,27 @@ matching-based 偏移在兩層都盲（不追蹤 shift）——fig2 雙欄版數
 附帶發現：test_00033 ura 官方譜 base offset +163ms（P9 時查 ura
 segments 解析或該譜 offset gimmick）。
 
+**Mapperatorinator 全 profile（2026-07-11，170 譜、clean 校準＋bpm-map，
+experiments/chart_quality_metrics_v1/runs/ext_mapperatorinator_clean_profile.jsonl）
+——「語言對、難度錯、相位歪」，與 TaikoNation 近乎完美互補**：
+- structure/pattern 家族**在帶**：repetition 1.000、surface_variety 1.000、
+  repeat_4gram 0.507（帶 0.45–0.72 內！）、ioi_entropy 1.724（帶內）——
+  它會寫太鼓式的 pattern 語言（pattern_nll 2.91 略超帶但遠優於 TN 5.08）
+- **難度條件化失效（course 條件化 band 的招牌抓捕）**：oni/ura 密度
+  完美在帶（1.000/1.000），easy/normal/hard 超帶 1.5–2.5×（easy nps
+  2.87 vs 帶 0.82–1.82）——osu 星級對映壓縮在頂部，「它的 easy 不是
+  太鼓的 easy」；strain 0.169、playability 0.194 連動受損
+- timing（終版紀錄）：clean 0.590、相對 viol **0.104**（乾淨）＋witness
+  26ms 錨偏＝「自洽時鐘、相位錯錨」型（GenéLive 同型）；**ddc 2.5ms
+  是管線對照組**——同一音訊直接取 onset 錨得準，證明 26–55ms 是模型
+  自身錨定行為非管線偏移
+- **與 TaikoNation 的互補失效對**：TN＝密度對/語言錯/時鐘錯，Mapp＝
+  語言對/難度錯/相位歪——單一分數（proxy 0.380 vs 0.000）只給排序，
+  profile 給出「進步發生在語言層、代價在錨定與難度層」的機制敘事。
+  2021→2024 世代 clean rate 幾乎同分（0.581 vs 0.590）而機制完全不同
+- 註：本 profile 的 boredom_score 仍為舊 heuristic——v2 指標（boredom_v2
+  等）尚無 band 條目，待下次校準重建納入（C 組 artifact 替換時一併）
+
 **TaikoNation 全 profile（taiko 域，chart-only 家族＋timing；
 experiments/chart_quality_metrics_v1/runs/ext_taikonation_clean_profile.jsonl，
 40 譜、clean 校準、oni band、官方 BPM）——「密度對、語言錯、時鐘歪」**：

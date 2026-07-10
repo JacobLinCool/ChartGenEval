@@ -6,15 +6,16 @@ artifact 同步發佈。論文 LaTeX 原始檔與研究紀錄在本 repo `paper/
 
 ## A. 實驗／分析（數字凍結前）
 
-- [ ] **既有模型評估（taiko 域）**：Mapperatorinator v32＋TaikoNation
-      對 40 首測試歌生成 → 全 profile 評估（管線 agent 執行中，
-      GPU 等 v1.6 佇列收官）
+- [x] **既有模型評估（taiko 域）**（2026-07-11，clean-40）：
+      Mapperatorinator 170 譜「語言對、難度錯（easy 超帶 1.5–2.5×）、
+      相位歪（26ms）」；TaikoNation 40 譜「密度對、語言錯、時鐘歪」
+      ——互補失效對，2021→2024 clean rate 同分而機制不同
 - [x] **跨遊戲組生成**（2026-07-10）：ddc_onset／GenéLive!／AutoOsu
       三系統 40/40 零失敗（CPU）；GenéLive 公開版實測為 timing-only
       （sym stub 全 lane 0，密度條件化真實）——適用性矩陣照此標註
-- [ ] **跨遊戲組評估**：對上述輸出跑遊戲無關家族（timing/coupling；
-      結構家族僅 ddc 外之多 token 系統）→ 產出
-      **指標適用性矩陣**（家族 × 遊戲詞彙）
+- [x] **跨遊戲組評估（timing）**（2026-07-11 終版）：六系統雙格線
+      1,320 records；ddc=管線對照組（2.5ms）；適用性矩陣熱圖待組裝
+      （B 組應用節件）
 - [x] **suite v2 修理票包**（2026-07-11，fixes_20260710.md，五 commits）：
   - [x] `official_manifold_gap` 真 LM-C5 重測＋φ v2（v1 低劑量可操縱
         已修；ρ −0.317、逐譜 84.4%、C1–C8 零迴歸）
