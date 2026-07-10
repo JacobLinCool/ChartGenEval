@@ -15,11 +15,17 @@ artifact 同步發佈。論文 LaTeX 原始檔與研究紀錄在本 repo `paper/
 - [ ] **跨遊戲組評估**：對上述輸出跑遊戲無關家族（timing/coupling；
       結構家族僅 ddc 外之多 token 系統）→ 產出
       **指標適用性矩陣**（家族 × 遊戲詞彙）
-- [ ] **suite v2 納入前的三件修復**：
-  - [ ] `official_manifold_gap` 用真 LM-C5 重測（現只有 color-flatten
-        proxy 證據）
-  - [ ] `energy_peak_support` 按有效時長正規化（|ρ| vs 音符數 0.77 → <0.3）
-  - [ ] `call_response` 以 reciprocity 子葉為 primary（rate 有 C3 漏）
+- [x] **suite v2 修理票包**（2026-07-11，fixes_20260710.md，五 commits）：
+  - [x] `official_manifold_gap` 真 LM-C5 重測＋φ v2（v1 低劑量可操縱
+        已修；ρ −0.317、逐譜 84.4%、C1–C8 零迴歸）
+  - [x] `energy_peak_support` run-head 時長正規化（長度 ρ 0.77→0.30、
+        C6 反應保持、AUC 0.728）
+  - [x] `call_response` → reciprocity v2 primary（C3 漏轉正、C6 歸正、
+        8/8 pass；舊 leaf ABAB=0.0 缺陷一併修）
+  - [x] boredom → **boredom_v2**（TaikoNation 反例 1.000→0.458、
+        C4 ρ −0.932、AUC 0.860 全候選最強）
+  - [x] MDI → **DROP**（修復版更糟＋雙形式被攻擊者打穿＋構念由
+        reciprocity v2 覆蓋）
 - [x] **gauntlet 'mid' 預期類別拆帶號重報**（2026-07-10，
       mid_rereport.md）：嚴格版 33/48=69%（原 74%）；mid 拆為
       directional-down ×5（post-hoc 輔助）/flat ×6/mild-counter ×3
@@ -41,7 +47,7 @@ artifact 同步發佈。論文 LaTeX 原始檔與研究紀錄在本 repo `paper/
       window_nll_p95 +0.82），density/structure 沉默——耦合矩陣補
       C1s 行；「timing 被吸收/grammar 接住」與 C5、C2 構成互補性
       雙向展品組（進 §complementarity）
-- [ ] （選配）boredom heuristic 修復或維持 diagnostic 降級說明
+- [x] boredom heuristic → boredom_v2 修復完成（見上）
 - [ ] （選配）seed／解碼穩健性小跑
 
 ## B. 論文寫作（英文版：本 repo paper/paper.tex）

@@ -357,8 +357,32 @@ energy_peak×C6 −.582——真訊號但 post-hoc，僅作輔助證據）、fla
 \|drop\|≤0.013，引用時揭露）。**ADOPT 四指標全部存活**（承重 pass 均在
 嚴格 33 內）；dose 計數引用一律以重報為準。
 
-待辦（剩餘）：manifold_gap 真 LM-C5 重測；MDI 修復重測；
-reciprocity 升 primary；energy_peak 時長正規化。
+**修理票包結案（2026-07-11，fix-or-drop 紀律，
+experiments/metric_candidates_v1/runs/tables/assess_20260710/fixes_20260710.md，
+五 commits 4644f52..c706c09）**：
+1. `energy_peak_support` FIXED：run-head 時長正規化（250ms 知覺群組化，
+   Fraisse/London 錨定）——長度 ρ −0.768→**−0.300**，C6 劑量反應保持
+   （z −2.24→−2.22），AUC 0.666→0.728
+2. `call_response` FIXED：primary 改 **reciprocity v2**（容錯
+   chance-corrected Dice × color-κ）——C3 漏 +0.373→−0.189 轉正、
+   C6 ε 反向歸正、**8/8 探針 pass**、AUC 0.711。附帶發現：舊 reciprocity
+   leaf 對教科書 ABAB 給 0.0（majority-color 標籤缺陷）已一併修
+3. `official_manifold_gap` FIXED：**真 LM-C5** 重測揭露 φ v1 低劑量
+   可操縱（70% 譜 gap 反縮，16/29 bigram 維被 LM-argmax 同向利用）
+   → φ v2（+3 反平淡維）ρ −0.317、逐譜 84.4%，C1–C8 零迴歸
+4. boredom FIXED：新候選 **`boredom_v2`**（小節級 stagnation＋
+   alienation，Berlyne 雙側，無 LM token 依賴；Rankin/Margulis 錨定）——
+   TaikoNation「零重複＝不無聊」反例 1.000→0.458（官方 0.260），
+   C4 目標 ρ −0.932 逐譜 100%，8/8 pass，**AUC off-vs-gen 0.860
+   全候選最強**
+5. `motif_development_index` **DROP**：單調化修復版實測更糟、
+   兩種形式都被攻擊者打穿（bell 0.9969 > 官方 max 0.9833）、
+   構念已由 reciprocity v2 覆蓋——依 fix-or-drop 出局
+
+**Suite v2 終版名單**：ADOPT＝manifold_gap(φv2)、reciprocity v2、
+density_energy_response、energy_peak(正規化)、**boredom_v2**；
+DROP＝self_similarity、MDI。真 C5 有效劑量為名目 1/3（實改
+9.7/21.4/42.4% 音符，官方譜貼近 LM mode）——劑量標註照實際值。
 
 ## 風險
 
