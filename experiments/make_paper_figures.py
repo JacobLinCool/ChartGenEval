@@ -182,6 +182,7 @@ def figA(probe_records, cert_records, out):
         ]),
     ]
     fig, axes = plt.subplots(1, 2, figsize=(6.9, 2.3), sharex=True)
+    plt.rcParams.update({})
     for ax, (title, series) in zip(axes, panels):
         ax.axvspan(-0.15, 0.15, color="#d5d8dc", alpha=0.5, lw=0, zorder=0)
         ax.axvline(0, color="gray", lw=0.6)
@@ -194,17 +195,15 @@ def figA(probe_records, cert_records, out):
             yticks.append(base_y)
             ylabels.append(label)
         ax.set_yticks(yticks)
-        ax.set_yticklabels(ylabels, fontsize=7.5)
+        ax.set_yticklabels(ylabels, fontsize=9.5)
         ax.set_xlim(-1.05, 1.05)
-        ax.set_title(title)
-        ax.set_xlabel("per-chart net direction vs.\ intact (doses 1$\\to$3, light$\\to$dark)")
+        ax.tick_params(axis="x", labelsize=9)
+        ax.set_title(title, fontsize=10.5)
         for spine in ("top", "right", "left"):
             ax.spines[spine].set_visible(False)
         ax.tick_params(left=False)
-    axes[0].annotate("grey band = null width ±0.15", xy=(0.02, 0.97),
-                     xycoords="axes fraction", fontsize=6.4, color="dimgray", va="top")
     fig.supxlabel("per-chart net direction vs. intact (doses 1→3, light→dark)",
-                  fontsize=8, y=0.02)
+                  fontsize=9.5, y=0.01)
     save(fig, out, "figA_complementarity")
 
 
@@ -359,6 +358,36 @@ def figD(probe_records, ext_records, profiles, out):
     save(fig, out, "figD_profile_radar")
 
 
+def figD_heat(probe_records, ext_records, profiles, out):
+    """Variant: 3-system annotated heatmap + gate glyphs (zeros legible)."""
+    from chartgeneval.plots import plot_profile
+    cols = [("timing clean", None), ("density", "density_adequacy_score"),
+            ("strain", "strain_adequacy_score"), ("trans. validity", "transition_validity_score"),
+            ("pattern IC", "pattern_ic_adequacy_score"), ("repetition", "repetition_adequacy_score"),
+            ("variety", "surface_variety_adequacy_score")]
+    con_keys = {"overload": "overload_score", "spike": "density_spike_score",
+                "playable": "playability_proxy_score"}
+    timing = defaultdict(list)
+    for r in ext_records:
+        if r.get("anchor_source") == "metadata" and r.get("clean_rate") is not None:
+            timing[r["system"]].append(r["clean_rate"])
+    chartside = {"official": [r for r in probe_records if r["probe"] == "official"]}
+    chartside.update(profiles)
+    def med(rows_, key):
+        v = [r[key] for r in rows_ if r.get(key) is not None]
+        return float(np.median(v)) if v else None
+    order = ["official", "mapperatorinator", "taikonation"]
+    scores, constraints = {}, {}
+    for sys_ in order:
+        row = {"timing clean": float(np.median(timing[sys_]))}
+        for label, key in cols[1:]:
+            row[label] = med(chartside[sys_], key)
+        scores[sys_] = row
+        constraints[sys_] = {n: (med(chartside[sys_], k) or 0) >= 0.5 for n, k in con_keys.items()}
+    fig, ax = plot_profile(scores, columns=[c for c, _ in cols], constraints=constraints)
+    save(fig, out, "figD_alt_heatmap")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--softchart-root", default=str(Path(__file__).resolve().parents[2] / "SoftChart"))
@@ -398,6 +427,7 @@ def main():
             "taikonation": jrows(root / "experiments/chart_quality_metrics_v1/runs/ext_taikonation_clean_profile.jsonl"),
         }
         figD(jrows(probe_rec), jrows(ext_rec), profiles, out)
+        figD_heat(jrows(probe_rec), jrows(ext_rec), profiles, out)
 
 
 if __name__ == "__main__":
