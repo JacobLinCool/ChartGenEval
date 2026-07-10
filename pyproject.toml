@@ -48,9 +48,12 @@ Repository = "https://github.com/JacobLinCool/ChartGenEval"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/chartgeneval"]
+# Ship the bundled calibration artifact (a data file, not a .py module).
+artifacts = ["src/chartgeneval/data/*.json"]
 
-[tool.hatch.build.targets.wheel.force-include]
-"src/chartgeneval/data" = "chartgeneval/data"
+[tool.hatch.build.targets.sdist]
+include = ["src/chartgeneval", "experiments", "tests", "README.md", "LICENSE", "pyproject.toml"]
+artifacts = ["src/chartgeneval/data/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
