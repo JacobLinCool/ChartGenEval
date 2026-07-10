@@ -192,6 +192,20 @@ downbeat 列表會弄丟拍號資訊而誤錨變拍譜**。套件 `timing.comput
 `grid["segments"]`（優先於 downbeats）。全部認證數字已以修正版重跑，
 結論不變（C1 100% 嚴格降 ×3；C1s 吸收 72.6%）
 
+### P9 clean split 重凍結進度（2026-07-10）
+
+1. ✅ 校準（clean train 924/course；band 與舊版差第三位小數）
+2. ✅ 探針全套（clean test 40 × 10 探針含 C1s × 3 劑量，
+   experiments/corruption_probes_v1/runs/raw/records/clean_probes_20260710.jsonl，
+   4,760 rows）——**招牌展品全數複現**：C5 pattern_nll 2.071→1.718
+   （≈perplexity 7.9→5.6，舊版 7.98→5.48）且 band 持平；C4
+   repeat_4gram 0.495→0.687、repetition band 正確下滑；C1s grammar
+   淨方向 +0.86~+0.88、density 沉默 −0.02——與舊 split 逐項一致，
+   band 統計對切分穩健的直接證據
+3. ✅ timing：cert（6ms 制）與外部系統評估本來就在 clean 上
+4. ⬜ 剩餘：meta-eval 借用基線重跑、圖表終版重出（等 Mapperatorinator
+   齊後一次做）、隨附校準 artifact 替換（C 組）
+
 ### Clean-40 外部系統 timing 結果（2026-07-10 初步，
 experiments/timing_integration_v1/runs/raw/records/ext_clean_timing_20260710.jsonl，
 980 records；clean test 前 40 canonical 歌、clean 校準時代首批數字；
