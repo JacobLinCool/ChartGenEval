@@ -385,7 +385,7 @@ def figD_heat(probe_records, ext_records, profiles, out):
         scores[sys_] = row
         constraints[sys_] = {n: (med(chartside[sys_], k) or 0) >= 0.5 for n, k in con_keys.items()}
     fig, ax = plot_profile(scores, columns=[c for c, _ in cols], constraints=constraints)
-    save(fig, out, "figD_alt_heatmap")
+    save(fig, out, "figD_profile_matrix")
 
 
 def main():
@@ -398,7 +398,7 @@ def main():
     root = Path(args.softchart_root)
     cp = root / "experiments/corruption_probes_v1/runs/reports/corruption_probes_20260710"
     ti = root / "experiments/timing_integration_v1/runs/reports/timing_integration_20260710"
-    probe_rec = root / "experiments/corruption_probes_v1/runs/raw/records/clean_probes_20260710.jsonl"
+    probe_rec = root / "experiments/corruption_probes_v1/runs/raw/records/clean_probes_v2rational_20260711.jsonl"
     cert_rec = root / "experiments/timing_integration_v1/runs/raw/records/certify_timing_tail_6ms_clean.jsonl"
     ext_rec = root / "experiments/timing_integration_v1/runs/raw/records/ext_clean_timing_final_20260711.jsonl"
     out = Path(args.out)
@@ -423,8 +423,8 @@ def main():
         figC(jrows(probe_rec), out)
     if want("figD"):
         profiles = {
-            "mapperatorinator": jrows(root / "experiments/chart_quality_metrics_v1/runs/ext_mapperatorinator_clean_profile.jsonl"),
-            "taikonation": jrows(root / "experiments/chart_quality_metrics_v1/runs/ext_taikonation_clean_profile.jsonl"),
+            "mapperatorinator": jrows(root / "experiments/chart_quality_metrics_v1/runs/ext_mapperatorinator_clean_profile_v2.jsonl"),
+            "taikonation": jrows(root / "experiments/chart_quality_metrics_v1/runs/ext_taikonation_clean_profile_v2.jsonl"),
         }
         figD(jrows(probe_rec), jrows(ext_rec), profiles, out)
         figD_heat(jrows(probe_rec), jrows(ext_rec), profiles, out)

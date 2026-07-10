@@ -231,8 +231,14 @@ surprisal percentiles.
 
 \textbf{Layer 2: calibrated band scores.} For each diagnostic and
 difficulty course we estimate a target band $[p_{10},p_{90}]$ over the
-calibration corpus. Scores are $1$ inside the band and decay smoothly
-outside; error-type quantities use exponential penalties. Band scores
+calibration corpus. Scores are $1$ inside the band and decay rationally outside
+($1/(1+d^2)$ in units $d$ of half the band width); error-type
+quantities use exponential penalties. The rational tail is calibrated
+to the data: held-out official charts reach up to $4.9$ band units on
+the language axis (creative outliers), and a Gaussian tail would
+collapse that entire range together with far-pathological readings to
+$0.00$. Each band score is accompanied by a signed band-position
+diagnostic in the same units, which does not saturate. Band scores
 measure \emph{typicality}: ``more entropy'' is neither good nor bad,
 but ``entropy within the range human charters use at this difficulty''
 is well defined, and the score is reference-free at the song
@@ -494,12 +500,12 @@ $-$36\%). The band score over the
 same statistic saturates at its ceiling of 1---flattening cannot push
 a chart above typicality---and the damage the attack actually does is
 registered where it lands:
-repetition adequacy falls from 0.99 to 0.84. \emph{Structureness
+repetition adequacy falls from 0.99 to 0.87. \emph{Structureness
 rewards collapse}: replacing charts with their own dominant 4-gram loop
 raises self-similarity structureness~\cite{wu2020jazz} by 62\% (0.0848
 $\to$ 0.1370)---copy-paste output is maximally self-similar---and
 set-level Self-BLEU rises from 0.845 to 0.898, while repetition and
-variety adequacy fall (0.99 $\to$ 0.80 and 0.99 $\to$ 0.89).
+variety adequacy fall (0.99 $\to$ 0.83 and 0.99 $\to$ 0.90).
 
 Two observational results complete the case. \emph{Direction
 instability}: against the two published taiko generators of
@@ -607,22 +613,23 @@ defines cleanliness) and serves as a consistency check.}
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.92\textwidth]{figs/figD_profile_radar.pdf}
+\includegraphics[width=0.92\textwidth]{figs/figD_profile_matrix.pdf}
 \caption{Ranker-axis profiles of the three taiko-vocabulary systems
-(radar; axes are 0--1 scores: timing clean rate and calibrated band
-scores; outline only---enclosed area is not a score). The two
-generated systems deviate on complementary axes: TaikoNation (red)
-holds density and strain but collapses on every pattern axis;
-Mapperatorinator (blue) holds repetition and variety but collapses on
-density and strain. Right: constraint gates, reported separately
+(cells are 0--1 scores: timing clean rate and calibrated band scores;
+a score of $1.00$ means in-band, and small values are readable as band
+distance under the rational falloff---e.g.\ TaikoNation's repetition
+$0.17$ is $3.3$ half-widths below band while its pattern-IC $0.01$ is
+$12$ above). The two generated systems deviate on complementary axes:
+TaikoNation holds density and strain but collapses on every pattern
+axis; Mapperatorinator holds repetition and variety but deviates on
+density and strain. Right glyphs: constraint gates, reported separately
 because gates veto rather than average (pass = median band score
-$\ge$0.5); Mapperatorinator trips the playability gate. Cross-vocabulary
-systems appear in \figref{fig:tiers} and the text: their time-based
-quantities are computable but read against taiko course norms, and
-their token-based families do not apply. The official row reads 0.75 on
-transition validity because a fixed training-corpus LM assigns nonzero
-unseen-transition rates to new songs; that value, not 1.0, is the human
-reference level for that axis.}
+$\ge$0.5; a failed gate outlines the row); Mapperatorinator trips the
+playability gate. Cross-vocabulary systems appear in \figref{fig:tiers}
+and the text. The official row reads 0.75 on transition validity
+because a fixed training-corpus LM assigns nonzero unseen-transition
+rates to new songs; that value, not 1.0, is the human reference level
+for that column.}
 \label{fig:profiles}
 \end{figure*}
 
@@ -691,7 +698,12 @@ the magnitude of novelty while the defect-type axes and the rest of
 the profile supply the value judgment; the same out-of-band reading
 means damage when the value axes collapse and material for human
 review when they hold. This adjudication is itself an argument for
-profiles: the meaning of one axis depends on the others. It is,
+profiles: the meaning of one axis depends on the others. The band
+units calibrate it empirically: held-out official charts reach up to
+$4.9$ half-widths out on the language axis, so deviations of that
+order lie within the observed human envelope---Mapperatorinator's
+grammar deviation ($+2.1$) does---whereas TaikoNation's $+12$ lies
+three times beyond any human chart in the corpus. It is,
 however, a protocol rather than an exercised instrument: the
 difficulty-conditioning verdict of \secref{sec:systemresults} is its
 only worked example, and instantiating the novelty arm requires human
