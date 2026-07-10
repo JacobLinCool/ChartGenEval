@@ -40,8 +40,13 @@ artifact 同步發佈。上游研究紀錄在 SoftChart repo 的
 
 ## C. 套件發佈（本 repo）
 
-- [ ] 保真驗證通過（乾淨 venv 安裝＋pytest＋golden 數字比對
-      ——workflow 驗證段執行中）
+- [x] 保真驗證通過（2026-07-10，verdict **sound**）：乾淨 venv 安裝、
+      34 pytest 全過、三個 golden 錨 max diff = 0.0（3,528＋28,350 值＋
+      校準逐位元）、探針決定性雙跑一致
+- [ ] 驗證員 MINOR 修復：pytest 入 [dev] 說明（README 已補）、
+      `--limit` 貫穿 LM 建置（現全量 ~9 分鐘）、
+      **P9 後以 clean split 重校準並替換隨附 artifact**（同時消除
+      「預設資料集≠golden 語料」的陷阱，README 已先加警語）
 - [ ] README 補：格線參照層級與適用時機、自宣稱 grid 警告、
       指標適用性矩陣（哪些家族需要哪種輸入/語料）
 - [ ] suite v2 指標隨 A 組修復同步進套件（含 gauntlet 通過紀錄）
@@ -65,6 +70,8 @@ artifact 同步發佈。上游研究紀錄在 SoftChart repo 的
 - [ ] 作者署名／單位（paper.tex 現為 TODO 佔位）
 - [ ] arXiv 分類（cs.SD＋eess.AS？）與授權（CC BY？）
 - [ ] TaikoNation 無 license 宣告——推論評估的引用措辭確認
+- [ ] checklist.md 與 PAPER.zh-TW.md 是否留在公開 artifact repo
+      （驗證員建議公開發佈前移出或 gitignore；作者拍板）
 - [ ] Mapperatorinator 非同儕評審的定位措辭確認
       （"widely-used community system"）
 

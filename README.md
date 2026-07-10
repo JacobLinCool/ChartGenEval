@@ -118,6 +118,16 @@ matrix), `length_orthogonality`, `baseline_reversal`, and `separation_auc`.
 
 ## Reproducing the paper
 
+> **Note on datasets and frozen numbers.** The bundled calibration artifact and
+> all reference (golden) numbers were frozen on `JacobLinCool/taiko-1000-parsed`
+> (the original corpus); to reproduce them byte-exactly pass
+> `--dataset JacobLinCool/taiko-1000-parsed`. The default dataset is the
+> go-forward clean split (`taiko-1000-parsed-clean`), which yields a different,
+> self-consistent set of numbers. Also note the LM/calibration build streams the
+> full train split (~9 min) regardless of `--limit-songs`, and running the test
+> suite requires the `[dev]` extra (`pip install -e ".[dev]"` before `pytest`).
+
+
 The dataset is gated on the Hugging Face Hub. The paper uses the cleaned split
 `JacobLinCool/taiko-1000-parsed-clean`; a local HF token is required. Set
 `--dataset` to switch corpora.
