@@ -50,8 +50,19 @@ def main():
     ap.add_argument("--calibration", default=None)
     ap.add_argument("--dataset", default=None, help="dataset id for LM (default clean split)")
     ap.add_argument("--no-lm", action="store_true", help="skip LM (no grammar scores)")
+    ap.add_argument(
+        "--bpm-map",
+        default=None,
+        help="JSON file {sid: bpm} used when a chart file carries no BPM "
+        "(e.g. the song's authored BPM). IOI tokenization needs a real BPM; "
+        "a zero fallback silently poisons every grammar score.",
+    )
     ap.add_argument("--out", default="charts_scored.jsonl")
     args = ap.parse_args()
+
+    bpm_map = {}
+    if args.bpm_map:
+        bpm_map = json.load(open(args.bpm_map))
 
     calibration = load_calibration(args.calibration) if args.calibration else load_bundled_calibration()
 
@@ -74,7 +85,10 @@ def main():
     for p in paths:
         chart = load_events_json(p)
         course = chart.course or infer_course(p, args.course)
-        bpm = chart.bpm or args.bpm
+        sid = "_".join(p.stem.split("_")[:2])
+        bpm = chart.bpm or bpm_map.get(sid) or args.bpm
+        if not bpm:
+            print(f"[warn] {p.name}: no BPM available; grammar scores will be invalid", flush=True)
         rec = {"path": str(p), "course": course, "bpm": bpm, "n_notes": len(chart.events)}
         rec.update(evaluate_chart_quality(chart.events, bpm, course, lm, calibration))
         rows.append(rec)
