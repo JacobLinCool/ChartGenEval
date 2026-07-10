@@ -24,8 +24,10 @@ artifact 同步發佈。論文 LaTeX 原始檔與研究紀錄在本 repo `paper/
       mid_rereport.md）：嚴格版 33/48=69%（原 74%）；mid 拆為
       directional-down ×5（post-hoc 輔助）/flat ×6/mild-counter ×3
       （ε 級須揭露）；ADOPT 四指標全存活；dose 計數以重報為準
-- [ ] **C2 雙列重跑呈現**：authored grid（最利偵測）＋estimated grid
-      （reference-free）並排；跨遊戲組時值評估改用 authored grid
+- [x] **C2 雙列呈現**（2026-07-10，c2_flip_dual.csv）：witness 在雙層
+      皆精確回收 shift（中位誤差 ≤0.15ms、IQR ≤0.56），matching 雙層
+      皆盲；authored@60ms 86.2% 係高 BPM ±半步 wrap（偵測範圍
+      ±step/2，入文標明）；跨遊戲組時值評估已用 authored grid ✓
 - [x] **timing 尾端修訂＋認證**（2026-07-10）：deadzone 統一 6ms（知覺
       優先，非遊戲判定窗）、三階超越率（1×/2×/3×）、clean_rate、C1s
       稀疏離群探針。C1@6ms 認證 PASS（clean_rate 100% 譜嚴格降 ×3 劑量、

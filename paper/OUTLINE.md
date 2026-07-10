@@ -220,6 +220,15 @@ Mapperatorinator 待 GPU 批次收官後補）
 - estimated grid 欄相對通道與 authored 一致（genelive 0.109 vs 0.099）——
   相對通道 grid-robust 的系統級佐證
 
+**C2 雙格線並列（2026-07-10 完成，
+experiments/timing_integration_v1/runs/tables/c2_flip_dual.csv）**：
+fixed-grid witness 在**兩個格線層**都精確回收注入偏移（authored：
+Δ中位 15.07/29.89/60.00ms、IQR ≤0.56；estimated：15.15/30.15/59.97）；
+matching-based 偏移在兩層都盲（Δ −9.5~+2.2ms，不追蹤 shift）。逐譜
+|Δ−shift|≤3ms 比例 86–98%——authored@60ms 降至 86.2% 係高 BPM 譜的
+±半步 wrap（八分步長 <120ms 時 60ms 觸及偵測邊界），入文時標明
+偵測範圍 ±step/2 為 BPM 相依。→ fig2 改雙欄版（B 組圖件）。
+
 **TaikoNation 全 profile（taiko 域，chart-only 家族＋timing；
 experiments/chart_quality_metrics_v1/runs/ext_taikonation_clean_profile.jsonl，
 40 譜、clean 校準、oni band、官方 BPM）——「密度對、語言錯、時鐘歪」**：
