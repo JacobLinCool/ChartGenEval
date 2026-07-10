@@ -24,6 +24,15 @@ artifact 同步發佈。上游研究紀錄在 SoftChart repo 的
       「劣化使讀數變好」也算過——不修不得引用 dose 計數）
 - [ ] **C2 雙列重跑呈現**：authored grid（最利偵測）＋estimated grid
       （reference-free）並排；跨遊戲組時值評估改用 authored grid
+- [x] **timing 尾端修訂＋認證**（2026-07-10）：deadzone 統一 6ms（知覺
+      優先，非遊戲判定窗）、三階超越率（1×/2×/3×）、clean_rate、C1s
+      稀疏離群探針。C1@6ms 認證 PASS（clean_rate 100% 譜嚴格降 ×3 劑量、
+      dose1 違規率 0.40=理論值）；**C1s 發現結構性盲區**（72.3% 被密格
+      re-matching 吸收，timing 家族僅 35–45% 譜觸發）——舊 10ms 紀錄
+      不可與新 6ms 紀錄混讀（P9 全面重跑後統一）
+- [ ] **C1s 家族歸屬**：C1s × 全家族 profile 跑完後補耦合矩陣 C1s 行
+      （grammar/pattern 是否接住錯格位移；無人接住則記錄為
+      reference-free 邊界＋official-reference tier 動機）
 - [ ] （選配）boredom heuristic 修復或維持 diagnostic 降級說明
 - [ ] （選配）seed／解碼穩健性小跑
 

@@ -9,6 +9,7 @@ produce bit-identical output.
 Probe -> target dimension (paper Table):
 
     C1 timing_jitter    -> timing / rhythm complexity
+    C1s sparse_jitter   -> timing tail (sparse severe outliers; mean-blind)
     C2 anchor_shift     -> anchoring (designed chart-only blind control)
     C3 type_shuffle     -> transition validity / pattern IC
     C4 loop_collapse    -> repetition / variety / boredom
@@ -61,6 +62,29 @@ def c1_timing_jitter(hits, delta_ms, rng, bpm):
     for t, c in hits:
         jit = float(rng.uniform(-delta_ms, delta_ms)) / 1000.0
         out.append((max(0.0, t + jit), c))
+    return sorted(out), False
+
+
+def c1s_sparse_jitter(hits, p, rng, bpm, mag_ms=60.0):
+    """Sparse severe outliers: displace a fraction ``p`` of notes by a large,
+    clearly perceptible offset (10x the 6 ms relative-JND floor), random sign.
+
+    The affected count is ``max(1, round(n * p))`` so the probe always applies.
+    Mean-based timing summaries barely move under this probe; tail statistics
+    (P99, violation rates) must respond.
+    """
+    n = len(hits)
+    if n < 4:
+        return hits, True
+    k = max(1, int(round(n * p)))
+    idx = set(int(i) for i in rng.choice(n, size=k, replace=False))
+    off = mag_ms / 1000.0
+    out = []
+    for i, (t, c) in enumerate(hits):
+        if i in idx:
+            sign = 1.0 if rng.random() < 0.5 else -1.0
+            t = max(0.0, t + sign * off)
+        out.append((t, c))
     return sorted(out), False
 
 
@@ -218,6 +242,7 @@ def c8_bar_shuffle(hits, p, rng, bpm):
 # probe id -> (operator, dose tuple, needs_lm)
 PROBES = {
     "C1_timing_jitter": (c1_timing_jitter, (10, 20, 30), False),
+    "C1s_sparse_jitter": (c1s_sparse_jitter, (0.005, 0.01, 0.02), False),
     "C2_anchor_shift": (c2_anchor_shift, (15, 30, 60), False),
     "C3_type_shuffle": (c3_type_shuffle, (0.2, 0.4, 0.8), False),
     "C4_loop_collapse": (c4_loop_collapse, (0.3, 0.6, 1.0), False),

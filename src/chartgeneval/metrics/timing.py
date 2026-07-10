@@ -25,6 +25,17 @@ from ..events import sorted_hits
 
 METRIC_NAME = "timing"
 
+# Perception-grounded thresholds (timing just-noticeable-difference literature).
+# These are perceptual constants, distinct from the matcher engineering
+# parameters (anchor gates 10-50 ms, merge window 4 ms) defined below.
+# The absolute deadzone is aligned with the relative JND floor: a single
+# 6 ms perceptual constant. Deviations below it are imperceptible; violation
+# tiers are expressed as multiples of it (1x detectable, 2x/3x severity).
+TAU_ABS_S = 0.006  # absolute deviation deadzone: deviations below are imperceptible
+REL_FLOOR_S = 0.006  # relative interval-distortion detection floor
+REL_FRAC = 0.025  # Weber fraction of the local inter-anchor interval
+VIOLATION_TIERS = (1, 2, 3)  # exceedance tiers as multiples of the deadzone
+
 
 @dataclass(frozen=True)
 class Anchor:
@@ -291,12 +302,40 @@ def _empty_result():
         "n_anchors": 0,
         "unsupported_rate": None,
         "matched_rate": None,
+        "absolute_tolerance_ms": TAU_ABS_S * 1000.0,
         "absolute_error_mean_ms": None,
+        "absolute_error_p90_ms": None,
         "absolute_error_p95_ms": None,
+        "absolute_error_p99_ms": None,
         "absolute_offset_abs_mean_ms": None,
+        "absolute_offset_abs_p90_ms": None,
+        "absolute_offset_abs_p95_ms": None,
+        "absolute_offset_abs_p99_ms": None,
+        "absolute_offset_abs_max_ms": None,
+        "absolute_violation_rate": None,
+        "absolute_violation_rate_2x": None,
+        "absolute_violation_rate_3x": None,
+        "n_absolute_violation": None,
+        "n_absolute_violation_2x": None,
+        "n_absolute_violation_3x": None,
+        "clean_rate": None,
         "relative_interval_abs_mean_ms": None,
+        "relative_interval_abs_p90_ms": None,
+        "relative_interval_abs_p95_ms": None,
+        "relative_interval_abs_p99_ms": None,
         "relative_error_mean_ms": None,
+        "relative_error_p90_ms": None,
+        "relative_error_p95_ms": None,
+        "relative_error_p99_ms": None,
+        "relative_violation_rate": None,
+        "relative_violation_rate_2x": None,
+        "relative_violation_rate_3x": None,
+        "n_relative_violation": None,
         "signed_offset_mean_ms": None,
+        "signed_offset_median_ms": None,
+        "early_rate": None,
+        "late_rate": None,
+        "anchor_salience_mean": None,
         "grid_phase_offset_ms": None,
         "grid_phase_offset_abs_ms": None,
         "grid_phase_support_frac": None,
@@ -374,10 +413,28 @@ def compute(events, ctx):
 
     e = np.asarray([m["error"] for m in matches], dtype=np.float64)
     abs_e = np.abs(e)
-    abs_resid = np.maximum(0.0, abs_e - 0.010)
+    abs_resid = np.maximum(0.0, abs_e - TAU_ABS_S)
     out["absolute_error_mean_ms"], out["absolute_error_p95_ms"] = _summary_ms(abs_resid)
-    out["absolute_offset_abs_mean_ms"], _ = _summary_ms(abs_e)
+    out["absolute_error_p90_ms"] = _percentile_ms(abs_resid, 90)
+    out["absolute_error_p99_ms"] = _percentile_ms(abs_resid, 99)
+    out["absolute_offset_abs_mean_ms"], out["absolute_offset_abs_p95_ms"] = _summary_ms(abs_e)
+    out["absolute_offset_abs_p90_ms"] = _percentile_ms(abs_e, 90)
+    out["absolute_offset_abs_p99_ms"] = _percentile_ms(abs_e, 99)
+    out["absolute_offset_abs_max_ms"] = float(np.max(abs_e) * 1000.0)
+    for tier in VIOLATION_TIERS:
+        suffix = "" if tier == 1 else f"_{tier}x"
+        mask = abs_e > tier * TAU_ABS_S
+        out[f"absolute_violation_rate{suffix}"] = float(np.mean(mask))
+        out[f"n_absolute_violation{suffix}"] = int(np.sum(mask))
+    # Clean rate: fraction of ALL notes (unsupported included in the
+    # denominator) that are matched to an anchor within the deadzone.
+    n_clean = n_matched - out["n_absolute_violation"]
+    out["clean_rate"] = float(n_clean / n_notes) if n_notes else None
     out["signed_offset_mean_ms"] = float(np.mean(e) * 1000.0)
+    out["signed_offset_median_ms"] = float(np.median(e) * 1000.0)
+    out["early_rate"] = float(np.mean(e < -TAU_ABS_S))
+    out["late_rate"] = float(np.mean(e > TAU_ABS_S))
+    out["anchor_salience_mean"] = float(np.mean([m["salience"] for m in matches]))
 
     if n_matched >= 2:
         g = np.asarray([m["g"] for m in matches], dtype=np.float64)
@@ -386,8 +443,21 @@ def compute(events, ctx):
         ok = delta > 1e-6
         if np.any(ok):
             r = np.abs(de[ok])
-            theta = np.maximum(0.006, 0.025 * delta[ok])
+            theta = np.maximum(REL_FLOOR_S, REL_FRAC * delta[ok])
             rel_resid = np.maximum(0.0, r - theta)
-            out["relative_interval_abs_mean_ms"], _ = _summary_ms(r)
-            out["relative_error_mean_ms"], _ = _summary_ms(rel_resid)
+            out["relative_interval_abs_mean_ms"], out["relative_interval_abs_p95_ms"] = _summary_ms(r)
+            out["relative_interval_abs_p90_ms"] = _percentile_ms(r, 90)
+            out["relative_interval_abs_p99_ms"] = _percentile_ms(r, 99)
+            out["relative_error_mean_ms"], out["relative_error_p95_ms"] = _summary_ms(rel_resid)
+            out["relative_error_p90_ms"] = _percentile_ms(rel_resid, 90)
+            out["relative_error_p99_ms"] = _percentile_ms(rel_resid, 99)
+            # r is the raw (pre-deadzone) interval distortion; the deadzone
+            # envelope theta is applied only here, after the relative
+            # deviation is computed.
+            for tier in VIOLATION_TIERS:
+                suffix = "" if tier == 1 else f"_{tier}x"
+                mask = r > tier * theta
+                out[f"relative_violation_rate{suffix}"] = float(np.mean(mask))
+                if tier == 1:
+                    out["n_relative_violation"] = int(np.sum(mask))
     return out

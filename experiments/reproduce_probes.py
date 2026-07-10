@@ -41,10 +41,21 @@ def main():
     ap.add_argument("--calibration", default=None, help="calibration JSON (default: bundled)")
     ap.add_argument("--limit-songs", type=int, default=40)
     ap.add_argument("--limit", type=int, default=None, help="alias for --limit-songs")
+    ap.add_argument(
+        "--probes",
+        default=None,
+        help="comma-separated probe ids to run (default: all registered probes)",
+    )
     ap.add_argument("--out", default="probes.jsonl")
     args = ap.parse_args()
 
     limit_songs = args.limit if args.limit is not None else args.limit_songs
+    probe_ids = list(PROBES)
+    if args.probes:
+        probe_ids = [p.strip() for p in args.probes.split(",") if p.strip()]
+        unknown = [p for p in probe_ids if p not in PROBES]
+        if unknown:
+            raise SystemExit(f"unknown probes: {unknown}; registered: {list(PROBES)}")
     calibration = load_calibration(args.calibration) if args.calibration else load_bundled_calibration()
 
     lm, n_calib = build_train_lm(args.dataset, args.calibration_split)
@@ -66,7 +77,7 @@ def main():
                 rows.append(rec)
 
             emit("official", 0, chart.events, False)
-            for probe in PROBES:
+            for probe in probe_ids:
                 for di in (1, 2, 3):
                     corrupted, noop = corrupt(
                         chart.events, probe, di, sid=sid, course=course, bpm=bpm, lm=lm
