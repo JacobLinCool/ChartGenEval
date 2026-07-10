@@ -288,7 +288,8 @@ constraints & playability limits & tokens & defect & veto \\
 \caption{The five-plus-one metric families. \emph{Inputs} determine
 cross-vocabulary applicability (\secref{sec:systemresults}): timing and
 coupling read note times only and apply to any timed note stream given
-a grid reference; grammar,
+a grid reference (the constraint quantities are likewise time-based,
+though their gates are calibrated to taiko course norms); grammar,
 structure, and gap require a vocabulary tokenizer and a calibration
 corpus. Perceptual constants are fixed from the temporal-discrimination
 literature~\cite{friberg1995jnd,london2012hearing}: a 6\,ms absolute
@@ -331,10 +332,10 @@ songs with meter and tempo variation.
 \subsection{Corruption operators and acceptance criteria}
 \label{sec:probes}
 
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \small
-\setlength{\tabcolsep}{3pt}
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{@{}lll@{}}
 \toprule
 Operator (dose parameter) & Damages & Designated target \\
@@ -360,7 +361,7 @@ displaces $\max(1,\lceil np\rceil)$ of a chart's $n$ notes by $\pm$60\,ms ($10\t
 the deadzone): a few severely misplaced notes in an otherwise intact
 chart, the failure mode that mean statistics cannot register.}
 \label{tab:probes}
-\end{table}
+\end{table*}
 
 Nine operators each damage one chart property at three controlled
 doses (\tabref{tab:probes}); they are chosen to span the family
@@ -452,30 +453,29 @@ response is the manipulation-resistance property, reported next.
 \subsection{Borrowed metrics reward damage}
 \label{sec:reductio}
 
-\begin{figure}[t]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=\columnwidth]{figs/figA_complementarity.pdf}
+\includegraphics[width=0.92\textwidth]{figs/figA_complementarity.pdf}
 \caption{Two corruptions that one metric family does not register and
-another detects, as per-chart net direction (fraction of charts moving
-up minus moving down relative to their own intact version; null width
-$\approx\pm0.15$). \textbf{Left (C5 flattening):} rewriting
-notes toward the LM argmax drives $n$-gram NLL \emph{down} in
-every chart (net direction $-1.0$ at full dose)---an
-improvement under the standard lower-is-better reading---while the band
-score built on the same LM statistic shows no dose-consistent reward
-(net direction $+0.18/+0.28/+0.04$ across doses): it is bounded at
-typicality. \textbf{Right
-(C1s sparse outliers):} displacing 0.5--2\% of notes by $\pm$60\,ms
-leaves mean timing summaries with zero median response (their dashed
-net-direction curve reflects sub-resolution drift with no usable
-magnitude), moves the timing clean rate in 34--45\% of charts (the
-subdivision lattice re-matches $\approx$70\% of displaced notes within
-the deadzone), but flips the IOI token class of adjacent intervals, so
-grammar NLL responds with net direction $+0.77$ at one to three
-displaced notes per chart, rising to $+0.87$ at higher doses. Timing damage that placement metrics absorb
-is detected as grammar damage.}
+another detects. Bars show per-chart net direction (fraction of charts
+moving up minus moving down relative to their own intact version) at
+doses 1--3, shaded light to dark; the grey band is the null width
+$\approx\pm0.15$. \textbf{Left (C5 flattening):} rewriting notes
+toward the LM argmax drives $n$-gram NLL down in every chart ($-1.0$
+at full dose)---an improvement under the lower-is-better reading---%
+while the band score over the same statistic shows no dose-consistent
+reward ($+0.18/+0.28/+0.04$, bounded at typicality) and repetition
+adequacy registers the induced looping. \textbf{Right (C1s sparse
+outliers):} displacing 0.5--2\% of notes by $\pm$60\,ms leaves mean
+timing summaries with zero median response (their positive net
+direction reflects sub-resolution drift with no usable magnitude),
+moves the timing clean rate in 34--45\% of charts (the subdivision
+lattice re-matches $\approx$70\% of displaced notes within the
+deadzone), but flips the IOI token class of adjacent intervals:
+grammar NLL responds at $+0.77$ with one to three displaced notes per
+chart, rising to $+0.87$.}
 \label{fig:complementarity}
-\end{figure}
+\end{figure*}
 
 Two borrowed metrics reverse sign under damage
 (\figref{fig:complementarity}, left). \emph{Perplexity rewards
@@ -566,9 +566,9 @@ Each family has a corruption it cannot register and a corruption only
 it registers. Any scalar aggregate would have to fix exchange rates
 between axes that these results show are not exchangeable.
 
-\begin{figure}[t]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=\columnwidth]{figs/figC_coupling.pdf}
+\includegraphics[width=0.92\textwidth]{figs/figC_coupling.pdf}
 \caption{The operator$\times$band-score response matrix (all 16
 calibrated scores; the raw-layer matrix over all 56 quantities ships
 with the released records). Cells are responses at maximum dose in
@@ -584,14 +584,14 @@ one-to-three-note damage is below band resolution, and its detection
 lives in the raw diagnostic layer (\figref{fig:complementarity}),
 which is the division of labor the role taxonomy prescribes.}
 \label{fig:couplingmap}
-\end{figure}
+\end{figure*}
 
 \subsection{System profiles}
 \label{sec:systemresults}
 
-\begin{figure}[t]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=\columnwidth]{figs/figB_timing_tiers.pdf}
+\includegraphics[width=0.92\textwidth]{figs/figB_timing_tiers.pdf}
 \caption{Timing profiles of published systems on the held-out test set
 (authored grid). Bars show the mean over charts of per-chart bucket
 fractions---clean ($\le$1$\times$ the 6\,ms deadzone), tier
@@ -603,26 +603,28 @@ $\times$---tail charts that corpus means hide. The official row is
 all-clean by construction (officials are authored on the grid that
 defines cleanliness) and serves as a consistency check.}
 \label{fig:tiers}
-\end{figure}
+\end{figure*}
 
-\begin{figure}[t]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=\columnwidth]{figs/figD_profile_matrix.pdf}
-\caption{System profiles and applicability matrix. Cells are 0--1
-scores (timing clean rate; calibrated band scores); grey dashes mark
-families that do not apply to the system's chart vocabulary; glyphs
-are constraint gates (pass/fail; a failed gate outlines the row: gates
-veto, they do not average in; pass = median band score $\ge$0.5).
-Density and strain adequacy appear as cells for diagnosis; their veto
-role is carried by the playability gate. The two taiko-vocabulary
-systems deviate on complementary axes on four of the six
-chart-vocabulary columns (density and strain against repetition and
-variety); both remain below band on the grammar columns. The official
-row reads 0.75 on transition validity because a fixed training-corpus
-LM assigns nonzero unseen-transition rates to new songs; that value,
-not 1.0, is the human reference level for that column.}
+\includegraphics[width=0.92\textwidth]{figs/figD_profile_radar.pdf}
+\caption{Ranker-axis profiles of the three taiko-vocabulary systems
+(radar; axes are 0--1 scores: timing clean rate and calibrated band
+scores; outline only---enclosed area is not a score). The two
+generated systems deviate on complementary axes: TaikoNation (red)
+holds density and strain but collapses on every pattern axis;
+Mapperatorinator (blue) holds repetition and variety but collapses on
+density and strain. Right: constraint gates, reported separately
+because gates veto rather than average (pass = median band score
+$\ge$0.5); Mapperatorinator trips the playability gate. Cross-vocabulary
+systems appear in \figref{fig:tiers} and the text: their time-based
+quantities are computable but read against taiko course norms, and
+their token-based families do not apply. The official row reads 0.75 on
+transition validity because a fixed training-corpus LM assigns nonzero
+unseen-transition rates to new songs; that value, not 1.0, is the human
+reference level for that axis.}
 \label{fig:profiles}
-\end{figure}
+\end{figure*}
 
 \figref{fig:tiers} and \figref{fig:profiles} give the profiles of the
 five systems of \secref{sec:systems}; three findings illustrate what

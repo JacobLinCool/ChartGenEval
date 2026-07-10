@@ -157,48 +157,51 @@ def fig2(ti, out):
 # ---------------- figA: bidirectional blindness ----------------
 
 
+def _net_series(records, metric, probe):
+    from chartgeneval.plots import net_direction
+    nd = net_direction(records, metric, probe)
+    return [nd.get(d, float("nan")) for d in (1, 2, 3)]
+
+
 def figA(probe_records, cert_records, out):
-    fig, axes = plt.subplots(1, 2, figsize=(6.9, 2.4), sharey=True)
-
-    plot_dose_response(
-        probe_records,
-        ["pattern_nll", "pattern_ic_adequacy_score"],
-        probe="C5_blandification",
-        styles={
-            "pattern_nll": {
-                "label": "n-gram NLL (baseline) — decreases under damage",
-                "color": BASE_C, "marker": "o"},
-            "pattern_ic_adequacy_score": {
-                "label": "pattern-IC band score — bounded, no dose-consistent reward",
-                "color": OURS_C},
-        },
-        ax=axes[0],
-        title="C5 flattening (LM-argmax rewrite)",
-    )
-
+    """Grouped horizontal bars of per-chart net direction (doses 1-3)."""
     cert_meta = [r for r in cert_records if r.get("anchor_source") == "metadata"]
-    plot_dose_response(
-        cert_meta,
-        ["absolute_error_mean_ms", "clean_rate"],
-        probe="C1s_sparse_jitter",
-        styles={
-            "absolute_error_mean_ms": {
-                "label": "mean timing summary (median response 0 ms)",
-                "color": BASE_C, "ls": "--", "marker": "o"},
-            "clean_rate": {
-                "label": "clean rate — partial (lattice re-matches ~70%)",
-                "color": "#7fb3d5"},
-        },
-        ax=axes[1],
-        title="C1s sparse outliers",
-    )
-    nd = net_direction(probe_records, "pattern_nll", "C1s_sparse_jitter")
-    ds = sorted(nd)
-    axes[1].plot([0] + ds, [0.0] + [nd[d] for d in ds], "-", color=OURS_C, marker="s",
-                 label="pattern NLL (grammar) — detects")
-    axes[1].legend(frameon=False, fontsize=6.4)
-    axes[0].set_ylabel("per-chart net direction vs intact")
-    axes[1].set_ylabel("")
+    panels = [
+        ("C5 flattening (LM-argmax rewrite)", [
+            ("n-gram NLL (baseline)", BASE_C, _net_series(probe_records, "pattern_nll", "C5_blandification")),
+            ("pattern-IC band score", OURS_C, _net_series(probe_records, "pattern_ic_adequacy_score", "C5_blandification")),
+            ("repetition adequacy", "#7fb3d5", _net_series(probe_records, "repetition_adequacy_score", "C5_blandification")),
+        ]),
+        ("C1s sparse outliers", [
+            ("mean timing summary", BASE_C, _net_series(cert_meta, "absolute_error_mean_ms", "C1s_sparse_jitter")),
+            ("timing clean rate", "#7fb3d5", _net_series(cert_meta, "clean_rate", "C1s_sparse_jitter")),
+            ("grammar NLL", OURS_C, _net_series(probe_records, "pattern_nll", "C1s_sparse_jitter")),
+        ]),
+    ]
+    fig, axes = plt.subplots(1, 2, figsize=(6.9, 2.3), sharex=True)
+    for ax, (title, series) in zip(axes, panels):
+        ax.axvspan(-0.15, 0.15, color="#d5d8dc", alpha=0.5, lw=0, zorder=0)
+        ax.axvline(0, color="gray", lw=0.6)
+        yticks, ylabels = [], []
+        for i, (label, color, vals) in enumerate(series):
+            base_y = -i * 1.0
+            for d, v in enumerate(vals):
+                ax.barh(base_y + (1 - d) * 0.26, v, height=0.24,
+                        color=color, alpha=0.45 + 0.275 * d, zorder=2)
+            yticks.append(base_y)
+            ylabels.append(label)
+        ax.set_yticks(yticks)
+        ax.set_yticklabels(ylabels, fontsize=7.5)
+        ax.set_xlim(-1.05, 1.05)
+        ax.set_title(title)
+        ax.set_xlabel("per-chart net direction vs.\ intact (doses 1$\\to$3, light$\\to$dark)")
+        for spine in ("top", "right", "left"):
+            ax.spines[spine].set_visible(False)
+        ax.tick_params(left=False)
+    axes[0].annotate("grey band = null width ±0.15", xy=(0.02, 0.97),
+                     xycoords="axes fraction", fontsize=6.4, color="dimgray", va="top")
+    fig.supxlabel("per-chart net direction vs. intact (doses 1→3, light→dark)",
+                  fontsize=8, y=0.02)
     save(fig, out, "figA_complementarity")
 
 
@@ -286,33 +289,30 @@ def figC(probe_records, out):
     save(fig, out, "figC_coupling")
 
 
-# ---------------- figD: profile heatmap / applicability matrix ----------------
+# ---------------- figD: radar profile + constraint gates ----------------
 
 
 def figD(probe_records, ext_records, profiles, out):
-    """System x metric profile heatmap. Cells are 0-1 scores (timing clean
-    rate + calibrated band scores); grey dashes are genuine n/a (chart
-    vocabulary outside taiko) -- the applicability matrix is part of the
-    data. Constraint glyphs: pass = band score >= 0.5."""
-    from chartgeneval.plots import plot_profile
-
-    cols = [
+    """Radar over the ranker axes for the full-profile systems (taiko
+    vocabulary only; cross-vocabulary systems are covered by the timing
+    figure), plus a separate constraint-gate panel: gates veto, they are
+    not axes."""
+    axes_cols = [
         ("timing clean", None),
         ("density", "density_adequacy_score"),
         ("strain", "strain_adequacy_score"),
-        ("trans. validity", "transition_validity_score"),
+        ("trans.\nvalidity", "transition_validity_score"),
         ("pattern IC", "pattern_ic_adequacy_score"),
         ("repetition", "repetition_adequacy_score"),
         ("variety", "surface_variety_adequacy_score"),
     ]
-    con_keys = {"overload": "overload_score", "spike": "density_spike_score",
-                "playable": "playability_proxy_score"}
+    gate_keys = [("overload", "overload_score"), ("spike", "density_spike_score"),
+                 ("playable", "playability_proxy_score")]
 
     timing = defaultdict(list)
     for r in ext_records:
         if r.get("anchor_source") == "metadata" and r.get("clean_rate") is not None:
             timing[r["system"]].append(r["clean_rate"])
-
     chartside = {"official": [r for r in probe_records if r["probe"] == "official"]}
     chartside.update(profiles)
 
@@ -320,23 +320,40 @@ def figD(probe_records, ext_records, profiles, out):
         v = [r[key] for r in rows_ if r.get(key) is not None]
         return float(np.median(v)) if v else None
 
-    order = ["official", "mapperatorinator", "taikonation", "ddconset", "genelive", "autoosu"]
-    scores, constraints = {}, {}
-    for s in order:
-        row = {}
-        row["timing clean"] = float(np.median(timing[s])) if timing.get(s) else None
-        cs = chartside.get(s)
-        for label, key in cols[1:]:
-            row[label] = med(cs, key) if cs else None
-        scores[s] = row
-        constraints[s] = {
-            name: (med(cs, key) >= 0.5 if cs and med(cs, key) is not None else None)
-            for name, key in con_keys.items()
-        }
-    fig, ax = plot_profile(scores, columns=[c for c, _ in cols], constraints=constraints)
-    ax.set_title("system profiles on the clean test set "
-                 "(— = family not applicable to the chart vocabulary)", fontsize=8)
-    save(fig, out, "figD_profile_matrix")
+    order = ["official", "mapperatorinator", "taikonation"]
+    colors = {"official": "#2c3e50", "mapperatorinator": "#2471a3", "taikonation": "#c0392b"}
+    fig = plt.figure(figsize=(6.9, 3.1))
+    axr = fig.add_axes([0.06, 0.08, 0.5, 0.84], polar=True)
+    angles = np.linspace(0, 2 * np.pi, len(axes_cols), endpoint=False)
+    for sys_ in order:
+        vals = [float(np.median(timing[sys_]))]
+        vals += [med(chartside[sys_], key) for _, key in axes_cols[1:]]
+        closed = np.concatenate([angles, angles[:1]])
+        axr.plot(closed, vals + vals[:1], marker="o", ms=3, lw=1.6,
+                 color=colors[sys_], label=sys_)
+    axr.set_xticks(angles)
+    axr.set_xticklabels([c for c, _ in axes_cols], fontsize=7.5)
+    axr.set_ylim(0, 1.0)
+    axr.set_yticks([0.25, 0.5, 0.75, 1.0])
+    axr.set_yticklabels(["0.25", "0.5", "0.75", "1"], fontsize=6)
+    axr.legend(loc="upper left", bbox_to_anchor=(1.02, 1.08), frameon=False, fontsize=8)
+
+    axg = fig.add_axes([0.66, 0.10, 0.3, 0.55])
+    axg.set_title("constraint gates (veto, not axes)", fontsize=8)
+    for j, (gname, _) in enumerate(gate_keys):
+        axg.text(j, len(order) - 0.4, gname, ha="center", fontsize=7.5)
+    for i, sys_ in enumerate(order):
+        y = len(order) - 1.4 - i
+        axg.text(-0.8, y, sys_, ha="right", va="center", fontsize=7.5)
+        for j, (_, key) in enumerate(gate_keys):
+            v = med(chartside[sys_], key)
+            ok = v is not None and v >= 0.5
+            axg.text(j, y, "\u2713" if ok else "\u2717", ha="center", va="center",
+                     fontsize=11, color="#1e8449" if ok else "#c0392b")
+    axg.set_xlim(-2.6, len(gate_keys) - 0.5)
+    axg.set_ylim(-0.8, len(order))
+    axg.axis("off")
+    save(fig, out, "figD_profile_radar")
 
 
 def main():

@@ -222,10 +222,19 @@ def plot_timing_tiers(rows, *, labels=None, chart_clean_rates=None, ax=None):
     if labels is None:
         labels = [r.get("label", f"system {i}") for i, r in enumerate(rows)]
     strip = chart_clean_rates is not None
-    if ax is None:
-        fig, ax = plt.subplots(figsize=(6.9, 0.44 * n + 1.3))
-    else:
+    if ax is not None:
         fig = ax.figure
+        ax_strip = None
+        strip = False
+    else:
+        if strip:
+            fig, (ax, ax_strip) = plt.subplots(
+                1, 2, figsize=(6.9, 0.44 * n + 1.5), sharey=True,
+                gridspec_kw={"width_ratios": [4, 1], "wspace": 0.04},
+            )
+        else:
+            fig, ax = plt.subplots(figsize=(6.9, 0.44 * n + 1.5))
+            ax_strip = None
 
     y = np.arange(n)[::-1]
     left = np.zeros(n)
@@ -235,24 +244,27 @@ def plot_timing_tiers(rows, *, labels=None, chart_clean_rates=None, ax=None):
         left += B[:, b]
     ax.set_yticks(y)
     ax.set_yticklabels(labels)
-    ax.set_xlim(0, 1.28 if strip else 1.0)
+    ax.set_xlim(0, 1.0)
     ax.set_xlabel("fraction of notes (perceptual buckets, deadzone = 6 ms JND)")
     ax.legend(loc="upper center", ncols=len(TIER_BUCKETS), frameon=False,
-              fontsize=6.4, bbox_to_anchor=(0.5, -0.28))
+              fontsize=6.4, bbox_to_anchor=(0.62, -0.30))
 
-    if strip:
-        x0 = 1.04
-        ax.axvline(1.0, color="#bbbbbb", lw=0.6)
-        ax.text(x0 + 0.10, -0.72, "per-chart clean rate\np10–med–p90, × = worst",
-                fontsize=6.0, ha="center", va="top", color="dimgray")
+    if strip and ax_strip is not None:
         for yi, lab in zip(y, labels):
             vals = np.asarray(chart_clean_rates.get(lab, []), dtype=float)
             if len(vals) == 0:
                 continue
             p10, med, p90 = np.percentile(vals, [10, 50, 90])
-            ax.plot([x0 + 0.20 * p10, x0 + 0.20 * p90], [yi, yi], color="#5d6d7e", lw=1.4)
-            ax.plot([x0 + 0.20 * med], [yi], "o", color=OURS_C, ms=3.5)
-            ax.plot([x0 + 0.20 * vals.min()], [yi], "x", color=BASE_C, ms=4)
+            ax_strip.plot([p10, p90], [yi, yi], color="#5d6d7e", lw=1.4)
+            ax_strip.plot([med], [yi], "o", color=OURS_C, ms=3.5)
+            ax_strip.plot([vals.min()], [yi], "x", color=BASE_C, ms=4)
+        ax_strip.set_xlim(-0.05, 1.05)
+        ax_strip.set_xticks([0, 0.5, 1])
+        ax_strip.set_xlabel("per-chart clean rate", fontsize=7)
+        ax_strip.set_title("p10–med–p90, × = worst", fontsize=6.2, color="dimgray")
+        for spine in ("top", "right", "left"):
+            ax_strip.spines[spine].set_visible(False)
+        ax_strip.tick_params(left=False)
     for spine in ("top", "right", "left"):
         ax.spines[spine].set_visible(False)
     return fig, ax
