@@ -37,7 +37,7 @@ TIER_BUCKETS = [
     ("1–2×", "#f5b041"),
     ("2–3×", "#dc7633"),
     (">3×", "#922b21"),
-    ("unsupported", "#5d6d7e"),
+    ("unmatched", "#5d6d7e"),
 ]
 
 

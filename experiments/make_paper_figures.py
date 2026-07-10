@@ -59,9 +59,12 @@ def jrows(path):
 
 
 def save(fig, out, name):
-    fig.tight_layout()
-    fig.savefig(out / f"{name}.pdf")
-    fig.savefig(out / f"{name}.png", dpi=150)
+    try:
+        fig.tight_layout()
+    except Exception:
+        pass
+    fig.savefig(out / f"{name}.pdf", bbox_inches="tight")
+    fig.savefig(out / f"{name}.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
     print("wrote", out / f"{name}.pdf")
 
