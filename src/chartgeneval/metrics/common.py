@@ -36,7 +36,7 @@ IOI_BEAT_BINS = (
     4.0,
 )
 
-SCORE_VERSION = "chart_quality_proxy_v1"
+SCORE_VERSION = "chart_quality_proxy_v2_rational"
 
 
 def fold_hit(cls: str) -> str:
@@ -79,7 +79,17 @@ def lower_better_score(x, scale, floor=1e-9) -> float | None:
 
 
 def band_score(x, lower, upper, sigma_low=None, sigma_high=None) -> float | None:
-    """1.0 inside [lower, upper], Gaussian falloff outside."""
+    """1.0 inside [lower, upper], rational falloff ``1/(1+d^2)`` outside.
+
+    ``d`` is the distance beyond the band edge in sigma units. The heavy
+    (rational) tail is deliberate: held-out official charts reach up to
+    ~5 sigma on the language axis (creative outliers), while alien-clock
+    systems sit an order of magnitude further out. A Gaussian tail collapses
+    that whole range to 0.00, destroying exactly the resolution the
+    novelty-vs-damage adjudication needs; the rational tail keeps far-out
+    readings ordered (3 sigma -> 0.10, 5 sigma -> 0.04, 12 sigma -> 0.007)
+    while leaving every rank-based certification statistic unchanged.
+    """
     if x is None or not np.isfinite(float(x)):
         return None
     x = float(x)
@@ -92,9 +102,28 @@ def band_score(x, lower, upper, sigma_low=None, sigma_high=None) -> float | None
     sigma_high = max(float(sigma_high) if sigma_high is not None else width * 0.5, 1e-9)
     if lower <= x <= upper:
         return 1.0
-    if x < lower:
-        return float(math.exp(-((lower - x) / sigma_low) ** 2))
-    return float(math.exp(-((x - upper) / sigma_high) ** 2))
+    d = (lower - x) / sigma_low if x < lower else (x - upper) / sigma_high
+    return float(1.0 / (1.0 + d * d))
+
+
+def band_sigma(x, lower, upper) -> float | None:
+    """Signed band position in half-width units (0 inside the band).
+
+    Negative below the band, positive above; saturation-free companion
+    diagnostic to :func:`band_score` (a chart at -12 reads as twelve
+    half-widths below the band's lower edge).
+    """
+    if x is None or not np.isfinite(float(x)):
+        return None
+    x = float(x)
+    lower = float(lower)
+    upper = float(upper)
+    if upper < lower:
+        lower, upper = upper, lower
+    sigma = max((upper - lower) / 2.0, 1e-9)
+    if lower <= x <= upper:
+        return 0.0
+    return (x - upper) / sigma if x > upper else (x - lower) / sigma
 
 
 def quantile(values, q, default=None):

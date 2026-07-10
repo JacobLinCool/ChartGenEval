@@ -38,8 +38,10 @@ def test_snap_ioi_bin_known():
 def test_band_score_edges():
     # inside band -> 1.0
     assert band_score(5.0, 4.0, 6.0) == 1.0
-    # far outside -> near 0
-    assert band_score(100.0, 4.0, 6.0) < 1e-6
+    # far outside -> small but ordered (rational tail keeps far-field
+    # resolution: 5 sigma vs 12 sigma remain distinguishable)
+    assert band_score(100.0, 4.0, 6.0) < 0.001
+    assert band_score(100.0, 4.0, 6.0) > band_score(400.0, 4.0, 6.0) > 0.0
     # symmetric-ish falloff
     assert 0.0 < band_score(3.0, 4.0, 6.0) < 1.0
 

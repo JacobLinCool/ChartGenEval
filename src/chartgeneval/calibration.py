@@ -24,6 +24,7 @@ from .metrics.common import (
     COURSES,
     SCORE_VERSION,
     band_score,
+    band_sigma,
     compute_chart_features,
     event_tokens,
     geometric_mean,
@@ -124,6 +125,10 @@ def score_chart_features(features, calibration, course) -> dict:
             upper,
             sigma_low=max(width * 0.75, 1e-6),
             sigma_high=max(width * 0.50, 1e-6),
+        )
+        # saturation-free companion: signed band position in half-widths
+        scores[score_name.replace("_score", "_band_sigma")] = band_sigma(
+            features.get(metric), lower, upper
         )
 
     band("density_nps", "density_adequacy_score")
