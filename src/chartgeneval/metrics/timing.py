@@ -165,6 +165,65 @@ def estimated_grid_anchors(downbeats, audio_duration=None, meter_num=4, meter_de
     return anchors
 
 
+def segment_grid_anchors(segments, audio_duration=None, include_fine=False):
+    """Build meter-aware anchors from parsed TJA segment timing metadata.
+
+    One segment per authored measure: ``timestamp`` + ``measure_num/den`` +
+    per-note ``bpm``. Each bar gets its own meter lattice, so variable-tempo
+    and variable-meter charts (3/4<->4/4, 5/16 bars, mid-song BPM ramps) are
+    anchored exactly. This is the authored-grid tier of the grid reference
+    hierarchy; flattened downbeat lists lose the per-bar meter and misanchor
+    such charts.
+    """
+    if not segments:
+        return []
+    segs = [s for s in segments if s.get("timestamp") is not None]
+    segs.sort(key=lambda s: float(s["timestamp"]))
+    if not segs:
+        return []
+
+    anchors = []
+    for i, seg in enumerate(segs):
+        start = float(seg["timestamp"])
+        if i + 1 < len(segs):
+            end = float(segs[i + 1]["timestamp"])
+        else:
+            end = None
+            bpm = None
+            notes = seg.get("notes") or []
+            if notes and notes[0].get("bpm"):
+                bpm = float(notes[0]["bpm"])
+            if bpm is None and i > 0:
+                notes = segs[i - 1].get("notes") or []
+                if notes and notes[0].get("bpm"):
+                    bpm = float(notes[0]["bpm"])
+            if bpm and bpm > 0:
+                num = float(seg.get("measure_num") or 4)
+                den = float(seg.get("measure_den") or 4)
+                end = start + (240.0 / bpm) * (num / den)
+            elif audio_duration is not None:
+                end = float(audio_duration)
+        if end is None:
+            continue
+        if audio_duration is not None and start > audio_duration + 0.1:
+            continue
+        end = min(end, float(audio_duration)) if audio_duration is not None else end
+        if end <= start:
+            anchors.append(Anchor(float(start), 1.0, "meter:bar"))
+            continue
+        span = end - start
+        for q, (sal, kind) in meter_fractions(
+            seg.get("measure_num") or 4,
+            seg.get("measure_den") or 4,
+            include_fine=include_fine,
+        ).items():
+            t = start + float(q) * span
+            if audio_duration is not None and not (-0.05 <= t <= audio_duration + 0.05):
+                continue
+            anchors.append(Anchor(float(t), sal, f"meter:{kind}"))
+    return anchors
+
+
 def merge_anchors(anchors, merge_ms=4.0):
     if not anchors:
         return []
@@ -363,11 +422,20 @@ def compute(events, ctx):
     if grid and (not bpm):
         bpm = grid.get("bpm")
 
+    segments = grid.get("segments") if grid else None
     downbeats = grid.get("downbeats") if grid else None
     meter = 4
     beat_period = None
     phase = None
-    if downbeats and len(downbeats) >= 2:
+    if segments:
+        # Authored grid: per-bar meter lattice; fixed-grid witness anchored at
+        # the first authored bar line with the course BPM (as the reference
+        # runner wires the metadata control).
+        ts = sorted(float(s["timestamp"]) for s in segments if s.get("timestamp") is not None)
+        if ts and bpm and bpm > 0:
+            beat_period = 60.0 / float(bpm)
+            phase = ts[0]
+    elif downbeats and len(downbeats) >= 2:
         db = sorted(float(x) for x in downbeats)
         bar = grid.get("bar") or float(np.median(np.diff(db)))
         if bpm and bpm > 0:
@@ -388,15 +456,24 @@ def compute(events, ctx):
         out["grid_phase_support_frac"] = gsupport
         out["grid_phase_step_ms"] = gstep
 
-    # Lattice matching (needs scipy + a downbeat grid).
-    if not downbeats or len(downbeats) < 2:
-        return out
-    try:
-        anchors = finalize_anchors(
-            merge_anchors(estimated_grid_anchors(downbeats, audio_duration=duration, meter_num=meter))
-        )
-    except Exception:
-        return out
+    # Lattice matching (needs scipy + segments or a downbeat grid).
+    anchors = None
+    if segments:
+        try:
+            anchors = finalize_anchors(
+                merge_anchors(segment_grid_anchors(segments, audio_duration=duration))
+            )
+        except Exception:
+            anchors = None
+    if anchors is None or not len(anchors.get("time", [])):
+        if not downbeats or len(downbeats) < 2:
+            return out
+        try:
+            anchors = finalize_anchors(
+                merge_anchors(estimated_grid_anchors(downbeats, audio_duration=duration, meter_num=meter))
+            )
+        except Exception:
+            return out
     out["n_anchors"] = int(len(anchors.get("time", [])))
     try:
         matches, unsupported = match_notes_to_anchors(note_times, anchors)

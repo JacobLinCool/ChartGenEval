@@ -155,9 +155,9 @@ experiments/timing_integration_v1/runs/raw/records/certify_timing_tail_6ms.jsonl
   保證不受影響——寫入論文時以「方向一致率」為準、不宣稱 magnitude 單調
 
 **C1s 稀疏重度離群——發現結構性盲區（重要負結果）**：
-- 位移音符 **72.3% 被密格 re-matching 吸收**為 clean（±60ms 後落在別的
-  合法格點 6ms 內）；timing 家族僅在 35–45% 譜上觸發（clean_rate 通道：
-  violation↑ 31.7–41.9%、unsupported↑ 6.6–12%）
+- 位移音符 **72.6% 被密格 re-matching 吸收**為 clean（±60ms 後落在別的
+  合法格點 6ms 內）；timing 家族僅在 34–45% 譜上觸發（clean_rate 通道：
+  violation↑ 30.5–43.1%、unsupported↑ 5.4–12%）
 - mean/percentile 類全盲（median 全 0.0000，dir ≤0.44）——歸謬成立：
   「平均很小」不保證尾端乾淨
 - 機制：lattice matching 量「離格程度」不量「錯格位置」——被移到另一
@@ -180,6 +180,17 @@ experiments/timing_integration_v1/runs/raw/records/certify_timing_tail_6ms.jsonl
 違規率 97.7%）→ 適用性矩陣定案：**絕對通道＝authored grid 專屬；estimated
 tier 僅相對通道可信**（C1s 於 est 上唯一有反應者＝relative_violation
 dir 0.79）
+
+**Authored grid 的建構教訓（2026-07-10，變拍歌事故→§timing 素材）**：
+初版認證腳本把 authored grid 扁平化為 downbeat 列表（單一拍號推斷），
+變拍/變速官方譜被誤判 31% 違規（《誘惑》3/4↔4/4、《シン・ゾンビ》5/16
+＋多段變速；原始建構下兩者皆 0.000ms 完美在格）。修正＝逐小節 TJA
+segments（每小節自帶拍號）＋chart_duration=max(音訊, 末音符+1s)；修正後
+逐位重現參考建構（n_anchors 一致），官方 baseline 最差譜歸位 0.970。
+結論入文：**authored tier 必須用完整逐小節 timing metadata——扁平化
+downbeat 列表會弄丟拍號資訊而誤錨變拍譜**。套件 `timing.compute` 現支援
+`grid["segments"]`（優先於 downbeats）。全部認證數字已以修正版重跑，
+結論不變（C1 100% 嚴格降 ×3；C1s 吸收 72.6%）
 
 ## 目標貢獻（v2.1）
 

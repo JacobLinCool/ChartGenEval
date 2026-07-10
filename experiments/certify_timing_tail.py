@@ -28,6 +28,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from _dataset import iter_rows, official_charts  # noqa: E402
 
+from chartgeneval.events import sorted_hits  # noqa: E402
 from chartgeneval.metrics import timing  # noqa: E402
 from chartgeneval.probes import corrupt  # noqa: E402
 
@@ -50,11 +51,15 @@ TABLE_FIELDS = [
 ]
 
 
-def build_sources(g):
+def build_sources(g, course_struct):
+    """Metadata source = per-course TJA segments (per-bar meter lattice, the
+    authored-grid tier); flattened downbeat lists misanchor variable-meter
+    charts. Estimated source = beat-tracker downbeats from the grids artifact.
+    """
     sources = {}
-    meta = g.get("meta_downbeats")
-    if meta and len(meta) >= 2:
-        sources["metadata"] = {"downbeats": meta, "bar": None, "bpm": None}
+    segments = (course_struct or {}).get("segments")
+    if segments:
+        sources["metadata"] = {"segments": segments}
     if g.get("est_ok") and g.get("est_downbeats") and len(g["est_downbeats"]) >= 2:
         sources["estimated"] = {
             "downbeats": g["est_downbeats"],
@@ -83,10 +88,15 @@ def main():
         if not g:
             continue
         duration = g.get("audio_duration_s")
-        sources = build_sources(g)
-        if not sources:
-            continue
         for course, chart in official_charts(row):
+            sources = build_sources(g, row.get(course))
+            if not sources:
+                continue
+            # Reference construction: the anchor lattice covers the chart even
+            # when it runs past the audio (chart_duration = max(audio, last
+            # note + 1 s)), matching the reference runner.
+            hits = sorted_hits(chart.events)
+            chart_duration = max(float(duration or 0.0), (hits[-1][0] + 1.0) if hits else 0.0)
             variants = [("official", 0, chart.events, False)]
             for probe in PROBES:
                 for dose in (1, 2, 3):
@@ -95,7 +105,7 @@ def main():
                     )
                     variants.append((probe, dose, ev, noop))
             for src, grid in sources.items():
-                ctx = {"grid": grid, "bpm": chart.bpm, "duration": duration}
+                ctx = {"grid": grid, "bpm": chart.bpm, "duration": chart_duration}
                 for tid, dose, ev, noop in variants:
                     m = timing.compute(ev, ctx)
                     m.update(

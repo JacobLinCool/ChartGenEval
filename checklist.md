@@ -27,8 +27,9 @@ artifact 同步發佈。論文 LaTeX 原始檔與研究紀錄在本 repo `paper/
 - [x] **timing 尾端修訂＋認證**（2026-07-10）：deadzone 統一 6ms（知覺
       優先，非遊戲判定窗）、三階超越率（1×/2×/3×）、clean_rate、C1s
       稀疏離群探針。C1@6ms 認證 PASS（clean_rate 100% 譜嚴格降 ×3 劑量、
-      dose1 違規率 0.40=理論值）；**C1s 發現結構性盲區**（72.3% 被密格
-      re-matching 吸收，timing 家族僅 35–45% 譜觸發）——舊 10ms 紀錄
+      dose1 違規率 0.40=理論值）；**C1s 發現結構性盲區**（72.6% 被密格
+      re-matching 吸收，timing 家族僅 34–45% 譜觸發；segments 版
+      authored grid 重跑後數字，結論不變）——舊 10ms 紀錄
       不可與新 6ms 紀錄混讀（P9 全面重跑後統一）
 - [x] **C1s 家族歸屬**（2026-07-10）：grammar 家族強接（淨方向 d3：
       ioi_entropy +0.87、pattern_nll +0.86、4gram ±0.85、
