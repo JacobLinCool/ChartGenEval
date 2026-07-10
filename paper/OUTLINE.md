@@ -220,6 +220,24 @@ Mapperatorinator 待 GPU 批次收官後補）
 - estimated grid 欄相對通道與 authored 一致（genelive 0.109 vs 0.099）——
   相對通道 grid-robust 的系統級佐證
 
+**TaikoNation 全 profile（taiko 域，chart-only 家族＋timing；
+experiments/chart_quality_metrics_v1/runs/ext_taikonation_clean_profile.jsonl，
+40 譜、clean 校準、oni band、官方 BPM）——「密度對、語言錯、時鐘歪」**：
+- 密度/約束家族全綠：density 1.000、spike/overload/strain/playability
+  1.000（raw nps 5.60 在 oni band 3.55–7.19 內）
+- grammar/pattern 家族崩潰：pattern_ic 0.000、transition_validity 0.001、
+  repetition 0.008、surface_variety 0.000（raw：pattern_nll 5.08 vs band
+  1.59–2.10；ioi_entropy 3.08 bits vs band 1.45–2.28；invalid_transition
+  55.2%；**repeat_4gram 0.004 vs band 0.45–0.72——幾乎零可學習重複**）
+- **boredom_score 1.000 的反諷**：零重複＝零無聊旗標——單看 boredom
+  會誇它，又一個「單指標會被反向解讀」的實例
+- 誠實揭露的耦合：IOI token 類別以節拍對齊為前提，時鐘歪（grid_phase
+  49.8ms）的系統會在 timing 與 grammar 兩家族被重複計入——與 C1 耦合
+  行為一致，寫入時標明為 disclosed coupling 而非獨立證據
+- 評估陷阱記錄：樣本檔無 BPM 時以 0 fallback 會讓 IOI tokenization
+  靜默中毒（首輪 invalid_transition=1.000 全垃圾）——腳本已加
+  --bpm-map（用歌曲官方 BPM）＋套件層防呆列入 checklist
+
 ## 目標貢獻（v2.1）
 
 1. **劣化驗證的指標套件**：每個維度都有「攻擊它、它就掉」的劑量反應
