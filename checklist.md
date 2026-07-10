@@ -20,8 +20,10 @@ artifact 同步發佈。論文 LaTeX 原始檔與研究紀錄在本 repo `paper/
         proxy 證據）
   - [ ] `energy_peak_support` 按有效時長正規化（|ρ| vs 音符數 0.77 → <0.3）
   - [ ] `call_response` 以 reciprocity 子葉為 primary（rate 有 C3 漏）
-- [ ] **gauntlet 'mid' 預期類別拆帶號重報**（28% pass 靠它、4 個
-      「劣化使讀數變好」也算過——不修不得引用 dose 計數）
+- [x] **gauntlet 'mid' 預期類別拆帶號重報**（2026-07-10，
+      mid_rereport.md）：嚴格版 33/48=69%（原 74%）；mid 拆為
+      directional-down ×5（post-hoc 輔助）/flat ×6/mild-counter ×3
+      （ε 級須揭露）；ADOPT 四指標全存活；dose 計數以重報為準
 - [ ] **C2 雙列重跑呈現**：authored grid（最利偵測）＋estimated grid
       （reference-free）並排；跨遊戲組時值評估改用 authored grid
 - [x] **timing 尾端修訂＋認證**（2026-07-10）：deadzone 統一 6ms（知覺

@@ -321,9 +321,17 @@ collapse 項並重測前不得當 ranker。`syncopation_contour`（弱分離，
 需 re-anchor＋長度控制）。**DROP**：`self_similarity_form_score`
 （在自己的兩個目標探針上反向——正是它聲稱要修的 self-BLEU 病理）。
 
-待辦（便宜）：'mid' 預期類別要拆帶號版本重報（28% 的 pass 靠它，
-4 個是「劣化使讀數變好」也算過）；manifold_gap 真 LM-C5 重測；
-MDI 修復重測；reciprocity 升 primary。
+**'mid' 嚴格重報（2026-07-10 完成，
+experiments/metric_candidates_v1/runs/tables/assess_20260710/mid_rereport.md）**：
+mid 排除於 pass 計數後 **33/48 = 69%**（原 46/62 = 74%，mid 佔 pass 28%）。
+13 個 mid 條目帶號分類：directional-down ×5（含 call_response×C5 −.597、
+energy_peak×C6 −.582——真訊號但 post-hoc，僅作輔助證據）、flat ×6
+（self_similarity 三條 flat 強化 DROP）、mild-counter ×3（全 ε 級
+\|drop\|≤0.013，引用時揭露）。**ADOPT 四指標全部存活**（承重 pass 均在
+嚴格 33 內）；dose 計數引用一律以重報為準。
+
+待辦（剩餘）：manifold_gap 真 LM-C5 重測；MDI 修復重測；
+reciprocity 升 primary；energy_peak 時長正規化。
 
 ## 風險
 
