@@ -1,0 +1,393 @@
+"""Timing family: audio-anchored alignment against an estimated beat grid.
+
+Note times are matched to a hierarchical meter lattice laid inside each grid
+span (from :mod:`chartgeneval.grid`), separating unsupported notes, absolute
+offset, relative-interval distortion, and signed bias. It also computes the
+fixed-grid ``grid_phase_offset`` that survives re-matching and is the sole
+witness of a global anchor shift (probe C2).
+
+Ported from the reference perceptual-timing module with the internal audio
+onset path removed (the metric here is anchored on the meter lattice; audio
+onset anchors were an ablation and required internal mel caches).
+
+Requires scipy for the optimal-assignment matcher; if scipy is absent, only the
+scipy-free ``grid_phase_offset`` witness is reported.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from fractions import Fraction
+
+import numpy as np
+
+from ..events import sorted_hits
+
+METRIC_NAME = "timing"
+
+
+@dataclass(frozen=True)
+class Anchor:
+    time: float
+    salience: float
+    kind: str
+
+
+def _put_frac(out, q, salience, kind):
+    q = Fraction(q).limit_denominator(256)
+    if q < 0 or q > 1:
+        return
+    prev = out.get(q)
+    if prev is None or salience > prev[0]:
+        out[q] = (float(salience), kind)
+
+
+def _meter_group_boundaries(num, den):
+    if den == 8 and num in (6, 9, 12):
+        return [Fraction(i, num // 3) for i in range(num // 3 + 1)]
+    if den == 8 and num == 5:
+        acc = 0
+        out = [Fraction(0, 1)]
+        for g in (3, 2):
+            acc += g
+            out.append(Fraction(acc, num))
+        return out
+    if den == 8 and num == 7:
+        acc = 0
+        out = [Fraction(0, 1)]
+        for g in (2, 2, 3):
+            acc += g
+            out.append(Fraction(acc, num))
+        return out
+    return []
+
+
+def _coerce_meter(num=4, den=4):
+    try:
+        num = int(num or 4)
+        den = int(den or 4)
+    except Exception:
+        num, den = 4, 4
+    if num <= 0 or den <= 0:
+        num, den = 4, 4
+    return num, den
+
+
+def _is_regular_meter(num, den):
+    if den not in (1, 2, 4, 8, 16):
+        return False
+    if num <= 0 or num > 16:
+        return False
+    quarter_units = 4.0 * num / den
+    return abs(quarter_units - round(quarter_units)) < 1e-6 or den in (8, 16)
+
+
+def _put_span_subdivisions(out, start, stop, divs, salience, kind):
+    if stop <= start:
+        return
+    span = stop - start
+    for d in divs:
+        for i in range(1, d):
+            _put_frac(out, start + span * Fraction(i, d), salience, kind)
+
+
+def meter_fractions(num=4, den=4, include_fine=False):
+    """Hierarchical meter lattice fractions in one span with salience labels."""
+    num, den = _coerce_meter(num, den)
+    out = {}
+    _put_frac(out, Fraction(0, 1), 1.0, "bar")
+    _put_frac(out, Fraction(1, 1), 1.0, "bar")
+
+    for q in _meter_group_boundaries(num, den):
+        _put_frac(out, q, 0.88, "pulse")
+
+    regular_meter = _is_regular_meter(num, den)
+    units = max(1, num) if regular_meter else 0
+    if units:
+        for i in range(units + 1):
+            _put_frac(out, Fraction(i, units), 0.78, "beat")
+
+    span_divs = (2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24, 32)
+    for d in span_divs:
+        for i in range(1, d):
+            if d <= 4:
+                sal = 0.50
+            elif d <= 8:
+                sal = 0.38
+            else:
+                sal = 0.28
+            _put_frac(out, Fraction(i, d), sal, "span_subdivision")
+
+    if regular_meter:
+        for i in range(units):
+            a = Fraction(i, units)
+            b = Fraction(i + 1, units)
+            _put_span_subdivisions(out, a, b, (2, 3, 4), 0.58, "subdivision")
+            _put_span_subdivisions(out, a, b, (6, 8, 12), 0.44, "dense_subdivision")
+            _put_span_subdivisions(out, a, b, (5,), 0.32, "tuplet")
+            if include_fine:
+                _put_span_subdivisions(out, a, b, (16,), 0.24, "fine_grid")
+
+    pulses = sorted(set(_meter_group_boundaries(num, den)))
+    for a, b in zip(pulses, pulses[1:]):
+        _put_span_subdivisions(out, a, b, (2, 3, 4), 0.52, "pulse_subdivision")
+
+    return out
+
+
+def estimated_grid_anchors(downbeats, audio_duration=None, meter_num=4, meter_den=4, include_fine=False):
+    """Build meter-aware anchors from an estimated downbeat grid."""
+    db = np.asarray(sorted(float(x) for x in downbeats), dtype=np.float64)
+    if len(db) < 2:
+        return []
+    fracs = meter_fractions(meter_num, meter_den, include_fine=include_fine)
+    anchors = []
+    for a, b in zip(db[:-1], db[1:]):
+        span = b - a
+        if span <= 0:
+            continue
+        for q, (sal, kind) in fracs.items():
+            t = a + float(q) * span
+            if audio_duration is not None and not (-0.05 <= t <= audio_duration + 0.05):
+                continue
+            anchors.append(Anchor(float(t), sal, f"meter:{kind}"))
+    return anchors
+
+
+def merge_anchors(anchors, merge_ms=4.0):
+    if not anchors:
+        return []
+    merge_s = merge_ms / 1000.0
+    xs = sorted(anchors, key=lambda a: a.time)
+    groups = []
+    cur = [xs[0]]
+    for a in xs[1:]:
+        if a.time - cur[-1].time <= merge_s:
+            cur.append(a)
+        else:
+            groups.append(cur)
+            cur = [a]
+    groups.append(cur)
+    merged = []
+    for g in groups:
+        best = max(g, key=lambda a: (a.salience, -abs(a.time)))
+        sal = min(1.0, max(a.salience for a in g) + 0.03 * (len(g) - 1))
+        kinds = "+".join(sorted(set(a.kind for a in g)))
+        merged.append(Anchor(float(best.time), float(sal), kinds))
+    return merged
+
+
+def finalize_anchors(anchors, max_gate_s=0.050, min_gate_s=0.010):
+    anchors = sorted(anchors, key=lambda a: a.time)
+    if not anchors:
+        return {"time": np.zeros(0), "salience": np.zeros(0), "gate": np.zeros(0), "kind": []}
+    t = np.asarray([a.time for a in anchors], dtype=np.float64)
+    sal = np.asarray([a.salience for a in anchors], dtype=np.float64)
+    prev_d = np.concatenate([[np.inf], np.diff(t)])
+    next_d = np.concatenate([np.diff(t), [np.inf]])
+    nearest = np.minimum(prev_d, next_d)
+    gate = np.minimum(float(max_gate_s), 0.5 * nearest)
+    gate[~np.isfinite(gate)] = float(max_gate_s)
+    gate = np.maximum(gate, float(min_gate_s))
+    return {"time": t, "salience": sal, "gate": gate, "kind": [a.kind for a in anchors]}
+
+
+def match_notes_to_anchors(note_times, anchors, lambda_salience=0.08, dummy_cost=1.25):
+    """One-to-one min-cost matching of notes to anchors within gates."""
+    from scipy.optimize import linear_sum_assignment
+
+    times = np.asarray(note_times, dtype=np.float64)
+    g = np.asarray(anchors["time"], dtype=np.float64)
+    sal = np.asarray(anchors["salience"], dtype=np.float64)
+    gate = np.asarray(anchors["gate"], dtype=np.float64)
+    kinds = anchors.get("kind", [])
+    n, m = len(times), len(g)
+    if n == 0:
+        return [], []
+    if m == 0:
+        return [], list(range(n))
+
+    big = np.float32(1e6)
+    cost = np.full((n, m + n), big, dtype=np.float32)
+    for i, t in enumerate(times):
+        lo = np.searchsorted(g, t - 0.050, side="left")
+        hi = np.searchsorted(g, t + 0.050, side="right")
+        if hi > lo:
+            d = np.abs(g[lo:hi] - t)
+            ok = d <= gate[lo:hi]
+            if np.any(ok):
+                js = np.nonzero(ok)[0] + lo
+                cost[i, js] = (d[ok] / gate[js] - lambda_salience * sal[js]).astype(np.float32)
+        cost[i, m + i] = np.float32(dummy_cost)
+
+    rows, cols = linear_sum_assignment(cost)
+    matches = []
+    unsupported = []
+    for r, c in zip(rows, cols):
+        if c < m and cost[r, c] < dummy_cost:
+            matches.append(
+                {
+                    "note_index": int(r),
+                    "anchor_index": int(c),
+                    "t": float(times[r]),
+                    "g": float(g[c]),
+                    "error": float(times[r] - g[c]),
+                    "gate": float(gate[c]),
+                    "salience": float(sal[c]),
+                    "kind": kinds[c] if c < len(kinds) else "",
+                }
+            )
+        else:
+            unsupported.append(int(r))
+    matches.sort(key=lambda x: (x["g"], x["t"]))
+    unsupported.sort()
+    return matches, unsupported
+
+
+def _summary_ms(x):
+    x = np.asarray(x, dtype=np.float64)
+    if len(x) == 0:
+        return None, None
+    return float(np.mean(x) * 1000.0), float(np.percentile(x, 95) * 1000.0)
+
+
+def _percentile_ms(x, q):
+    x = np.asarray(x, dtype=np.float64)
+    if len(x) == 0:
+        return None
+    return float(np.percentile(x, q) * 1000.0)
+
+
+def grid_phase_offset(note_times, beat_period, phase, subdiv=2, tol_ms=12.0, n_steps=241):
+    """Global signed anchor offset against a FIXED eighth-note grid.
+
+    This is the C2-sensitive detector that the re-matching offset is blind to. A
+    constant anchor shift moves the whole stream off the grid; grid-support
+    maximization on the eighth lattice recovers a unique wrap-free peak for
+    shifts up to ~+-75 ms. Returns ``(offset_ms, support_frac, step_ms)``.
+    """
+    t = np.asarray(note_times, dtype=np.float64)
+    if len(t) < 4 or not beat_period or beat_period <= 0:
+        return None, None, None
+    step = float(beat_period) / float(subdiv)
+    step_ms = step * 1000.0
+    tol = min(tol_ms / 1000.0, 0.45 * step)
+    half = step / 2.0
+    cands = np.linspace(-half, half, int(n_steps))
+    best_d, best_s = 0.0, -1.0
+    for d in cands:
+        r = np.abs(((t - d - float(phase) + half) % step) - half)
+        support = float(np.mean(np.maximum(0.0, 1.0 - r / tol)))
+        if support > best_s:
+            best_s, best_d = support, float(d)
+    return best_d * 1000.0, best_s, step_ms
+
+
+def _empty_result():
+    return {
+        "n_notes": 0,
+        "n_matched": 0,
+        "n_unsupported": 0,
+        "n_anchors": 0,
+        "unsupported_rate": None,
+        "matched_rate": None,
+        "absolute_error_mean_ms": None,
+        "absolute_error_p95_ms": None,
+        "absolute_offset_abs_mean_ms": None,
+        "relative_interval_abs_mean_ms": None,
+        "relative_error_mean_ms": None,
+        "signed_offset_mean_ms": None,
+        "grid_phase_offset_ms": None,
+        "grid_phase_offset_abs_ms": None,
+        "grid_phase_support_frac": None,
+        "grid_phase_step_ms": None,
+    }
+
+
+def compute(events, ctx):
+    """Timing metrics for a hit stream against the ctx grid.
+
+    Uses ``ctx['grid']`` downbeats to build the anchor lattice and the grid beat
+    period + phase for the fixed-grid offset witness. Requires ``bpm``/grid; with
+    neither, returns an all-None bundle.
+    """
+    hits = sorted_hits(events)
+    note_times = [t for t, _ in hits]
+    out = _empty_result()
+    out["n_notes"] = len(note_times)
+    if len(note_times) < 2:
+        return out
+
+    grid = ctx.get("grid") if isinstance(ctx, dict) else None
+    bpm = ctx.get("bpm") if isinstance(ctx, dict) else None
+    duration = ctx.get("duration") if isinstance(ctx, dict) else None
+    if grid and (not bpm):
+        bpm = grid.get("bpm")
+
+    downbeats = grid.get("downbeats") if grid else None
+    meter = 4
+    beat_period = None
+    phase = None
+    if downbeats and len(downbeats) >= 2:
+        db = sorted(float(x) for x in downbeats)
+        bar = grid.get("bar") or float(np.median(np.diff(db)))
+        if bpm and bpm > 0:
+            m = int(round(bar / (60.0 / bpm)))
+            if 2 <= m <= 12:
+                meter = m
+        beat_period = bar / meter
+        phase = db[0]
+    elif bpm and bpm > 0:
+        beat_period = 60.0 / bpm
+        phase = note_times[0]
+
+    # Fixed-grid global offset (C2 witness), scipy-free.
+    if beat_period is not None and phase is not None:
+        go, gsupport, gstep = grid_phase_offset(note_times, beat_period, phase)
+        out["grid_phase_offset_ms"] = go
+        out["grid_phase_offset_abs_ms"] = abs(go) if go is not None else None
+        out["grid_phase_support_frac"] = gsupport
+        out["grid_phase_step_ms"] = gstep
+
+    # Lattice matching (needs scipy + a downbeat grid).
+    if not downbeats or len(downbeats) < 2:
+        return out
+    try:
+        anchors = finalize_anchors(
+            merge_anchors(estimated_grid_anchors(downbeats, audio_duration=duration, meter_num=meter))
+        )
+    except Exception:
+        return out
+    out["n_anchors"] = int(len(anchors.get("time", [])))
+    try:
+        matches, unsupported = match_notes_to_anchors(note_times, anchors)
+    except ImportError:
+        return out
+    n_notes = len(note_times)
+    n_matched = len(matches)
+    out["n_matched"] = n_matched
+    out["n_unsupported"] = len(unsupported)
+    out["unsupported_rate"] = float(len(unsupported) / n_notes) if n_notes else 0.0
+    out["matched_rate"] = float(n_matched / n_notes) if n_notes else 1.0
+    if n_matched == 0:
+        return out
+
+    e = np.asarray([m["error"] for m in matches], dtype=np.float64)
+    abs_e = np.abs(e)
+    abs_resid = np.maximum(0.0, abs_e - 0.010)
+    out["absolute_error_mean_ms"], out["absolute_error_p95_ms"] = _summary_ms(abs_resid)
+    out["absolute_offset_abs_mean_ms"], _ = _summary_ms(abs_e)
+    out["signed_offset_mean_ms"] = float(np.mean(e) * 1000.0)
+
+    if n_matched >= 2:
+        g = np.asarray([m["g"] for m in matches], dtype=np.float64)
+        delta = np.diff(g)
+        de = np.diff(e)
+        ok = delta > 1e-6
+        if np.any(ok):
+            r = np.abs(de[ok])
+            theta = np.maximum(0.006, 0.025 * delta[ok])
+            rel_resid = np.maximum(0.0, r - theta)
+            out["relative_interval_abs_mean_ms"], _ = _summary_ms(r)
+            out["relative_error_mean_ms"], _ = _summary_ms(rel_resid)
+    return out
