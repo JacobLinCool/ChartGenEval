@@ -4,12 +4,15 @@ Two sub-groups:
 
 * *density constraints* -- density adequacy, strain (local p95), overload and
   density-spike lower-better scores (band + threshold; needs ``ctx['calibration']``).
-* *audio coupling* -- the adopted v2 candidates ``density_energy_response`` (note
-  density tracks musical energy) and ``energy_peak_support_rate`` (notes land on
-  onset-envelope peaks). Both need ``ctx['mel']``; density_energy also needs a
-  grid.
+* *audio coupling* -- the adopted suite-v2 candidates ``density_energy_response``
+  (note density tracks musical energy) and ``energy_peak_support_rate`` (notes
+  land on onset-envelope peaks; run-head duration-normalized). Both need
+  ``ctx['mel']``; density_energy also needs a grid. Missing mel/grid or an
+  empty hit stream yield NaN outputs, never silent garbage.
 
-Ported from the reference density-score pipeline and the two candidate modules.
+Ported bitwise-identically from the reference density-score pipeline and the two
+fixed candidate modules (``experiments/metric_candidates_v1/candidates/`` in the
+SoftChart research repo).
 """
 
 from __future__ import annotations
@@ -26,6 +29,7 @@ FPS = 86.1328125
 MIN_WINDOWS = 8
 MIN_ENERGY_DYNRANGE = 0.05
 HALF_WIN = 3  # +-3 frames ~= +-35 ms
+GROUP_IOI_S = 0.25  # perceptual grouping bound (Fraisse 1982; London 2012)
 
 
 # --------------------------------------------------------------------------
@@ -78,7 +82,24 @@ def _detrend(y):
 
 
 def density_energy_response(events, ctx):
-    """Spearman coupling of per-bar note density and audio energy (candidate)."""
+    """Spearman coupling of per-bar note density and audio energy.
+
+    Construct: in a good chart note density follows musical energy -- dense at
+    the climax, sparse when quiet. Per-bar note density (hits per second) and
+    linear mel power are rank-correlated across bar windows; rank correlation
+    is shape-only, so the read is immune to uniform density scaling. Companions:
+    ``density_energy_partial`` (linear trend vs bar index regressed out of both
+    series, removing intro/outro ramps) and ``density_energy_lag_robust``
+    (max |Spearman| over +-1 bar shift). Songs with fewer than 8 bar windows or
+    an over-compressed energy envelope (p90-p10 dynamic range below 5% of the
+    median) return NaN.
+
+    Gauntlet record (suite-v2 ADOPT, assess_20260710 verdict in the SoftChart
+    research repo, ``experiments/metric_candidates_v1/runs/tables/
+    assess_20260710/``): passed as adopted with no fix ticket; adopted alongside
+    the run-head ``energy_peak_support_rate`` as the coupling family's
+    audio-response axes.
+    """
     nan = {
         "density_energy_spearman": float("nan"),
         "density_energy_partial": float("nan"),
@@ -95,7 +116,8 @@ def density_energy_response(events, ctx):
     downbeats = grid.get("downbeats")
     if downbeats is None or len(downbeats) < 2:
         return nan
-    db = np.unique(np.asarray([float(x) for x in downbeats], dtype=np.float64))
+    db = np.asarray([float(x) for x in downbeats], dtype=np.float64)
+    db = np.unique(db[np.isfinite(db)])
     db.sort()
     if db.size < MIN_WINDOWS + 1:
         return nan
@@ -166,14 +188,47 @@ def _onset_envelope(mel):
 
 
 def energy_peak_support_rate(events, ctx):
-    """Rate of hits landing on onset-envelope peaks (candidate; C2 witness)."""
+    """Rate of rhythmic-group heads landing on onset-envelope peaks.
+
+    Construct: notes should land where something is actually sounding. The
+    onset-strength envelope is spectral flux over ``ctx['mel']`` (audio only --
+    note positions never enter the envelope); a hit is *supported* when the
+    max envelope value within +-3 frames (~+-35 ms) clears the song-adaptive
+    p60 threshold.
+
+    Run-head duration normalization (fix 2026-07-11): the primary leaf
+    ``energy_support_rate_raw`` averages over RUN-HEADS only -- the first hit,
+    or any hit whose preceding IOI >= 0.25 s. Perceptually a dense run is ONE
+    rhythmic group anchored at its head: events closer than ~200-250 ms lose
+    independent rhythmic identity and fuse into a group (Fraisse 1982; London
+    2012 -- ~100 ms floor for metric subdivision). Scoring one probe per group
+    makes the denominator scale with effective duration instead of note count.
+    The per-note mean is kept as ``energy_support_rate_all`` (diagnostic);
+    ``energy_at_hit_z`` (exact-frame envelope read, no max window) is the
+    monotone C2 anchor-shift witness and is untouched by the fix.
+
+    Gauntlet record (fixes_20260710.md ticket 1; records ``experiments/
+    metric_candidates_v1/runs/raw/records/assess_20260710_energyfix_{probes,
+    systems}.jsonl`` in the SoftChart research repo): length coupling
+    rho(leaf, n_notes) -0.7681 -> -0.29995 (|rho| < 0.3); C6 density kept
+    directional (rho -0.4505, drop 0.0277, z -2.22; 82.6% per-chart maxdose
+    drop); C7 burst still past gate (rho -0.1526, drop 0.0036; magnitude
+    diluted, disclosed); C2 anchor support leaf strengthened (rho -0.6212,
+    drop 0.2831); AUC official-vs-generated 0.6662 -> 0.7283.
+
+    Raw hit times are used; hits must NOT be snapped to the grid, or the C2
+    detection is destroyed. Missing mel / degenerate envelope / no hits in
+    frame range yield NaN outputs.
+    """
     nan = {
         "energy_support_rate_raw": float("nan"),
+        "energy_support_rate_all": float("nan"),
         "energy_support_rate_global": float("nan"),
         "energy_peak_mean_z": float("nan"),
         "energy_at_hit_z": float("nan"),
         "energy_theta_song": float("nan"),
         "energy_n_hits": float("nan"),
+        "energy_n_heads": float("nan"),
     }
     mel = ctx.get("mel") if isinstance(ctx, dict) else None
     if mel is None:
@@ -185,20 +240,28 @@ def energy_peak_support_rate(events, ctx):
     hits = sorted((float(t), str(c)) for t, c in events if c in HIT_CLASSES)
     if not hits:
         return nan
-    peaks, at_hit = [], []
+    times, peaks, at_hit = [], [], []
     for t, _ in hits:
         i = int(round(t * FPS))
         if i < 0 or i >= T:
             continue
         lo = max(0, i - HALF_WIN)
         hi = min(T, i + HALF_WIN + 1)
+        times.append(t)
         peaks.append(float(np.max(o[lo:hi])))
         at_hit.append(float(o[i]))
     if not peaks:
         return nan
+    times = np.asarray(times, dtype=np.float64)
     peaks = np.asarray(peaks, dtype=np.float64)
     at_hit = np.asarray(at_hit, dtype=np.float64)
+
+    # run-heads: one probe per perceptual group (first hit, or preceding
+    # IOI >= GROUP_IOI_S). Duration normalization -- see docstring.
+    heads = [0] + [k for k in range(1, len(times)) if times[k] - times[k - 1] >= GROUP_IOI_S]
+
     theta_song = float(np.percentile(o, 60))
+    sup_song = peaks >= theta_song
     theta_global = 0.0
     if isinstance(ctx, dict) and ctx.get("energy_theta_global") is not None:
         try:
@@ -206,12 +269,14 @@ def energy_peak_support_rate(events, ctx):
         except (TypeError, ValueError):
             theta_global = 0.0
     return {
-        "energy_support_rate_raw": float(np.mean(peaks >= theta_song)),
-        "energy_support_rate_global": float(np.mean(peaks >= theta_global)),
+        "energy_support_rate_raw": float(np.mean(sup_song[heads])),
+        "energy_support_rate_all": float(np.mean(sup_song)),
+        "energy_support_rate_global": float(np.mean((peaks >= theta_global)[heads])),
         "energy_peak_mean_z": float(np.mean(peaks)),
         "energy_at_hit_z": float(np.mean(at_hit)),
         "energy_theta_song": theta_song,
         "energy_n_hits": float(len(peaks)),
+        "energy_n_heads": float(len(heads)),
     }
 
 

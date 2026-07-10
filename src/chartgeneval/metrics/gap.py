@@ -1,19 +1,42 @@
 """Gap family: distance to the official chart manifold.
 
-The adopted v2 candidate ``official_manifold_gap``: good charts look like
-official charts, bad ones are far from the official "shape". A joint feature
-vector phi(chart) (IOI histogram + type-bigram + per-beat density quantiles +
-distinct ratio + big-note ratio) is compared against a reference cloud of
-official charts. This catches the "each dimension is band-normal but the
-combination is not official" collapse that per-dimension bands cannot see.
+The adopted suite-v2 candidate ``official_manifold_gap`` (phi v2, 32 dims).
+
+Construct: good charts look like official charts; bad ones are far from the
+official "shape". A joint feature vector phi(chart) (IOI histogram + type-bigram
++ per-beat density quantiles + distinct ratio + big-note ratio + three
+entropy/variety dims) is compared against a reference cloud of official charts.
+This catches the "each dimension is band-normal but the combination is not
+official" collapse that per-dimension bands cannot see.
+
+phi v2 (fix 2026-07-11): the real LM-driven C5 blandification retest showed the
+29-dim phi v1 was low-dose manipulable -- LM-argmax recoloring pushed 16 bigram
+dims TOWARD the official mode (dose 0.3/0.6: ~70% of charts moved *closer* to
+the manifold), with only one ``distinct`` dim resisting. Three monotone
+anti-blandness dims were added (type unigram entropy, bigram entropy, colour
+switch rate; all length/density invariant), restoring the directional-down
+response under the real attack.
+
+Gauntlet record (fixes_20260710.md ticket 3; records
+``experiments/metric_candidates_v1/runs/raw/records/assess_20260710_mgfix_probes
+.jsonl`` and ``.../assess_20260710_c5real_manifold.jsonl`` in the SoftChart
+research repo): real-C5 rho(dose, -gap) -0.157 -> -0.3174, maxdose drop
++0.415 -> +1.841, per-chart direction agreement 71.9% -> 84.4%; zero regression
+on the other seven probes (C4 -0.287 -> -0.452, C5proxy -0.429 -> -0.603);
+length orthogonality 0.1645 -> 0.1361; AUC official-vs-generated 0.5554 ->
+0.5682; ladder rho 0.5714 -> 0.6667; new-axis max |pearson| 0.3240 (< 0.5).
 
 The module always returns the phi vector (``phi_*``). When the runner injects a
 fitted reference via ``ctx['official_manifold_ref'] = {mean, std, feats, scale,
 k}`` for the matching course, it also returns ``manifold_gap_raw`` /
 ``manifold_score``. Fitting a reference from a corpus is a two-pass operation;
-:func:`fit_manifold_ref` builds one from phi vectors.
+:func:`fit_manifold_ref` builds one from phi vectors. Missing/invalid inputs
+(fewer than 4 hits) yield NaN outputs, never silent garbage; without a valid
+bpm the IOI/density/entropy-token dims degrade to their bpm-less forms exactly
+as in the source implementation.
 
-Ported from the candidate module.
+Ported bitwise-identically from the fixed candidate module
+(``experiments/metric_candidates_v1/candidates/metric_official_manifold_gap.py``).
 """
 
 from __future__ import annotations
@@ -25,7 +48,7 @@ from ..events import HIT_CLASSES
 METRIC_NAME = "gap"
 _TYPE_INDEX = {"DS": 0, "KS": 1, "DB": 2, "KB": 3}
 _IOI_LOG2_EDGES = np.array([-4, -3, -2, -1, 0, 1, 2, 3], dtype=np.float64)
-PHI_DIM = 8 + 16 + 3 + 1 + 1  # 29
+PHI_DIM = 8 + 16 + 3 + 1 + 1 + 3  # ioi(8)+bigram(16)+densq(3)+distinct(1)+big(1)+variety(3) = 32
 
 
 def _fold_size(cls: str) -> str:
@@ -94,7 +117,38 @@ def phi(events, bpm):
     big = sum(1 for c in classes if c.endswith("B"))
     big_ratio = big / len(classes) if classes else 0.0
 
-    return np.concatenate([ioi_hist, bigram, dens_q, [distinct], [big_ratio]]).astype(np.float64)
+    # --- variety dims (anti-blandness; monotone under LM blandification) ---
+    def _entropy_bits(p):
+        p = np.asarray(p, dtype=np.float64)
+        p = p[p > 0]
+        if p.size == 0:
+            return 0.0
+        p = p / p.sum()
+        return float(-(p * np.log2(p)).sum())
+
+    uni = np.zeros(4, dtype=np.float64)
+    for c in classes:
+        k = _TYPE_INDEX.get(c)
+        if k is not None:
+            uni[k] += 1.0
+    type_entropy = _entropy_bits(uni)
+    bigram_entropy = _entropy_bits(bigram)
+    folds = [c[0] for c in classes]
+    switches = sum(1 for a, b in zip(folds[:-1], folds[1:]) if a != b)
+    switch_rate = switches / (len(folds) - 1) if len(folds) > 1 else 0.0
+
+    return np.concatenate(
+        [
+            ioi_hist,  # 8
+            bigram,  # 16
+            dens_q,  # 3
+            [distinct],  # 1
+            [big_ratio],  # 1
+            [type_entropy],  # 1
+            [bigram_entropy],  # 1
+            [switch_rate],  # 1
+        ]
+    ).astype(np.float64)
 
 
 def fit_manifold_ref(phi_vectors, k=20):

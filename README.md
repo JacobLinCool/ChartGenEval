@@ -67,16 +67,17 @@ The scripts under `experiments/` all accept `--limit` for a fast smoke run.
 ## Metric families
 
 The suite is organised into five families with a uniform
-`compute(events, ctx) -> dict` interface. The four adopted *suite-v2* candidate
-metrics are folded into their natural family.
+`compute(events, ctx) -> dict` interface. The five adopted *suite-v2* candidate
+metrics (post gauntlet fix pass, 2026-07-11) are folded into their natural
+family.
 
 | Family | Module | What it scores | Key outputs | v2 candidate folded in |
 |---|---|---|---|---|
 | timing | `metrics.timing` | audio-anchored alignment vs an estimated beat grid | `grid_phase_offset_ms` (C2 witness), `relative_error_mean_ms`, `unsupported_rate` | — |
-| coupling | `metrics.coupling` | density/strain constraints + audio coupling | `density_adequacy_score`, `strain_adequacy_score`, `density_energy_spearman`, `energy_support_rate_raw` | `density_energy_response`, `energy_peak_support_rate` |
+| coupling | `metrics.coupling` | density/strain constraints + audio coupling | `density_adequacy_score`, `strain_adequacy_score`, `density_energy_spearman`, `energy_support_rate_raw` (run-head normalized) | `density_energy_response`, `energy_peak_support_rate` |
 | grammar | `metrics.grammar` | n-gram pattern grammar (course-conditioned LM) | `pattern_ic_adequacy_score`, `transition_validity_score`, `rare_ngram_score` | — |
-| structure | `metrics.structure` | surface variety, repetition, boredom, colour, call-response | `surface_variety_adequacy_score`, `repetition_adequacy_score`, `reciprocity` | `call_response_reciprocity` |
-| gap | `metrics.gap` | distance to the official chart manifold | `manifold_gap_raw`, `manifold_score` | `official_manifold_gap` |
+| structure | `metrics.structure` | surface variety, repetition, boredom, colour, call-response | `surface_variety_adequacy_score`, `repetition_adequacy_score`, `reciprocity` (v2 primary), `boredom_v2_raw` | `call_response_reciprocity`, `boredom_v2` |
+| gap | `metrics.gap` | distance to the official chart manifold (phi v2, 32 dims) | `manifold_gap_raw`, `manifold_score` | `official_manifold_gap` |
 
 `metrics.constraints` re-exposes the hard playability gates (overload / spike /
 chaos / boredom). `metrics.evaluate_profile` runs the full calibrated pipeline
