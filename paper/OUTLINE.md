@@ -408,6 +408,31 @@ density_energy_response、energy_peak(正規化)、**boredom_v2**；
 DROP＝self_similarity、MDI。真 C5 有效劑量為名目 1/3（實改
 9.7/21.4/42.4% 音符，官方譜貼近 LM mode）——劑量標註照實際值。
 
+## 構念審查與衰減修訂（2026-07-11，使用者第一性提問驅動）
+
+**snapped-grammar 實驗（metric 無罪證明）**：把音符吸附到最近授權格點後
+重算 pattern NLL（train LM、oni、40 歌）——official 1.989→1.989（恆等
+sanity ✓）、TaikoNation 5.083→**5.095（毫無改善）**、Mapperatorinator
+1.880→2.127（略差——語言黏在自己相位偏移但規律的格上）。結論：TN 的
+grammar 崩潰**不是時鐘病的下游回音**，是真的第二個病（吸附後的落點是格
+上隨機遊走，仍無人類節奏句）；grammar 家族與 timing 家族的分工經受住
+構念混淆質疑；raw grammar 作為體驗層讀數合理。Mapp 的 oni raw ppl 6.6
+< official 7.3（帶內偏平側）——方向不穩定的又一活例。
+
+**官方譜極端值校準（170 張、逐 course σ 距離）**：pattern_nll 是人類
+最寬尾的軸（42.9% 微出帶、p99=3.0σ、**max 4.9σ**《ゆらめ》hard；
+《Amber Light》3.0σ——與 base offset 奇譜同張）；其他軸人類 max ≤2.6σ。
+**經驗分區**：0–2σ 常態變異、2–5σ 人類創意區、TN 12σ＝超出任何人類
+觀測 3 倍。
+
+**band_score 衰減修訂（fix-or-drop）**：高斯 e^{−d²} 把 4.9σ（人類創意）
+與 12σ（外星文）都壓成 0.00——解析度死在 novelty-vs-damage 裁決最需要
+的區間。改為**有理式 1/(1+d²)**（3σ=0.10、5σ=0.04、12σ=0.007，保持
+6 倍分離）；新增 `band_sigma` 有號診斷欄（無飽和）。SCORE_VERSION →
+v2_rational。所有 rank-based 認證統計量不變；顯示層數字全部重出
+（records v2 檔）。論文獲得校準句：「留出官方譜語言軸最遠 4.9σ；
+異時鐘系統 12σ——超出任何人類譜的觀測範圍」。
+
 ## 設計澄清（2026-07-11，使用者定案）
 
 **1. Band 語義＝typicality 不是 quality（單向推論）**：探針證明
