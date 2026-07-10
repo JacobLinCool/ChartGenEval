@@ -192,6 +192,34 @@ downbeat 列表會弄丟拍號資訊而誤錨變拍譜**。套件 `timing.comput
 `grid["segments"]`（優先於 downbeats）。全部認證數字已以修正版重跑，
 結論不變（C1 100% 嚴格降 ×3；C1s 吸收 72.6%）
 
+### Clean-40 外部系統 timing 結果（2026-07-10 初步，
+experiments/timing_integration_v1/runs/raw/records/ext_clean_timing_20260710.jsonl，
+980 records；clean test 前 40 canonical 歌、clean 校準時代首批數字；
+Mapperatorinator 待 GPU 批次收官後補）
+
+| system（authored grid，跨譜 median） | clean | viol1× | unsup | 相對viol | grid_phase\|off\| | 逐譜 worst |
+|---|---|---|---|---|---|---|
+| official | 1.000 | 0.000 | 0.000 | 0.000 | 0.00ms | 0.955 |
+| ddc_onset | 0.729 | 0.245 | 0.027 | 0.311 | 3.50ms | 0.229 |
+| taikonation | 0.581 | 0.325 | 0.139 | 0.414 | **49.75ms** | 0.344 |
+| genelive | 0.526 | 0.398 | 0.102 | **0.099** | 12.67ms | 0.046 |
+| autoosu | 0.380 | 0.456 | 0.233 | 0.232 | 16.45ms | 0.000 |
+
+三通道分解讓每個系統得到**機制診斷**而非單一分數（應用節主敘事）：
+- **ddc_onset**「audio-follower＋偵測散佈」：錨定準（3.5ms）、6–12ms 帶
+  抖動（viol 24.5% 但 2×/3× 階≈0）
+- **genelive**「內部一致、相位錯錨」：相對通道乾淨（0.099，五難度中
+  beginner 0.000）但 grid phase 偏 12.7ms——**C2 教訓在真實系統上重演**：
+  matching-median 只顯示 0.49ms（re-matching 吸收），fixed-grid witness
+  抓到 12.67ms。真實已發表系統上的活例證，比探針更有說服力
+- **taikonation**「訊框量化雙重症」：相位不相干（49.8ms）＋音程抖動
+  （0.414）
+- **autoosu**「偏移＋散佈＋災難尾」：35% 譜 bias>6ms、逐譜 worst=0.000
+- 全系統 2×/3× 階≈0：偏差集中在 6–12ms 可感知帶，粗大離群走 unsupported
+  通道——三階＋unsupported 的分工實測成立
+- estimated grid 欄相對通道與 authored 一致（genelive 0.109 vs 0.099）——
+  相對通道 grid-robust 的系統級佐證
+
 ## 目標貢獻（v2.1）
 
 1. **劣化驗證的指標套件**：每個維度都有「攻擊它、它就掉」的劑量反應
