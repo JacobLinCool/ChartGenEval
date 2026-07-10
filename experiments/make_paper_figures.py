@@ -206,24 +206,28 @@ def figA(probe_records, cert_records, c1s_records, out):
 # ---------------- figB: perceptual tier bars (draft) ----------------
 
 
-def figB(cert_records, out):
-    meta = [r for r in cert_records if r.get("anchor_source") == "metadata" and not r.get("noop")]
-    systems = [
-        ("official charts", "official", 0),
-        ("C1 jitter ±10 ms", "C1_timing_jitter", 1),
-        ("C1 jitter ±20 ms", "C1_timing_jitter", 2),
-        ("C1 jitter ±30 ms", "C1_timing_jitter", 3),
-        ("C1s 2% sparse ±60 ms", "C1s_sparse_jitter", 3),
-    ]
+def figB(ext_records, out):
+    """Real-system perceptual tier bars from the clean-40 external timing run."""
+    meta = [r for r in ext_records if r.get("anchor_source") == "metadata"]
+    by_system = defaultdict(list)
+    for r in meta:
+        by_system[r["system"]].append(r)
+    # official first, then descending median clean rate.
+    order = sorted(
+        (s for s in by_system if s != "official"),
+        key=lambda s: -np.median([r["clean_rate"] for r in by_system[s]]),
+    )
+    systems = ["official"] + order
     tier_rows, labels, strips = [], [], {}
-    for label, tid, dose in systems:
-        rs = [r for r in meta if r["target_id"] == tid and r["dose_index"] == dose]
+    for s in systems:
+        rs = by_system[s]
         B = np.array([timing_buckets(r) for r in rs])
+        label = f"{s} (n={len(rs)})"
         tier_rows.append({"buckets": B.mean(axis=0)})
         labels.append(label)
         strips[label] = np.array([r["clean_rate"] for r in rs if r.get("clean_rate") is not None])
     fig, ax = plot_timing_tiers(tier_rows, labels=labels, chart_clean_rates=strips)
-    ax.set_title("timing profile under known damage (authored grid)", fontsize=8)
+    ax.set_title("timing profile of published systems (clean test, authored grid)", fontsize=8)
     save(fig, out, "figB_timing_tiers")
 
 
@@ -287,6 +291,7 @@ def main():
     probe_rec = root / "experiments/corruption_probes_v1/runs/raw/records/corruption_probes_20260710.jsonl"
     cert_rec = root / "experiments/timing_integration_v1/runs/raw/records/certify_timing_tail_6ms.jsonl"
     c1s_rec = root / "experiments/corruption_probes_v1/runs/raw/records/c1s_full_profile.jsonl"
+    ext_rec = root / "experiments/timing_integration_v1/runs/raw/records/ext_clean_timing_20260710.jsonl"
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
 
@@ -302,7 +307,7 @@ def main():
     if want("figA"):
         figA(jrows(probe_rec), jrows(cert_rec), jrows(c1s_rec), out)
     if want("figB"):
-        figB(jrows(cert_rec), out)
+        figB(jrows(ext_rec), out)
     if want("figC"):
         figC(cp, jrows(c1s_rec), out)
 
