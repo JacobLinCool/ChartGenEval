@@ -1,0 +1,64 @@
+{
+  "counts": {
+    "charts": 170,
+    "noops": 0,
+    "records": 4760,
+    "songs": 40
+  },
+  "dataset": {
+    "id": "JacobLinCool/taiko-1000-parsed-clean",
+    "panel_id": "canonical_test_0_40_development",
+    "revision": "b72da4616d643018e81f372cea06ce51349285e0",
+    "split": "test"
+  },
+  "ended_at_utc": "2026-07-12T04:20:05.322230+00:00",
+  "execution_command": [
+    "experiments/certify_structure_v2.py",
+    "--dataset",
+    "JacobLinCool/taiko-1000-parsed-clean",
+    "--revision",
+    "b72da4616d643018e81f372cea06ce51349285e0",
+    "--limit-songs",
+    "40",
+    "--spec",
+    "experiments/suite_v2_development/SPEC.md",
+    "--out",
+    "/tmp/chartgeneval_structure_v2_bound.jsonl",
+    "--run-manifest",
+    "/tmp/chartgeneval_structure_run_manifest.json"
+  ],
+  "experiment_id": "suite_v2_development",
+  "language_model": {
+    "alpha": 0.05,
+    "n_train_charts": 3880,
+    "order": 3,
+    "split": "train"
+  },
+  "output": {
+    "path": "/tmp/chartgeneval_structure_v2_bound.jsonl",
+    "record_schema_version": "chartgeneval.suite_v2_development_record.v1",
+    "sha256": "0babae4e8e0b673ed487a20ce5d90786297ab5ed0632180fbe842c9e927442c7"
+  },
+  "phase": "development_descriptive",
+  "runner": "structure",
+  "runtime": {
+    "chartgeneval": "0.1.0",
+    "datasets": "5.0.0",
+    "numpy": "2.2.6",
+    "python": "3.11.14",
+    "scipy": "1.17.1"
+  },
+  "schema_version": "chartgeneval.suite_v2_development_run.v1",
+  "source_hashes": {
+    "experiments/_coupling_feature_contract.py": "b827f838ebcb88fb246144c9d123065137fa74da9c9f248c32136e3f54c7689c",
+    "experiments/_dataset.py": "b5620579695df957b57052c50f87dcc0b4473e2aca6163b211bf77c917d2fdd9",
+    "experiments/certify_structure_v2.py": "0b543bd87ba9400a9497d4b4091ba64e9d9ccb151cc862ed1b28330735cde7c3",
+    "src/chartgeneval/metrics/structure.py": "f7296d7c8a44eede9e462c09d30371ed967eba9b00723cdefed2a903a736d4a7",
+    "src/chartgeneval/probes.py": "ef8a9b9a4e07262f496a97017c00e89f4d1742116f6ef18125a802ddfe54b2f6"
+  },
+  "spec": {
+    "path": "experiments/suite_v2_development/SPEC.md",
+    "sha256": "78bdc08cd414195af5e372c0b5c302f56040259d0689789ff135db1e7e1e948f"
+  },
+  "started_at_utc": "2026-07-12T04:15:04.205337+00:00"
+}

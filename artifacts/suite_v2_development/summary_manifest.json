@@ -1,0 +1,57 @@
+{
+  "analysis_command": [
+    "experiments/summarize_suite_v2_development.py",
+    "--structure",
+    "artifacts/records/structure_v2_development.jsonl",
+    "--coupling-gap",
+    "artifacts/records/corruption_coupling_gap_clean.jsonl",
+    "--spec",
+    "experiments/suite_v2_development/SPEC.md",
+    "--out",
+    "/tmp/chartgeneval_suite_v2_bound_roles.csv",
+    "--manifest",
+    "/tmp/chartgeneval_suite_v2_summary_manifest_roles.json"
+  ],
+  "analysis_script": {
+    "path": "experiments/summarize_suite_v2_development.py",
+    "sha256": "29cbeb9cbb8adc5a815c2b3f40c5a69dbb309768a40fad68a0d6e0e97114f7b8"
+  },
+  "experiment_id": "suite_v2_development",
+  "generated_at_utc": "2026-07-12T04:28:33.747174+00:00",
+  "inputs": {
+    "coupling_gap": {
+      "path": "artifacts/records/corruption_coupling_gap_clean.jsonl",
+      "sha256": "46d2f6acea1184f6d1c995a0ef4738e5c9b239c61d3609e764e8cfff1c564298"
+    },
+    "structure": {
+      "path": "artifacts/records/structure_v2_development.jsonl",
+      "sha256": "0babae4e8e0b673ed487a20ce5d90786297ab5ed0632180fbe842c9e927442c7"
+    }
+  },
+  "output": {
+    "columns": [
+      "metric",
+      "metric_key",
+      "probe",
+      "orientation",
+      "n_complete_charts",
+      "pooled_spearman_dose",
+      "mean_within_chart_spearman",
+      "mean_maxdose_oriented_delta",
+      "median_maxdose_raw_delta",
+      "improve_minus_worsen",
+      "phase",
+      "spec_sha256",
+      "source_sha256"
+    ],
+    "path": "/tmp/chartgeneval_suite_v2_bound_roles.csv",
+    "rows": 45,
+    "sha256": "3deb8c56924a715a2600efa8e09cd304f6a35976e31204725c6efcf41951d698"
+  },
+  "phase": "development_descriptive",
+  "schema_version": "chartgeneval.suite_v2_development_summary.v1",
+  "spec": {
+    "path": "experiments/suite_v2_development/SPEC.md",
+    "sha256": "78bdc08cd414195af5e372c0b5c302f56040259d0689789ff135db1e7e1e948f"
+  }
+}

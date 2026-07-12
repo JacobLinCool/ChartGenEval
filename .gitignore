@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.eggs/
+
+# venvs
+.venv/
+venv/
+env/
+
+# test / repro outputs
+.pytest_cache/
+*.jsonl
+!src/chartgeneval/data/*.json
+!artifacts/records/*.jsonl
+figures/
+calibration.json
+probes.jsonl
+charts_scored.jsonl
+
+# HF / caches
+.cache/
+
+# OS
+.DS_Store
+
+# LaTeX build artifacts
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.blg
+paper/*.synctex.gz
+
+# Private release-working documents
+/checklist.md
+/paper/OUTLINE.md
+/paper/PAPER.zh-TW.md
+/paper/archive-v4/

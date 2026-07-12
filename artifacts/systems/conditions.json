@@ -1,0 +1,103 @@
+{
+  "schema_version": "chartgeneval.system_conditions.v2",
+  "reference_course_mapping_version": "system_reference_course_v1",
+  "evaluated_on": "2026-07-10/11",
+  "systems": [
+    {
+      "id": "mapperatorinator",
+      "citation_key": "mapperatorinator",
+      "source": "https://github.com/OliBomby/Mapperatorinator/tree/v32.0.0",
+      "version": "32.0.0",
+      "revision": "80368f8c275d9556fd6709436bc6b701e6b20627",
+      "license_observed": "MIT",
+      "configuration": {
+        "gamemode": 1,
+        "seed": 0,
+        "course_to_star_rating": {
+          "easy": 2.0,
+          "normal": 3.5,
+          "hard": 5.0,
+          "oni": 6.5,
+          "ura": 7.5
+        },
+        "reference_course_map": {
+          "easy": ["easy"],
+          "normal": ["normal"],
+          "hard": ["hard"],
+          "oni": ["oni"],
+          "ura": ["ura"]
+        }
+      }
+    },
+    {
+      "id": "taikonation",
+      "citation_key": "halina2021taikonation",
+      "source": "https://github.com/emily-halina/TaikoNationV1/tree/5d810bb9c73b3a4b9d503170c441a1734c36853d",
+      "version": "V1",
+      "revision": "5d810bb9c73b3a4b9d503170c441a1734c36853d",
+      "license_observed": null,
+      "configuration": {
+        "difficulty": "single public checkpoint; no difficulty control",
+        "reference_course_map": {
+          "*": ["oni"]
+        }
+      },
+      "redistribution": "Derived metric records only; no code, checkpoint, input asset, or generated chart data."
+    },
+    {
+      "id": "ddconset",
+      "citation_key": "donahue2017ddc",
+      "source": "https://github.com/chrisdonahue/ddc_onset",
+      "revision": "d02aad36297a90e00848c32f6492fad1b43b7912",
+      "license_observed": "MIT",
+      "configuration": {
+        "difficulty": "CHALLENGE",
+        "output": "timing-only onset stream",
+        "reference_course_map": {
+          "challenge": ["oni"]
+        }
+      }
+    },
+    {
+      "id": "genelive",
+      "citation_key": "takada2023genelive",
+      "source": "https://github.com/KLab/AAAI-23.6040",
+      "revision": "43806e50e2a252b2c74acdb5283fdf59002f645b",
+      "license_observed": "MIT",
+      "configuration": {
+        "checkpoint": "pretrained_model/model.pth",
+        "public_configuration": "timing-only (symbol model unavailable)",
+        "difficulty_codes": {
+          "10": "beginner",
+          "20": "easy",
+          "30": "medium",
+          "40": "hard",
+          "50": "challenge"
+        },
+        "reference_course_map": {
+          "beginner": ["easy"],
+          "easy": ["normal"],
+          "medium": ["hard"],
+          "hard": ["oni"],
+          "challenge": ["ura", "oni"]
+        }
+      }
+    },
+    {
+      "id": "autoosu",
+      "citation_key": "autoosu",
+      "source": "https://github.com/issyun/AutoOsu",
+      "revision": "b81dc6f43f6274eb37b6cffa0945e3e5e23cf1dd",
+      "license_observed": null,
+      "configuration": {
+        "checkpoint": "checkpoints/osu_model_v2.pt",
+        "difficulty": 2.7,
+        "vocabulary": "osu!mania 4K",
+        "reference_course_map": {
+          "d27": ["oni"]
+        }
+      },
+      "redistribution": "Derived metric records only; no code, checkpoint, input asset, or generated chart data."
+    }
+  ]
+}

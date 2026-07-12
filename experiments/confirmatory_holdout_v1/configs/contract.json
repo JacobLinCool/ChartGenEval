@@ -1,0 +1,127 @@
+{
+  "schema_version": "chartgeneval.confirmatory_contract.v1",
+  "experiment_id": "confirmatory_holdout_v1",
+  "spec_version": "1.0.0",
+  "expected_score_version": "calibrated_diagnostics_v1_symmetric_halfwidth",
+  "language_model": {
+    "dataset_id": "JacobLinCool/taiko-1000-parsed-clean",
+    "dataset_revision": "b72da4616d643018e81f372cea06ce51349285e0",
+    "split": "train",
+    "range": "full_split",
+    "row_policy": "all_source_rows_including_aliases",
+    "expected_source_rows": 924,
+    "expected_canonical_groups": 813,
+    "expected_charts": 3880,
+    "order": 3,
+    "alpha": 0.05
+  },
+  "replicate_base_seeds": [1103, 2207, 3301, 4409, 5519],
+  "probes": {
+    "C1_timing_jitter": {"dose_values": [10, 20, 30], "severity": [0.0, 0.3333333333333333, 0.6666666666666666, 1.0]},
+    "C1s_sparse_jitter": {"dose_values": [0.005, 0.01, 0.02], "severity": [0.0, 0.25, 0.5, 1.0]},
+    "C2_anchor_shift": {"dose_values": [15, 30, 60], "severity": [0.0, 0.25, 0.5, 1.0]},
+    "C3_type_shuffle": {"dose_values": [0.2, 0.4, 0.8], "severity": [0.0, 0.25, 0.5, 1.0]},
+    "C4_loop_collapse": {"dose_values": [0.3, 0.6, 1.0], "severity": [0.0, 0.3, 0.6, 1.0]},
+    "C5_blandification": {"dose_values": [0.3, 0.6, 1.0], "severity": [0.0, 0.3, 0.6, 1.0]},
+    "C6_density_scale": {"dose_values": [0.5, 1.5, 2.0], "severity": [0.0, 0.5, 0.5, 1.0]},
+    "C7_burst_insert": {"dose_values": [2, 4, 8], "severity": [0.0, 0.25, 0.5, 1.0]},
+    "C8_bar_shuffle": {"dose_values": [0.3, 0.6, 1.0], "severity": [0.0, 0.3, 0.6, 1.0]}
+  },
+  "primary_pairs": [
+    {"pair_id": "C1__timing_clean_rate", "probe": "C1_timing_jitter", "metric": "timing.clean_rate", "family": "timing", "expected_raw_direction": "decrease", "scoped_sham": "CTRL_color_bijection", "scoped_sham_dose_index": 0},
+    {"pair_id": "C1s__timing_p99", "probe": "C1s_sparse_jitter", "metric": "timing.absolute_error_p99_ms", "family": "timing", "expected_raw_direction": "increase", "scoped_sham": "CTRL_color_bijection", "scoped_sham_dose_index": 0},
+    {"pair_id": "C2__timing_phase_abs", "probe": "C2_anchor_shift", "metric": "timing.grid_phase_offset_abs_ms", "family": "timing", "expected_raw_direction": "increase", "scoped_sham": "CTRL_joint_time_origin_shift", "scoped_sham_dose_index": 0},
+    {"pair_id": "C3__transition", "probe": "C3_type_shuffle", "metric": "transition_validity_score", "family": "grammar", "expected_raw_direction": "decrease", "scoped_sham": "C2_anchor_shift", "scoped_sham_dose_index": 3},
+    {"pair_id": "C4__repetition", "probe": "C4_loop_collapse", "metric": "repetition_adequacy_score", "family": "structure", "expected_raw_direction": "decrease", "scoped_sham": "C2_anchor_shift", "scoped_sham_dose_index": 3},
+    {"pair_id": "C5__repetition", "probe": "C5_blandification", "metric": "repetition_adequacy_score", "family": "structure", "expected_raw_direction": "decrease", "scoped_sham": "C2_anchor_shift", "scoped_sham_dose_index": 3},
+    {"pair_id": "C5__surface_variety", "probe": "C5_blandification", "metric": "surface_variety_adequacy_score", "family": "structure", "expected_raw_direction": "decrease", "scoped_sham": "C2_anchor_shift", "scoped_sham_dose_index": 3},
+    {"pair_id": "C6__density", "probe": "C6_density_scale", "metric": "density_adequacy_score", "family": "density", "expected_raw_direction": "decrease", "scoped_sham": "CTRL_color_bijection", "scoped_sham_dose_index": 0},
+    {"pair_id": "C7__density_spike", "probe": "C7_burst_insert", "metric": "density_spike_score", "family": "density", "expected_raw_direction": "decrease", "scoped_sham": "CTRL_color_bijection", "scoped_sham_dose_index": 0},
+    {"pair_id": "C8__repetition", "probe": "C8_bar_shuffle", "metric": "repetition_adequacy_score", "family": "structure", "expected_raw_direction": "decrease", "scoped_sham": "C2_anchor_shift", "scoped_sham_dose_index": 3}
+  ],
+  "co_primary_claims": [
+    {"claim_id": "C5__repetition_and_variety", "pair_ids": ["C5__repetition", "C5__surface_variety"], "combination_rule": "all_pairs_must_survive"}
+  ],
+  "secondary_metrics": [
+    {"analysis_id": "C5__pattern_ic_ambiguity", "probe": "C5_blandification", "metric": "pattern_ic_adequacy_score", "role": "secondary_ambiguity", "expected_raw_direction": null},
+    {"analysis_id": "C5__pattern_nll_diagnostic", "probe": "C5_blandification", "metric": "pattern_nll", "role": "secondary_diagnostic", "expected_raw_direction": null}
+  ],
+  "controls": {
+    "CTRL_identity": {
+      "description": "Exact re-evaluation of unchanged events and grid.",
+      "scoped_families": ["timing", "density", "grammar", "structure"],
+      "metrics": ["timing.clean_rate", "timing.absolute_error_p99_ms", "timing.grid_phase_offset_abs_ms", "density_adequacy_score", "density_spike_score", "transition_validity_score", "repetition_adequacy_score", "surface_variety_adequacy_score", "pattern_ic_adequacy_score", "pattern_nll"]
+    },
+    "CTRL_joint_time_origin_shift": {
+      "description": "Shift notes and authored grid together by +1 s; coordinate-origin invariant.",
+      "scoped_families": ["timing", "density", "grammar", "structure"],
+      "metrics": ["timing.clean_rate", "timing.absolute_error_p99_ms", "timing.grid_phase_offset_abs_ms", "density_adequacy_score", "density_spike_score", "transition_validity_score", "repetition_adequacy_score", "surface_variety_adequacy_score", "pattern_ic_adequacy_score", "pattern_nll"]
+    },
+    "CTRL_color_bijection": {
+      "description": "Swap Don/Ka while preserving time and size; invariant only for timing and density.",
+      "scoped_families": ["timing", "density"],
+      "metrics": ["timing.clean_rate", "timing.absolute_error_p99_ms", "timing.grid_phase_offset_abs_ms", "density_adequacy_score", "density_spike_score"]
+    },
+    "C2_anchor_shift": {
+      "description": "Absolute chart translation; negative control only for chart-only families.",
+      "scoped_families": ["density", "grammar", "structure"],
+      "metrics": ["density_adequacy_score", "density_spike_score", "transition_validity_score", "repetition_adequacy_score", "surface_variety_adequacy_score", "pattern_ic_adequacy_score", "pattern_nll"]
+    }
+  },
+  "control_absolute_tolerances": {
+    "timing.clean_rate": 1e-12,
+    "timing.absolute_error_p99_ms": 1e-9,
+    "timing.grid_phase_offset_abs_ms": 0.000001,
+    "density_adequacy_score": 1e-12,
+    "density_spike_score": 1e-12,
+    "transition_validity_score": 1e-12,
+    "repetition_adequacy_score": 1e-12,
+    "surface_variety_adequacy_score": 1e-12,
+    "pattern_ic_adequacy_score": 1e-12,
+    "pattern_nll": 1e-12
+  },
+  "analysis": {
+    "bootstrap_seed": 20260712,
+    "bootstrap_draws": 10000,
+    "nominal_confidence_level": 0.95,
+    "familywise_confidence_level": 0.995,
+    "minimum_confirmatory_group_clusters": 72,
+    "support_rule": "dose_statistic_and_target_minus_scoped_sham_adjusted_upper_bounds_below_zero_and_controls_pass",
+    "refutation_rule": "either_adjusted_lower_bound_at_or_above_zero",
+    "replicate_reducer": "arithmetic_mean_within_chart_condition_dose",
+    "course_reducer": "arithmetic_mean_within_group_id",
+    "cluster_unit": "group_id",
+    "complete_case_rule": "course_requires_official_all_three_target_doses_and_fixed_scoped_sham; song_requires_at_least_one_complete_course; both_statistics_use_identical_courses",
+    "constant_response_dose_statistic": 0.0
+  },
+  "frozen_source_paths": [
+    "experiments/confirmatory_holdout_v1/SPEC.md",
+    "experiments/confirmatory_holdout_v1/configs/contract.json",
+    "experiments/confirmatory_holdout_v1/run.py",
+    "experiments/confirmatory_holdout_v1/transform.py",
+    "experiments/confirmatory_holdout_v1/analyze.py",
+    "experiments/confirmatory_holdout_v1/contract.py",
+    "tests/test_confirmatory_holdout.py",
+    "artifacts/splits/clean_split_manifest.json",
+    "src/chartgeneval/events.py",
+    "src/chartgeneval/probes.py",
+    "src/chartgeneval/calibration.py",
+    "src/chartgeneval/metrics/common.py",
+    "src/chartgeneval/metrics/timing.py",
+    "src/chartgeneval/data/taiko_1000_parsed_clean_calibration_v2.json",
+    "pyproject.toml"
+  ],
+  "frozen_source_globs": [
+    "src/chartgeneval/**/*.py",
+    "experiments/confirmatory_holdout_v1/*.py",
+    "experiments/confirmatory_holdout_v1/configs/*.json"
+  ],
+  "clean_split_contract": {
+    "path": "artifacts/splits/clean_split_manifest.json",
+    "train_source_rows": 924,
+    "train_canonical_groups": 813,
+    "test_source_rows": 140,
+    "test_canonical_groups": 120,
+    "test_alias_rows": 20
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "chartgeneval.confirmatory_run_config.v1",
+  "experiment_id": "confirmatory_holdout_v1",
+  "phase": "smoke_development",
+  "contract_path": "experiments/confirmatory_holdout_v1/configs/contract.json",
+  "dataset": {
+    "source": "huggingface",
+    "id": "JacobLinCool/taiko-1000-parsed-clean",
+    "revision": "b72da4616d643018e81f372cea06ce51349285e0",
+    "split": "test",
+    "canonical_filter": true,
+    "sampling_context_canonical_start_inclusive": 0,
+    "sampling_context_canonical_stop_exclusive": 2,
+    "canonical_song_index_start_inclusive": 0,
+    "canonical_song_index_stop_exclusive": 2,
+    "expected_selected_canonical_songs": 2,
+    "stop_after_canonical_songs": 2,
+    "scan_full_split": false,
+    "lm_split": "train",
+    "ordering": "stored_order_at_pinned_revision"
+  },
+  "clean_split_manifest_path": "artifacts/splits/clean_split_manifest.json",
+  "calibration": {"source": "bundled"},
+  "require_freeze_manifest": false,
+  "raw_root": "experiments/confirmatory_holdout_v1/runs/raw"
+}

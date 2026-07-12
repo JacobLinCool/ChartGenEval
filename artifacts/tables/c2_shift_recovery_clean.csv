@@ -1,0 +1,7 @@
+anchor_source,witness,shift_ms,delta_median_ms,delta_iqr_ms,frac_within_3ms,n
+authored,piecewise_lattice,15.0,15.0,0.0,0.9941,170
+authored,piecewise_lattice,30.0,30.0,0.0,0.9941,170
+authored,piecewise_lattice,60.0,60.0,0.0,0.9941,170
+estimated,piecewise_lattice,15.0,15.0,0.0,1.0,170
+estimated,piecewise_lattice,30.0,30.0,0.0,1.0,170
+estimated,piecewise_lattice,60.0,60.0,0.0,0.9941,170

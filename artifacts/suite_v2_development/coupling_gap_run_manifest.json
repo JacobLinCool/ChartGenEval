@@ -1,0 +1,82 @@
+{
+  "counts": {
+    "charts": 170,
+    "noops": 0,
+    "records": 4760,
+    "songs": 40
+  },
+  "dataset": {
+    "id": "JacobLinCool/taiko-1000-parsed-clean",
+    "panel_id": "canonical_test_0_40_development",
+    "revision": "b72da4616d643018e81f372cea06ce51349285e0",
+    "split": "test"
+  },
+  "ended_at_utc": "2026-07-12T04:23:09.976799+00:00",
+  "execution_command": [
+    "experiments/certify_coupling_gap.py",
+    "--dataset",
+    "JacobLinCool/taiko-1000-parsed-clean",
+    "--revision",
+    "b72da4616d643018e81f372cea06ce51349285e0",
+    "--limit-songs",
+    "40",
+    "--features",
+    "../SoftChart/eval/features_clean",
+    "--audio-manifest",
+    "../SoftChart/eval/ext_provenance_clean/audio_manifest_clean.json",
+    "--feature-manifest",
+    "/tmp/chartgeneval_coupling_gap_feature_manifest_v1.json",
+    "--spec",
+    "experiments/suite_v2_development/SPEC.md",
+    "--out",
+    "/tmp/chartgeneval_coupling_gap_bound.jsonl",
+    "--run-manifest",
+    "/tmp/chartgeneval_coupling_gap_run_manifest.json"
+  ],
+  "experiment_id": "suite_v2_development",
+  "inputs": {
+    "audio_manifest_sha256": "44f6a891ffd09812e39544f3b07fd0f3652ee8a2d227a62ed398b0868ba6fa45",
+    "feature_manifest_sha256": "086b3cf9826b0a50eede3857b6d19fa11d0a2d4c184392be6dc7cfd23c14fbf9"
+  },
+  "language_model": {
+    "alpha": 0.05,
+    "n_train_charts": 3880,
+    "order": 3,
+    "split": "train"
+  },
+  "output": {
+    "path": "/tmp/chartgeneval_coupling_gap_bound.jsonl",
+    "record_schema_version": "chartgeneval.suite_v2_development_record.v1",
+    "sha256": "46d2f6acea1184f6d1c995a0ef4738e5c9b239c61d3609e764e8cfff1c564298"
+  },
+  "phase": "development_descriptive",
+  "reference_counts": {
+    "easy": 923,
+    "hard": 924,
+    "normal": 924,
+    "oni": 924,
+    "ura": 185
+  },
+  "runner": "coupling_gap",
+  "runtime": {
+    "chartgeneval": "0.1.0",
+    "datasets": "5.0.0",
+    "numpy": "2.2.6",
+    "python": "3.11.14",
+    "scipy": "1.17.1"
+  },
+  "schema_version": "chartgeneval.suite_v2_development_run.v1",
+  "source_hashes": {
+    "experiments/_coupling_feature_contract.py": "b827f838ebcb88fb246144c9d123065137fa74da9c9f248c32136e3f54c7689c",
+    "experiments/_dataset.py": "b5620579695df957b57052c50f87dcc0b4473e2aca6163b211bf77c917d2fdd9",
+    "experiments/certify_coupling_gap.py": "df7c5f06f108967bda966b31abb292246df2ca6145137809de02190ab3f88fb7",
+    "src/chartgeneval/metrics/coupling.py": "7276b33084ef2b350b26a3817dbdfb88497de7b68aa372ae87d2b40dcaecb91d",
+    "src/chartgeneval/metrics/gap.py": "76a9d026789a39f4e9cf2e8337ccf6087b3f331ea8dc0deef48cf3a3cf06f505",
+    "src/chartgeneval/probes.py": "ef8a9b9a4e07262f496a97017c00e89f4d1742116f6ef18125a802ddfe54b2f6"
+  },
+  "spec": {
+    "path": "experiments/suite_v2_development/SPEC.md",
+    "sha256": "78bdc08cd414195af5e372c0b5c302f56040259d0689789ff135db1e7e1e948f"
+  },
+  "started_at_utc": "2026-07-12T04:15:04.205308+00:00"
+}

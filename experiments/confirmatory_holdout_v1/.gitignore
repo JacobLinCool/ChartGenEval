@@ -1,0 +1,7 @@
+__pycache__/
+runs/raw/*
+!runs/raw/README.md
+frozen/*
+!frozen/README.md
+CONFIRMATORY_ANCHOR.json
+

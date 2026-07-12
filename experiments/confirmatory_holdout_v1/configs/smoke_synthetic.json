@@ -1,0 +1,27 @@
+{
+  "schema_version": "chartgeneval.confirmatory_run_config.v1",
+  "experiment_id": "confirmatory_holdout_v1",
+  "phase": "smoke_synthetic",
+  "contract_path": "experiments/confirmatory_holdout_v1/configs/contract.json",
+  "dataset": {
+    "source": "synthetic",
+    "id": "chartgeneval_confirmatory_synthetic_v1",
+    "revision": "generated_by_run_py_v1",
+    "split": "synthetic",
+    "canonical_filter": true,
+    "sampling_context_canonical_start_inclusive": 0,
+    "sampling_context_canonical_stop_exclusive": 4,
+    "canonical_song_index_start_inclusive": 0,
+    "canonical_song_index_stop_exclusive": 4,
+    "expected_selected_canonical_songs": 4,
+    "expected_source_rows": 4,
+    "expected_canonical_songs": 4,
+    "expected_filtered_alias_rows": 0,
+    "scan_full_split": true,
+    "lm_split": "synthetic_reference",
+    "ordering": "deterministic_generator_order"
+  },
+  "calibration": {"source": "synthetic"},
+  "require_freeze_manifest": false,
+  "raw_root": "experiments/confirmatory_holdout_v1/runs/raw"
+}

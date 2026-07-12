@@ -1,0 +1,689 @@
+{
+  "audio_manifest_file": "audio_manifest_clean.json",
+  "audio_manifest_sha256": "44f6a891ffd09812e39544f3b07fd0f3652ee8a2d227a62ed398b0868ba6fa45",
+  "dataset_id": "JacobLinCool/taiko-1000-parsed-clean",
+  "dataset_revision": "b72da4616d643018e81f372cea06ce51349285e0",
+  "experiment_id": "suite_v2_development",
+  "extraction_contract": {
+    "audio_decode": "soundfile.read(dtype=float32,always_2d=True)",
+    "center": true,
+    "channel_mix": "arithmetic_mean_over_channels",
+    "fmax_hz": 11025.0,
+    "fmin_hz": 20.0,
+    "frames_per_second": 86.1328125,
+    "historical_runtime_dependency_snapshot_available": false,
+    "hop_length": 256,
+    "log_transform": "natural_log(mel_power+1e-5)",
+    "mel_backend": "librosa.filters.mel",
+    "n_fft": 2048,
+    "n_mels": 128,
+    "output_dtype": "float16",
+    "output_shape": "[128,n_frames]",
+    "power": 2,
+    "resample_when_needed": "librosa.resample(res_type=soxr_hq)",
+    "stft_backend": "torch.stft",
+    "target_sample_rate_hz": 22050,
+    "window": "hann"
+  },
+  "extraction_source_hashes": {
+    "feature_extractor": "802139d577a81c4af9109d82bf1b68797fe0a501d35fb3a54332482b0dd6a51a",
+    "softchart_preprocess": "fea30ba009fe817ffab2ad83c6ca68fdc0441f8d9cf9d9f4f741b5285509a07e",
+    "softchart_vocab": "ac1b86e660c5d802ead691414915ee6adeeb7afa7895592ead0dd1cfff0a46ff"
+  },
+  "feature_set_sha256": "0657c1d35cc25e836e03b4dafce4370bcd6afcce960919461ab22e2cf5f4df9c",
+  "features_index_file": "index.json",
+  "features_index_sha256": "a34cf97b474619d5c9f28c1460afc3565af963159539aa1df257503473531a4e",
+  "features_run_report_file": "run_report.json",
+  "features_run_report_sha256": "01db05b98f6bbb25f4898c3c3171023684d81a07ee5cbd08cae6dbab6d061d74",
+  "limitations": [
+    "This manifest binds the cached tensors used by the released derived records.",
+    "The historical extraction dependency snapshot was not recorded, so the release does not claim byte-identical end-to-end re-extraction from raw audio."
+  ],
+  "panel_id": "canonical_test_0_40_development",
+  "phase": "development_descriptive",
+  "rows": [
+    {
+      "all_finite": true,
+      "audio_bytes": 2307239,
+      "audio_sha256": "678ec381d16123bb8cf09edb9f18a719f1241ac40e05ba86aa88858350d47886",
+      "group_id": 117,
+      "mel_bytes": 2763648,
+      "mel_dtype": "float16",
+      "mel_file": "test_00000.mel.npy",
+      "mel_sha256": "6b72c8d7e9696e9ba0ee554e9da0cc62c8c7ad439b0c58780a0651b869295210",
+      "mel_shape": [
+        128,
+        10795
+      ],
+      "n_frames": 10795,
+      "sid": "test_00000"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 6514298,
+      "audio_sha256": "749d218a688886481f5fc583bb27d11df7f39a43a153d7aff4d983fb5f070e88",
+      "group_id": 130,
+      "mel_bytes": 2451072,
+      "mel_dtype": "float16",
+      "mel_file": "test_00001.mel.npy",
+      "mel_sha256": "d72664463f6fcca0210132efbb8f6814ea6e574f1597c5be3ed5e60267f9f1ff",
+      "mel_shape": [
+        128,
+        9574
+      ],
+      "n_frames": 9574,
+      "sid": "test_00001"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 9399516,
+      "audio_sha256": "5bc5860806f370b5da8b6340fa36468c5f2f848647864e15adb91785e68bbcc9",
+      "group_id": 156,
+      "mel_bytes": 3684224,
+      "mel_dtype": "float16",
+      "mel_file": "test_00002.mel.npy",
+      "mel_sha256": "6a9fd4526590819995705a5992ded46257286c8f82ab8070c24d13d0656c8083",
+      "mel_shape": [
+        128,
+        14391
+      ],
+      "n_frames": 14391,
+      "sid": "test_00002"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 9002600,
+      "audio_sha256": "85eaeda923d33419a38810e4f5cd495a2e9ee0464bae104b5bf7f5d469ae19b7",
+      "group_id": 165,
+      "mel_bytes": 2944384,
+      "mel_dtype": "float16",
+      "mel_file": "test_00003.mel.npy",
+      "mel_sha256": "b792dd9764f814b4bc903cd670c1497e9fbc41524d41946a14b38d26f44420e6",
+      "mel_shape": [
+        128,
+        11501
+      ],
+      "n_frames": 11501,
+      "sid": "test_00003"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 2947405,
+      "audio_sha256": "5b3987703da771e50f675cb0bed83e865a0b846d1f5d60edcbf326aef311edfd",
+      "group_id": 171,
+      "mel_bytes": 3316096,
+      "mel_dtype": "float16",
+      "mel_file": "test_00004.mel.npy",
+      "mel_sha256": "616eae3dae1e81c9886ab771702afa4308169a2c8d1c4721c8a190b9a77738b5",
+      "mel_shape": [
+        128,
+        12953
+      ],
+      "n_frames": 12953,
+      "sid": "test_00004"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 5555818,
+      "audio_sha256": "553df8e7850c6391ece5728983c9051ebca2bc7864cada054c71772179bfb963",
+      "group_id": 178,
+      "mel_bytes": 2087552,
+      "mel_dtype": "float16",
+      "mel_file": "test_00005.mel.npy",
+      "mel_sha256": "069c36db5fbeeb085f06dd84cadca1008a4dfe9521a063255ad29bc99fa94efd",
+      "mel_shape": [
+        128,
+        8154
+      ],
+      "n_frames": 8154,
+      "sid": "test_00005"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 2216998,
+      "audio_sha256": "11d9bdb898a40b31d6c83977ee0fa2caa92cfcdf7e5ac3b6638bf3b8bea7ddbb",
+      "group_id": 201,
+      "mel_bytes": 2689408,
+      "mel_dtype": "float16",
+      "mel_file": "test_00006.mel.npy",
+      "mel_sha256": "36c0437274b8f18c12a87ffa30c7edfc2fdb3622746cc5e42053d25b237ae35a",
+      "mel_shape": [
+        128,
+        10505
+      ],
+      "n_frames": 10505,
+      "sid": "test_00006"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 3196588,
+      "audio_sha256": "ce524a715c3cea6971fc6c47a90bca7ae7dbebf827537c7a2da9e34a1ed8fbd5",
+      "group_id": 203,
+      "mel_bytes": 3828864,
+      "mel_dtype": "float16",
+      "mel_file": "test_00007.mel.npy",
+      "mel_sha256": "6b00dcaf9a1a054888f1418e14a1b43a3d6fa3d8e0065990107d0a06ae7b7c88",
+      "mel_shape": [
+        128,
+        14956
+      ],
+      "n_frames": 14956,
+      "sid": "test_00007"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 9092712,
+      "audio_sha256": "a8dcb0ab0767728c67c63ba9d84d54b98d257c3bc4ea417762567ecd86cc4432",
+      "group_id": 209,
+      "mel_bytes": 3409280,
+      "mel_dtype": "float16",
+      "mel_file": "test_00008.mel.npy",
+      "mel_sha256": "2c4e84d7d896eefda6083176476c8c87a6b2741f2bd8e5236c1627083eb8fb64",
+      "mel_shape": [
+        128,
+        13317
+      ],
+      "n_frames": 13317,
+      "sid": "test_00008"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 4792912,
+      "audio_sha256": "c96873ac8b2dcc3d4054b3ad5c6b40766f7e576554c80567f9810e9920ad149d",
+      "group_id": 34,
+      "mel_bytes": 2012800,
+      "mel_dtype": "float16",
+      "mel_file": "test_00009.mel.npy",
+      "mel_sha256": "45e4a89a98adb9c1d7e7e992d0a88b6b2a22023a8c1827b9940a54eaad6d3a97",
+      "mel_shape": [
+        128,
+        7862
+      ],
+      "n_frames": 7862,
+      "sid": "test_00009"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 8899276,
+      "audio_sha256": "51c6a8e05ecc04fccb734ea92f000f8e56ff5a6fcd5a05e2111334035801e4b3",
+      "group_id": 211,
+      "mel_bytes": 3133824,
+      "mel_dtype": "float16",
+      "mel_file": "test_00010.mel.npy",
+      "mel_sha256": "22ba4cb5ac13adf473d4ee3593ce2b2b4ab9447d6067535349cfe0c9f01fd4aa",
+      "mel_shape": [
+        128,
+        12241
+      ],
+      "n_frames": 12241,
+      "sid": "test_00010"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 6697374,
+      "audio_sha256": "88a49a600e415bdefb065213a1aa8aa0a8994657657377fca3c4693ad6777aac",
+      "group_id": 216,
+      "mel_bytes": 2757760,
+      "mel_dtype": "float16",
+      "mel_file": "test_00011.mel.npy",
+      "mel_sha256": "b5533056e783f0ad5f83aa596f2218d2eaa05994f1777072cdb17f74a680f977",
+      "mel_shape": [
+        128,
+        10772
+      ],
+      "n_frames": 10772,
+      "sid": "test_00011"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 6404196,
+      "audio_sha256": "abd9ff9ee8fe5bc3d8b1c11134854b74f8668a43d509c6b270367370fa114a28",
+      "group_id": 220,
+      "mel_bytes": 2592896,
+      "mel_dtype": "float16",
+      "mel_file": "test_00012.mel.npy",
+      "mel_sha256": "a502e3fdf2a4337e6c7b1b9aeae64534dd4a48926318de8e5661837668db8847",
+      "mel_shape": [
+        128,
+        10128
+      ],
+      "n_frames": 10128,
+      "sid": "test_00012"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 6414218,
+      "audio_sha256": "b89243ec30716174214a3a3520edc1e36823069e1ea024fe94829b9f04bc8644",
+      "group_id": 224,
+      "mel_bytes": 2711680,
+      "mel_dtype": "float16",
+      "mel_file": "test_00013.mel.npy",
+      "mel_sha256": "c8abb4cdb5041d6c28ab7a540e4c14b39969d53e48aeede74a652a25eca520f4",
+      "mel_shape": [
+        128,
+        10592
+      ],
+      "n_frames": 10592,
+      "sid": "test_00013"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 2702093,
+      "audio_sha256": "cf41f6edd362ed6a693a2aed15d1df7b6d82e7e4d8c7077f65fb037eedf44c1d",
+      "group_id": 235,
+      "mel_bytes": 3704192,
+      "mel_dtype": "float16",
+      "mel_file": "test_00014.mel.npy",
+      "mel_sha256": "d49995afa520f382a0e6f35753da8548a6405a867767fa416db834f3aec8768f",
+      "mel_shape": [
+        128,
+        14469
+      ],
+      "n_frames": 14469,
+      "sid": "test_00014"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 2320923,
+      "audio_sha256": "3f1b1301999957df52b9aa53ae1cc01342f2787946113580a5b6255bb3d7d991",
+      "group_id": 239,
+      "mel_bytes": 2756736,
+      "mel_dtype": "float16",
+      "mel_file": "test_00015.mel.npy",
+      "mel_sha256": "c9e58f1132c6904568c84efa883b36df28fe02e8a2aef08ce4856c7f6e215147",
+      "mel_shape": [
+        128,
+        10768
+      ],
+      "n_frames": 10768,
+      "sid": "test_00015"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 8290306,
+      "audio_sha256": "efded90169c6df93dad15a77b176e3f614ed2550cc4bd90ef173fb7398eac170",
+      "group_id": 241,
+      "mel_bytes": 3170432,
+      "mel_dtype": "float16",
+      "mel_file": "test_00016.mel.npy",
+      "mel_sha256": "e0536d3ec10f2f19dd3c81dd63f2f5fa3e896ba8f4568a18160479dbce8ebd07",
+      "mel_shape": [
+        128,
+        12384
+      ],
+      "n_frames": 12384,
+      "sid": "test_00016"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 8215459,
+      "audio_sha256": "7e4f047c9e3795389771e0839d10671feb2ea670db9bc49d7499ca3af7996e2f",
+      "group_id": 246,
+      "mel_bytes": 3117440,
+      "mel_dtype": "float16",
+      "mel_file": "test_00017.mel.npy",
+      "mel_sha256": "383213e4452d6754356555611d82742405b94a2a48b5f9ebb8dcfbdb669ab756",
+      "mel_shape": [
+        128,
+        12177
+      ],
+      "n_frames": 12177,
+      "sid": "test_00017"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 1570306,
+      "audio_sha256": "2b60ecce2cad2f90e50cb3007686d367ed142eaef97b3d6cda45644f0574dcc1",
+      "group_id": 248,
+      "mel_bytes": 2449536,
+      "mel_dtype": "float16",
+      "mel_file": "test_00018.mel.npy",
+      "mel_sha256": "f4c0c37b3dd7102b674f1150ba0ae162239299fd4ffc30822ee1dd539445ebbc",
+      "mel_shape": [
+        128,
+        9568
+      ],
+      "n_frames": 9568,
+      "sid": "test_00018"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 2226646,
+      "audio_sha256": "5cc761be2c57c3139295b4d72ce1f56d27c0855b5b2623a3b844f85285268da3",
+      "group_id": 251,
+      "mel_bytes": 2836608,
+      "mel_dtype": "float16",
+      "mel_file": "test_00019.mel.npy",
+      "mel_sha256": "9d1293c3f2be8f4ceb31550d43ed7beb1bc157d177938d619102998457bd139d",
+      "mel_shape": [
+        128,
+        11080
+      ],
+      "n_frames": 11080,
+      "sid": "test_00019"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 8618668,
+      "audio_sha256": "687b866ec7b48f39f739e59f29ac8b6a1f2a34d9c1d74cc4b3bdf41fe9fa89d6",
+      "group_id": 265,
+      "mel_bytes": 3099776,
+      "mel_dtype": "float16",
+      "mel_file": "test_00020.mel.npy",
+      "mel_sha256": "41fed387ebbb4703f81273c2484f8065276ab5c3297d5bf4403d246b98fffc76",
+      "mel_shape": [
+        128,
+        12108
+      ],
+      "n_frames": 12108,
+      "sid": "test_00020"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 2268600,
+      "audio_sha256": "e5e2a216492da424cd7ba3260d0d62815a3645492537392922abdd3d073f5db7",
+      "group_id": 274,
+      "mel_bytes": 2912384,
+      "mel_dtype": "float16",
+      "mel_file": "test_00021.mel.npy",
+      "mel_sha256": "2f718a7ff1c163ada02792f42b51e3a6b90061bdc94b784626cd0a0642823885",
+      "mel_shape": [
+        128,
+        11376
+      ],
+      "n_frames": 11376,
+      "sid": "test_00021"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 2307066,
+      "audio_sha256": "8b521672792303270985c46a080115791a162af095d21a04eae29013b866addf",
+      "group_id": 307,
+      "mel_bytes": 2791808,
+      "mel_dtype": "float16",
+      "mel_file": "test_00022.mel.npy",
+      "mel_sha256": "65155cf0af4c4633902d52b10262630aa2a6049932a037701d8de08977441945",
+      "mel_shape": [
+        128,
+        10905
+      ],
+      "n_frames": 10905,
+      "sid": "test_00022"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 8498183,
+      "audio_sha256": "e935ac3501d8f6e161d3ea590aace6bf41f4df30d4ea1179b67d212b7b97bb79",
+      "group_id": 315,
+      "mel_bytes": 3329408,
+      "mel_dtype": "float16",
+      "mel_file": "test_00023.mel.npy",
+      "mel_sha256": "aaea2533f9fb704c94636fcbd3d07c6e18e212133814b3f3a4017b31735b27f3",
+      "mel_shape": [
+        128,
+        13005
+      ],
+      "n_frames": 13005,
+      "sid": "test_00023"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 1323611,
+      "audio_sha256": "a8ee8a49fd9f31bc1daa2877a4d9e63f5117ef02baf1f679f519751b14b520e3",
+      "group_id": 339,
+      "mel_bytes": 2200960,
+      "mel_dtype": "float16",
+      "mel_file": "test_00024.mel.npy",
+      "mel_sha256": "bd950344b0677ab7f1d8abfcb94e99f73db25b3a2c2e1c1fea600a1cd99d41db",
+      "mel_shape": [
+        128,
+        8597
+      ],
+      "n_frames": 8597,
+      "sid": "test_00024"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 2430863,
+      "audio_sha256": "a1248e3cc3b1ea2a420366b274aaf602a4c2a86bded0b355b2919e0295ec78a1",
+      "group_id": 347,
+      "mel_bytes": 2553216,
+      "mel_dtype": "float16",
+      "mel_file": "test_00025.mel.npy",
+      "mel_sha256": "39fae44657354ff1474bd3eade2ff08adbc8d3b8a020569c5d7e7f5212cd6c07",
+      "mel_shape": [
+        128,
+        9973
+      ],
+      "n_frames": 9973,
+      "sid": "test_00025"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 8150813,
+      "audio_sha256": "cd6dfd52abc0c342dac420d47208e8c6cbd3ed56c2392568d6946f37ab3818d4",
+      "group_id": 362,
+      "mel_bytes": 2927232,
+      "mel_dtype": "float16",
+      "mel_file": "test_00026.mel.npy",
+      "mel_sha256": "205a490b0e0f45655911ba41c5e0e01a914e0620e87388125d00fe62bc09ab47",
+      "mel_shape": [
+        128,
+        11434
+      ],
+      "n_frames": 11434,
+      "sid": "test_00026"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 8327522,
+      "audio_sha256": "178deeaf742a7a67c40f712cfce1f3ee3b551db8a8e7d6104c54fa12808e1306",
+      "group_id": 368,
+      "mel_bytes": 2977920,
+      "mel_dtype": "float16",
+      "mel_file": "test_00027.mel.npy",
+      "mel_sha256": "fc18e8c9883169e0c6c149b3b9f36c433b174704abb2c92e731bf1845d2d8151",
+      "mel_shape": [
+        128,
+        11632
+      ],
+      "n_frames": 11632,
+      "sid": "test_00027"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 2167320,
+      "audio_sha256": "d9fafab2b7cfd44cb92e24b1bf5a03114cdc841e5f6cd0647d29f606297141aa",
+      "group_id": 380,
+      "mel_bytes": 2808960,
+      "mel_dtype": "float16",
+      "mel_file": "test_00028.mel.npy",
+      "mel_sha256": "5542651eb880ea24f43d8e0fa2f70082b9e2129e7f454fb2386820dbd05a3b4f",
+      "mel_shape": [
+        128,
+        10972
+      ],
+      "n_frames": 10972,
+      "sid": "test_00028"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 5309117,
+      "audio_sha256": "b893bdcbba57bac5ca3698bb97bb6a92d8f79b08b406aec61af181da3bd977eb",
+      "group_id": 401,
+      "mel_bytes": 2072448,
+      "mel_dtype": "float16",
+      "mel_file": "test_00029.mel.npy",
+      "mel_sha256": "bd95261a7c7aa60efb113c12b821396840231b5ef1f15117890f9f93057c2aea",
+      "mel_shape": [
+        128,
+        8095
+      ],
+      "n_frames": 8095,
+      "sid": "test_00029"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 2050683,
+      "audio_sha256": "0a115c479157d849a51bedcdecee8656613d9c8a4734416044a26696db8702f3",
+      "group_id": 403,
+      "mel_bytes": 3105920,
+      "mel_dtype": "float16",
+      "mel_file": "test_00030.mel.npy",
+      "mel_sha256": "796e3929efa085f2f9adef302daf568eae44a5f84424c0da46ba2e30bab8102d",
+      "mel_shape": [
+        128,
+        12132
+      ],
+      "n_frames": 12132,
+      "sid": "test_00030"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 8205517,
+      "audio_sha256": "ce4772cdda1530e9b4afac96b19fba3a20f7aaca0490ab15cd42e2a0c7946749",
+      "group_id": 408,
+      "mel_bytes": 2983808,
+      "mel_dtype": "float16",
+      "mel_file": "test_00031.mel.npy",
+      "mel_sha256": "ba0093acc2da9e0bf6283e4a7f711c3ed94f4049af267b141bad0338839cc3ec",
+      "mel_shape": [
+        128,
+        11655
+      ],
+      "n_frames": 11655,
+      "sid": "test_00031"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 5288585,
+      "audio_sha256": "99164ccea38ba108aac66e32fdb5f87230d8c15efa9d48be33d21af58417d392",
+      "group_id": 411,
+      "mel_bytes": 2084736,
+      "mel_dtype": "float16",
+      "mel_file": "test_00032.mel.npy",
+      "mel_sha256": "9e6f97ebf9e62bc10da239c5b41b15a8d1d28c1fef697287945108634284b2d3",
+      "mel_shape": [
+        128,
+        8143
+      ],
+      "n_frames": 8143,
+      "sid": "test_00032"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 7903215,
+      "audio_sha256": "f4bb04c5bcb967349884f3d207d347ce36e82860484ebda24b4dfc2a549fb1cb",
+      "group_id": 413,
+      "mel_bytes": 2993024,
+      "mel_dtype": "float16",
+      "mel_file": "test_00033.mel.npy",
+      "mel_sha256": "301fb749318cbb1510d4cb23e5b3277953049cbaab7b327f2c61c9259266ec0d",
+      "mel_shape": [
+        128,
+        11691
+      ],
+      "n_frames": 11691,
+      "sid": "test_00033"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 7358526,
+      "audio_sha256": "d0ba3006b607b4b969244a1cc7d1f0dd7a1730bba880718113fbc400c464167d",
+      "group_id": 424,
+      "mel_bytes": 2699392,
+      "mel_dtype": "float16",
+      "mel_file": "test_00034.mel.npy",
+      "mel_sha256": "e3bad28142e1353a373c8312a932c7c94055bcad3a54b4a6c3b0e57e6531635d",
+      "mel_shape": [
+        128,
+        10544
+      ],
+      "n_frames": 10544,
+      "sid": "test_00034"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 1539109,
+      "audio_sha256": "00515b3dc7e98f000e13d40f69c379773c5396c11c0357817a63efa240a9b755",
+      "group_id": 437,
+      "mel_bytes": 2450816,
+      "mel_dtype": "float16",
+      "mel_file": "test_00035.mel.npy",
+      "mel_sha256": "d3c401b544b47eb47aff4de0295083d5f226d34a31b16c8bb4593c2e3f7e46a2",
+      "mel_shape": [
+        128,
+        9573
+      ],
+      "n_frames": 9573,
+      "sid": "test_00035"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 2503126,
+      "audio_sha256": "d45db5b9f644172edf5b67955cf342ff76d1154ce977626c41ed65be561953d2",
+      "group_id": 446,
+      "mel_bytes": 3042176,
+      "mel_dtype": "float16",
+      "mel_file": "test_00036.mel.npy",
+      "mel_sha256": "b9dbb9a4443006e1011b9438c5d28864278fac24653bc37979f6a64304680c2f",
+      "mel_shape": [
+        128,
+        11883
+      ],
+      "n_frames": 11883,
+      "sid": "test_00036"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 6829632,
+      "audio_sha256": "2060c1574d3458c210524cc20c40fb210aa7ffed4b3c7eccef3354fa1e5a3d84",
+      "group_id": 448,
+      "mel_bytes": 2628736,
+      "mel_dtype": "float16",
+      "mel_file": "test_00037.mel.npy",
+      "mel_sha256": "65e24be3ac612140b5db56213956b9ee4451f70efbcb53566ae19cfb1e015210",
+      "mel_shape": [
+        128,
+        10268
+      ],
+      "n_frames": 10268,
+      "sid": "test_00037"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 6470232,
+      "audio_sha256": "f0b76ae6c508e708779e2653a3b47707b02ab80d354956b10456b76fceb7def1",
+      "group_id": 462,
+      "mel_bytes": 2691968,
+      "mel_dtype": "float16",
+      "mel_file": "test_00038.mel.npy",
+      "mel_sha256": "9ac5cbbce9950ca314763cccd2a59f978d09b1c4c7bf9ea31464d9a3acf7ec4b",
+      "mel_shape": [
+        128,
+        10515
+      ],
+      "n_frames": 10515,
+      "sid": "test_00038"
+    },
+    {
+      "all_finite": true,
+      "audio_bytes": 2698320,
+      "audio_sha256": "42107d45a83293677b03cd283f717bc46ede51842ac3f29063c791a4ac75b9f5",
+      "group_id": 463,
+      "mel_bytes": 2859904,
+      "mel_dtype": "float16",
+      "mel_file": "test_00039.mel.npy",
+      "mel_sha256": "50895d7b7cb1d03945848822e915e52f06f7caec3c4810b5a10600f96fa01418",
+      "mel_shape": [
+        128,
+        11171
+      ],
+      "n_frames": 11171,
+      "sid": "test_00039"
+    }
+  ],
+  "schema_version": "chartgeneval.coupling_gap_feature_manifest.v1",
+  "spec_sha256": "78bdc08cd414195af5e372c0b5c302f56040259d0689789ff135db1e7e1e948f",
+  "split": "test"
+}

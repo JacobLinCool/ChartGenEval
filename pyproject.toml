@@ -1,0 +1,70 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "chartgeneval"
+version = "0.1.0"
+description = "A multi-dimensional metric suite for rhythm-game chart generation"
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+license = { text = "MIT" }
+authors = [{ name = "Jhen-Ke Lin", email = "jacoblincool@gmail.com" }]
+keywords = ["evaluation", "rhythm-game", "taiko", "chart-generation", "music-information-retrieval"]
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Science/Research",
+    "Topic :: Multimedia :: Sound/Audio :: Analysis",
+]
+
+# Core is intentionally numpy-only. Everything else lives in an extra.
+dependencies = ["numpy>=1.23,<2.3"]
+
+[project.optional-dependencies]
+# Optimal-assignment matcher for the full timing family + Spearman p-values.
+scipy = ["scipy>=1.10"]
+# Audio-side grids (librosa) and mel loading.
+audio = ["scipy>=1.10", "librosa>=0.10", "soundfile>=0.12"]
+# Figure rendering for make_figures.py.
+plots = ["matplotlib>=3.6"]
+# Dataset reproduction (calibration + probes from taiko-1000-parsed).
+data = ["datasets>=3.0"]
+# Everything for running the reproduction scripts + tests.
+dev = [
+    "scipy>=1.10",
+    "librosa>=0.10",
+    "soundfile>=0.12",
+    "matplotlib>=3.6",
+    "datasets>=3.0",
+    "pytest>=7.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/JacobLinCool/ChartGenEval"
+Repository = "https://github.com/JacobLinCool/ChartGenEval"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/chartgeneval"]
+# Ship the bundled calibration artifact (a data file, not a .py module).
+artifacts = ["src/chartgeneval/data/*.json", "src/chartgeneval/data/*.md"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/chartgeneval",
+    "experiments",
+    "tests",
+    "README.md",
+    "LICENSE",
+    "ARTIFACT_LICENSE.md",
+    "THIRD_PARTY_NOTICES.md",
+    "CITATION.cff",
+    "pyproject.toml",
+]
+artifacts = ["src/chartgeneval/data/*.json", "src/chartgeneval/data/*.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

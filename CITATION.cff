@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use ChartGenEval, please cite the software and accompanying paper."
+title: "ChartGenEval: A Multi-Dimensional Metric Suite for Rhythm-Game Chart Generation"
+type: software
+version: 0.1.0
+date-released: 2026-07-11
+authors:
+  - family-names: Lin
+    given-names: Jhen-Ke
+repository-code: "https://github.com/JacobLinCool/ChartGenEval"
+url: "https://github.com/JacobLinCool/ChartGenEval"
+license: MIT
+abstract: >-
+  A floor-first metric suite for rhythm-game chart generation: timing is
+  measured against the official chart's authored timing map only, and six
+  dimensions are scored separately with no overall total. Combines metrics
+  proposed in the accompanying study with difficulty-conditioned adaptations
+  of established chart statistics, plus controlled-corruption tools,
+  calibration artifacts, and released per-chart evidence records.

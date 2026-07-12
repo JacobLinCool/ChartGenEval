@@ -1,0 +1,791 @@
+% =====================================================================
+% ChartGenEval 指標套件論文中文對照版（v6；地板優先敘事）。
+% 與 paper.tex 同步；數字為 clean-split 新數據。
+% 編譯：latexmk -xelatex paper.zh-TW.tex
+% =====================================================================
+\documentclass[10pt,twocolumn]{article}
+\usepackage[a4paper,top=2.2cm,bottom=2.4cm,left=1.9cm,right=1.9cm,columnsep=0.8cm]{geometry}
+\usepackage{amsmath,cite,url}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{placeins}
+\usepackage{titlesec}
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\setmainfont{Times New Roman}
+\setCJKmainfont[BoldFont={Songti TC Bold}]{Songti TC}
+\titlespacing*{\section}{0pt}{1.1em}{0.5em}
+\titlespacing*{\subsection}{0pt}{0.9em}{0.4em}
+
+\renewcommand{\abstractname}{摘要}
+\renewcommand{\refname}{參考文獻}
+\renewcommand{\figurename}{圖}
+\renewcommand{\tablename}{表}
+
+\newcommand{\secref}[1]{\S\ref{#1}}
+\newcommand{\figref}[1]{圖~\ref{#1}}
+\newcommand{\tabref}[1]{表~\ref{#1}}
+\newcommand{\artifacturl}{\url{https://github.com/JacobLinCool/ChartGenEval}}
+
+\title{\bfseries ChartGenEval：節奏遊戲譜面生成的多維度指標套件}
+
+\author{Jhen-Ke Lin\\
+  國立陽明交通大學\\
+  \texttt{jacob.cs14@nycu.edu.tw}}
+\date{\small 本文為英文版（\texttt{paper.tex}，v6）之中文對照；正式版本以英文版為準。}
+
+\sloppy
+\raggedbottom
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+節奏遊戲譜面既要貼合音樂，也要玩起來良好；同一首歌卻可能容納多張合法
+譜面。製譜是設計，因此與單一官方譜面的一致度，會把合法替代與真正的
+缺陷一併懲罰。音符選擇的自由仍留下一項任何替代都無法迴避的要求：無論
+選了哪些音符，它們都必須站在歌曲的音樂時間上。時值是音樂貼合度的
+地板。我們提出 ChartGenEval，一套
+不把任何音符序列當成答案、直接測量這個地板的指標套件：它只取官方譜面
+的作者編定時值圖，從不使用其音符位置。其整譜格線相位偏移以零中位誤差
+回收注入的 15--60\,ms 平移——而這些平移使所有主要只讀譜面輸出的變化
+都不超過人類譜標準差的 0.03 倍。
+
+在地板之上，品質容許多種答案，因此 ChartGenEval 以分數 profile 取代
+單一排名：六個維度——時值、音符序列、重複與形式、音樂呼應、與同難度
+人類譜的距離，以及可玩性限制——各自評分、分開報告，不合成總分。受控損壞說明原因：向常見模式
+改寫使語言模型 perplexity 下降 37\%，循環崩解使自相似度上升 62\%。
+在 40 首歌發展組上選定的十個凍結損壞--測量檢驗，全數通過 80 個未接觸
+歌曲群組上的保留資料確認，32 項指定控制亦全數通過；計入一組代數耦合
+後，餘九個非冗餘檢驗。其餘本文提出的元件目前只有發展證據；以玩家評分
+為效標的效度仍待建立。施用於五個公開生成器後，套件揭露單一排名會掩蓋
+的時值與難度特定偏離。我們於 \artifacturl{} 釋出實作、受控損壞、校準
+值與逐譜紀錄。
+\end{abstract}
+
+\section{引言}\label{sec:intro}
+
+節奏遊戲的自動譜面生成——把音訊映射為可遊玩的定時、定型音符序列——
+已從 onset 偵測管線進展到條件式序列
+模型~\cite{donahue2017ddc,halina2021taikonation,takada2023genelive,
+hanzen2025tcp}。評估卻沒有跟上。譜面規定玩家\emph{何時}做\emph{什麼}：
+它同時對音樂與玩家負責。本文把評估組織為兩個問題。譜面是否\emph{貼合音樂}——
+音符是否錨定在節拍上、其活動是否跟隨音樂起伏？譜面是否\emph{玩起來良好}——
+是否提供可學習的 pattern 與帶變化的重複，其要求是否與指定難度相稱？
+譜面是設計作品而非標註：貼合容許多種答案，而這些答案玩起來如何，
+正是區分它們之處。
+
+既有方法回答了有用但局部的問題。主流評估——與單一官方譜面比較的配置
+F1——量化的是重建程度：合法替代會像缺陷一樣降低重合度，歌曲沒有參照
+譜時也無法比較。最佳化一致度因此獎勵複製官方答案，懲罰的正是讓製譜
+成為設計問題的那些出走。語言模型（LM）似然量化模型適配度；分佈與
+自相似度統計描述生成材料；玩家或專家研究則建立系統層級的體驗。它們
+各自回答自己的問題，而其聚合分數的權衡關係並不透明。
+
+把音符選擇留給創意的評估，仍必須守住一個地板。音符再自由，仍要對
+歌曲的音樂時間負責：音符偏離節拍的譜面，在談品質之前就已失格。時值因此是音樂貼合度的\emph{地板}——任何合法替代都仍須
+滿足的必要條件。我們的第一步是把官方譜面的兩種角色拆開：只取其作者
+編定時值圖、從不使用其音符位置，讓音樂時間框架得以共享，框架內的音符
+選擇保持自由。本文提出的譜面對格線時值 profile 與整譜格線相位偏移，
+使這個地板不需參照音符序列即可檢驗；偏移搜尋回收了所有主要只讀譜面
+測量都錯過的 15--60\,ms 注入平移。
+
+站上地板的譜面還不是好譜面。在地板之上，品質有程度之分、也容許多種
+答案，因此 \textbf{ChartGenEval} 以分數 profile 取代單一排名：六個維度
+圍繞音樂貼合度與遊玩特性組織（\figref{fig:overview}）。除時值外，套件追問：活動是否
+跟隨音樂（兩項譜面--音訊呼應測量）、長程結構是否回返而不停滯（ABAB
+交互回應與停滯--疏離代理量），以及譜面距同難度人類譜有多遠（一個
+32 維距離）。這些本文提出的元件，再與音符密度、音符間隔、轉移
+pattern、4-gram 重複等既有譜面統計量結合，並轉換為同難度典型性分數或
+單側限制檢查；可玩性限制是它們自己的地板。所有維度分開報告，不定義
+通用總分。
+
+受控損壞提供敏感度證據。我們從人類譜出發，加入三個強度、由構造保證存在的
+缺陷，檢查宣告測量是否惡化，同時要求指定控制保持不變。九種損壞涵蓋密集
+時值抖動、稀疏時值離群、整體時值平移、音符類型置換、循環崩解、常見模式
+改寫、音符率縮放、爆發插入與小節順序洗牌。發展實驗用於選擇與修訂候選
+測量；另行凍結的確認實驗，則在未接觸歌曲上評估十個宣告的損壞--測量檢驗。
+這個雙層設計把探索性的候選證據與保留資料上的確認分開。
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.96\textwidth]{figs/fig0_overview.pdf}
+\caption{評估總覽。我們從人類譜出發，加入三個強度的單一已知缺陷，檢驗
+各 ChartGenEval 元件宣告的反應。只讀譜面的統計量以指定難度的人類譜為
+參照。時值使用配對官方譜面的作者編定時值圖，卻不使用其中的音符位置；
+音訊估計格線作為後備。六個維度分開報告，因為它們回答不同問題。}
+\label{fig:overview}
+\end{figure*}
+
+三項發展結果說明各維度為何必須分開。LM perplexity 獎勵向常見模式改寫；
+自相似度獎勵循環崩解；所有主要只讀譜面輸出則都錯過固定的譜面--音訊平移。
+凍結確認中，十個宣告檢驗與 32 項指定控制全數通過（\secref{sec:dependency}）。
+
+我們的貢獻如下：
+\begin{enumerate}
+\item \textbf{多維度指標套件。} ChartGenEval 定義譜面對格線、譜面--音訊、
+  本文所提的長程結構與人類譜距離測量，並結合既有譜面統計量的難度條件化
+  版本。每項輸出都有明定的解讀角色，並維持分開報告。
+\item \textbf{譜面專用操作化。} 我們定義整譜格線相位偏移、
+  小節層級密度--能量呼應、連打首音 onset 支持度、ABAB 交互回應、
+  停滯--疏離結構代理量，以及 32 維、依難度條件化的人類譜差距。格線
+  相位偏移納入保留資料確認，其餘五項本文提出的操作化目前具有發展證據。
+\item \textbf{受控損壞證據。} 九種具劑量控制的損壞，同時檢驗目標反應與
+  指定不變性，產生九個非冗餘的保留資料損壞--測量檢驗。相同
+  實驗亦找出 perplexity、自相似度的符號反轉，以及只讀譜面指標對整體平移
+  的盲點。
+\item \textbf{系統層級應用與可重現材料。} 把相容元件施用於五個公開
+  生成器，可定位時值、序列、密度與難度特定偏離。我們於 \artifacturl{}
+  釋出實作、受控損壞、校準值與逐譜紀錄。
+\end{enumerate}
+
+\section{相關研究}\label{sec:related}
+
+\textbf{參照譜一致度。} DDC 與 Gen\'eLive! 對預測音符位置報告 F-score，
+TCP 則報告 onset、onset-plus-type F1 與局部 pattern
+recall~\cite{donahue2017ddc,takada2023genelive,hanzen2025tcp}。其容差與聚合方式
+各異：DDC 使用 $\pm20$\,ms，Gen\'eLive! 使用 $\pm50$\,ms，TCP 則以小節
+比例定義容差。TaikoNation 改以 23\,ms 二元 frame 與 pattern space
+比較~\cite{halina2021taikonation}。這些都是重建估計量，承繼
+\secref{sec:intro} 所述的單一參照限制。
+
+\textbf{無配對與人類錨定評估。} DDC 把 LM perplexity 與 token accuracy
+用作保留資料上的模型適配度，而非生成譜品質分數~\cite{donahue2017ddc}。
+符號音樂與文字生成研究則提供多樣性、特徵分佈、自相似度與集合層級重複
+統計~\cite{li2016diversity,zhu2018texygen,yang2020evaluation,dong2020muspy,
+wu2020jazz}。人類研究回答另一個問題：MuTE 以專家評分驗證參照對齊的鋼琴
+編曲測量~\cite{gover2022mute}；Gen\'eLive! 報告專業譜師的部署
+回饋~\cite{takada2023genelive}；Mania Archetype 則結合參照相似度與八位資深
+玩家評分~\cite{wang2024mania}。ChartGenEval 提供這類人類研究可據以
+開展的自動測量與損壞敏感度證據。
+
+\textbf{指標壓力測試與時值。} SCHmUBERT 建構非音樂性的 piano roll，卻能
+匹配逐 frame 自相似統計~\cite{plasser2023schmubert}。Fr\'echet Music
+Distance 以音高與力度擾動測試，但仍是集合層級的 embedding
+距離~\cite{retkowski2025fmd}。STRUM 在逐歌搜尋整體偏移後報告參照 onset
+F1~\cite{opria2026strum}；ChartGenEval 則把整譜格線相位偏移作為譜面層級測量，
+且不以參照音符作為目標。我們的 6\,ms deadzone 以時間辨別研究為
+依據~\cite{friberg1995jnd,london2012hearing}（\secref{sec:timingmethod}）。
+
+\section{方法}\label{sec:methods}
+
+\subsection{ChartGenEval 指標套件}\label{sec:suite}
+
+ChartGenEval 把 profile 建構與損壞敏感度測試分開。套件先定義每項測量的
+構念、輸入、輸出與解讀角色，再以受控損壞檢驗其宣告反應。
+\tabref{tab:suite} 列出哪些測量由本文提出、哪些改編自既有譜面統計量，
+以及本研究對各項測量所提供的最高證據層級。
+
+\begin{table*}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3.2pt}
+\begin{tabular}{@{}p{0.105\textwidth}p{0.31\textwidth}p{0.19\textwidth}p{0.13\textwidth}p{0.20\textwidth}@{}}
+\toprule
+構念 & 主要輸出與解讀 & 必要錨點 & 來源 & 證據層級 \\
+\midrule
+時值 & 格線容差內比例與殘差尾部；整譜格線相位偏移 &
+作者編定時值圖或音訊估計格線 & 本文提出的譜面對格線 profile &
+C1、C1s、C2 確認 \\
+音符序列 & LM loss 作為描述；未見轉移懲罰作為單側熟悉度檢查 &
+依難度條件化的訓練 LM & 改編的 n-gram 統計 &
+C3 對轉移熟悉度的確認 \\
+重複與形式 & 4-gram 典型性；ABAB 交互回應；停滯--疏離結構代理量
+（\texttt{boredom\_v2}） & 難度範圍；新結構測量另需節拍格線 &
+改編的 4-gram 分數；兩項本文提出的操作化 &
+C4、C5、C8 確認同一個 4-gram 軸；本文提出的操作化僅有發展證據 \\
+音樂呼應 & 小節層級密度--能量等級相關；連打首音 onset 支持度 &
+音訊 mel spectrogram；小節視窗另需格線 & 兩項本文提出的操作化 & 僅有發展證據 \\
+人類譜距離 & 32 維譜面表徵中，到 20 張最近訓練譜的平均距離 &
+各難度的人類參照點雲 & 本文提出的譜面專用實例 & 僅有發展證據 \\
+難度與限制 & 密度與負荷典型性；過載與局部密度尖峰限制 &
+同難度訓練譜 & 改編統計量與本文提出的校準 &
+C6、C7 分別確認密度典型性與尖峰限制 \\
+\bottomrule
+\end{tabular}
+\caption{ChartGenEval 的構念、來源與證據邊界。「本文提出」表示操作化
+由本文界定，不代表其中每個基礎統計量都是新的。「確認」只指具名的凍結輸出。
+僅有發展證據的操作化是在 40 首歌的發展組上選擇與修訂，未納入凍結主要檢驗。
+任何證據層級都不代表已建立以玩家評分為效標的效度。}
+\label{tab:suite}
+\end{table*}
+
+本文提出的測量，針對單一譜面統計量留下的缺口設計。\emph{整譜格線相位偏移}
+在固定的小節、拍與八分音符錨點上，搜尋 $-250$ 至 $+250$\,ms 的平移量。
+為檢驗活動是否跟隨音樂起伏，\emph{密度--能量呼應}是在作者編定的小節視窗內，
+計算每秒打擊數與線性 mel
+能量的 Spearman 相關。可用視窗少於八個，或歌曲能量的第 90 與第 10
+百分位差小於其中位數的 5\% 時，這項測量記為不可用。\emph{連打首音 onset
+支持度}是節奏群群首中，在三個 mel frames（約 $\pm35$\,ms）內的最大
+spectral flux 達到該歌曲第 60 百分位門檻者所占比例。相鄰 onset 的間隔
+至少為 0.25\,s 時才開始新群組，以免密集連打主導分母。
+
+對長程結構而言，\emph{交互回應}把譜面依十六分音符位置切成兩小節樂句。
+具 $\pm1$ 個位置容差、經機率校正的節奏相似度，乘上經機率校正的音色
+一致度。若 $S(i,j)$ 表示這個乘積，分數就是
+$S(i,i+2)[1-S(i,i+1)]$ 的樂句平均：素材隔著中間樂句回返，但相鄰的
+copy-paste 重複不會得到獎勵。
+
+\emph{停滯--疏離代理量}使用活動小節的節奏與音色 fingerprints。若某小節是
+連續相似度 $\geq.8$ 序列中的第四個或之後成員，或其每個可用的 16 音符
+音色視窗都呈現週期不超過四的精確循環，便標為停滯。若前後 32 小節內都
+沒有相似度至少 .75 的小節，便標為疏離。原始輸出是兩類集合聯集占所有
+活動小節的比例。刻意採用這個操作性名稱，是因為測量描述的是譜面結構，
+尚未驗證為玩家感受到的無聊。最後，\emph{人類譜差距}以 32 個音符間隔、
+音符類型、密度與多樣性特徵表示每張譜；特徵依難度標準化，原始差距 $g$
+是到同難度 20 張最近訓練譜的平均歐氏距離。有界的顯示分數為
+$\exp(-g/a)$，其中 $a$ 是該 course leave-one-out 差距的第 90 百分位。
+表徵本身為譜面專用，其中的 entropy、bigram 與最近鄰基礎量則是既有
+統計方法。
+
+\subsection{資料與時值參照}\label{sec:data}
+
+我們使用自網路社群資源蒐集的 taiko 風格譜面檔與對應音訊；譜面檔轉錄
+官方難度 course，作為人類參照譜。由於譜面與音訊屬潛在受版權保護的
+內容，語料本身不隨本文發布：釋出物承載衍生的校準統計與逐譜紀錄，
+分析則固定於單一語料快照，其雜湊由凍結 manifest 釘住。來源紀錄依
+穩定的群組識別碼與音訊 SHA-256
+合併為歌曲群組；對映不一致時拒絕納入。訓練集包含 924 筆來源紀錄、813 個
+歌曲群組與 3{,}880 張各難度譜面，用於擬合校準值與 LM。測試集的 140 筆
+來源紀錄合併為依儲存順序排列的 120 個歌曲群組。前 40 組包含各可得難度的
+170 張人類譜，構成指標與損壞設計、圖表及系統 profile 使用的發展組。其餘
+索引 $[40,120)$ 構成 80 首歌的確認組；直到下述協定、實作、校準、執行環境
+與分析契約全數凍結後，才開啟這批資料。
+
+五項僅有發展證據的本文所提元件，依一份在其選擇與修訂後才寫成的規格
+整理，因此其分析維持探索性。釋出紀錄以雜湊把每項結果綁定到其確切輸入。
+
+時值需要外部的歌曲時值參照。主要格線使用配對官方譜面檔中，由作者編定的
+逐小節時間戳、拍號與速度中繼資料；官方譜面的音符時間與類型從不作為目標。
+換言之，官方檔案提供的是時值圖，不是唯一正確的音符序列。這保留時值圖中
+精確的小節結構，也讓生成譜能在同一音樂時間框架內採取不同而合法的音符
+設計。我們絕不使用生成譜自行宣告的格線，否則生成器便能定義自己的參照。
+
+缺少作者編定時值圖時，一般 profile 可改用音訊估計的 downbeat。40 首
+發展歌曲中，有 39 首的估計節拍週期與中繼資料週期相差不超過 2\%；其餘
+一首相差 2.39\%。兩種來源對第一拍仍可能不一致，所以下述格線相位偏移
+搜尋刻意容許這項模糊。絕對偏移仍以作者編定格線報告，因為音訊必須自行
+推估小節相位。凍結確認只使用各 course 的作者編定時值圖；若缺失，受影響
+的時值測量記為不可用，不以音訊估計格線代替。
+
+\subsection{測量角色與難度校準}\label{sec:layers}
+
+每張譜都是定時、定型的音符序列。我們依 \figref{fig:overview} 的六個問題組
+安排原始測量，並分屬 \secref{sec:intro} 的兩項要求。音樂貼合度是所聽與
+所打的一致，因此時值與音樂呼應需要歌曲；其餘四組不需要音訊，用來描述
+遊玩特性，其中本文提出的結構測量另需節拍格線。改編的譜面內部基礎量包括平滑化 trigram LM、
+未見轉移率、音符率、局部密度、短間隔負荷、entropy，以及獨特或重複的
+4-grams。我們保留 LM loss 作為模型適配度描述。讀作平均逐音符資訊量時，
+同一個量稱為 \emph{pattern-IC}；其同難度範圍分數僅作為次要分析。釋出名稱
+\texttt{transition\_validity\_score} 的解讀則收斂為「轉移熟悉度」：
+訓練語料中未曾出現的 trigram，不一定是無效轉移。本文提出的結構、
+音訊呼應、時值與人類譜差距測量已在 \secref{sec:suite} 定義。
+
+我們把選定的 band-calibrated 特徵轉成\emph{同難度範圍分數}。對每個
+course 與選定特徵，令 $l,u$ 分別為訓練譜的第 10、90 百分位，
+$h=\max((u-l)/2,10^{-9})$ 為受保護的半範圍寬。兩側使用同一尺度：
+\begin{equation}
+\begin{aligned}
+d(x)&=
+\begin{cases}
+(l-x)/h, & x<l,\\
+0,       & l\leq x\leq u,\\
+(x-u)/h, & x>u,
+\end{cases}\\
+s(x)&=\frac{1}{1+d(x)^2}.
+\end{aligned}
+\label{eq:band}
+\end{equation}
+因此範圍內得 1，向下與向上等距偏離得到相同分數。我們同時保留帶號
+距離，使大幅偏離不會塌縮到同一個近零分數。
+
+這個分數量的是譜對指定難度而言有多不尋常；它本身不說譜好不好。有些
+測量有宣告的不可欲方向，例如超出難度相對限制的過度負荷；它們使用另行
+具名的單側分數。轉移熟悉度相對訓練語料同樣是單側的，但不意味語義上
+無效。沒有宣告校準的 family 測量保留為 raw 描述。entropy、密度、
+重複則可過低也可過高。受控損壞只支持單向推論——已知損壞傾向
+把這些值推出人類範圍。一張不尋常但仍可玩、仍跟著音樂的譜可能是創意
+（\secref{sec:discussion}）。
+
+我們依各結果宣告的角色與證據層級加以使用。可玩性限制維持分開的地板檢查；
+發展組的人類譜中，音符率、短間隔與密度尖峰檢查分別有 88\%、89\% 與
+97\% 得分至少 0.99。整體平移估計等數值則維持描述性。公開介面分開回傳
+具名測量與檢查。
+
+\subsection{對歌曲測量時值}\label{sec:timingmethod}
+
+依已發表的短間隔恰可覺差~\cite{friberg1995jnd}，我們以 6\,ms 作為
+deadzone。這項結果提供格線對齊容差的動機，不等同於已在本語料玩家上
+驗證的 gameplay 閾值。更大的誤差按三個範圍報告：超過 6、12、18\,ms。
+相鄰音符間隔另以
+$\max(6\,\mathrm{ms},2.5\%\times\mathrm{IOI})$ 的容差比較。每個音符
+被計為容差內、超過三個範圍之一、或未配對。未配對音符留在分母中，因此
+新增的離格音符會降低容差內比率；此量沒有參照音符 recall 項，因此刪除
+未配對的生成音符可能提高比率。我們把它與音符數、同難度密度一併解讀。
+我們先對每張譜摘要，再跨譜報告中位數與尾部。
+
+最近格點配對可能錯過恆定平移（\figref{fig:timing}）：在密格線上，
+每個被平移的音符可能只是與另一個鄰近格點配對。因此我們對整張譜估計
+單一偏移：對 $-250$ 至 $+250$\,ms 間的每個候選，測量多少音符與
+參照小節內的固定細分對齊，選出一致性最強的偏移。作者編定格線的小節
+來自官方譜面的時值圖，而非其音符序列；音訊估計格線的小節則由
+音訊 downbeat 推估。合併小節、拍、
+八分音符細分可消解多數週期性平手；殘餘平手取最小幅度偏移。
+在正式 protocol 中，兩種時值摘要都必須有上述其中一種外部格線；作者編定
+時值圖與音訊估計格線皆不可得時，時值結果記為不可用。BPM 只給週期、
+不給 phase，因此不足以作為時值參照。
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.94\textwidth]{figs/figT_timing_alignment.pdf}
+\caption{為何時值需要整譜估計。\textbf{左}：最近格點配對可能把被平移
+的音符配到不同細分點、報出很小的局部誤差。\textbf{右}：我們測試候選的
+整譜偏移，選擇格線一致性最強者。格線如\figref{fig:overview}：作者編定
+時值圖為主要格線，音訊估計 downbeat 為後備，兩種格線皆不取自生成器
+自己的輸出。}
+\label{fig:timing}
+\end{figure*}
+
+\subsection{受控損壞與驗收規則}
+\label{sec:probes}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}p{0.30\textwidth}p{0.18\textwidth}p{0.46\textwidth}@{}}
+\toprule
+受控損壞（強度） & 改變什麼 & 凍結的主要反應 \\
+\midrule
+C1 時值抖動（$\pm$10/20/30\,ms） & 音符時值 &
+\texttt{timing.clean\_rate} $\downarrow$ \\
+C1s 稀疏時值錯誤（名目 0.5/1/2\%，$\pm$60\,ms） & 少數音符時間 &
+\texttt{timing.absolute\_error\_p99\_ms} $\uparrow$ \\
+C2 整體平移（+15/30/60\,ms） & 譜--音訊對齊 &
+\texttt{timing.grid\_phase\_offset\_abs\_ms} $\uparrow$ \\
+C3 音符類型置換（$p{=}0.2/0.4/0.8$） & 局部轉移 &
+\texttt{transition\_validity\_score} $\downarrow$ \\
+C4 循環崩解（$p{=}0.3/0.6/1$） & 重複與形式 &
+\texttt{repetition\_adequacy\_score} $\downarrow$ \\
+C5 常見模式改寫（$p{=}0.3/0.6/1$） & pattern 多樣性 &
+\begin{tabular}[t]{@{}l@{}}
+\texttt{repetition\_adequacy\_score} $\downarrow$ \\
+\texttt{surface\_variety\_adequacy\_score} $\downarrow$
+\end{tabular} \\
+C6 音符率縮放（$\times$0.5/1.5/2） & 難度適配 &
+\texttt{density\_adequacy\_score} $\downarrow$ \\
+C7 爆發插入（2/4/8 叢） & 局部過載 &
+\texttt{density\_spike\_score} $\downarrow$ \\
+C8 小節順序洗牌（$p{=}0.3/0.6/1$） & 全局形式 &
+\texttt{repetition\_adequacy\_score} $\downarrow$ \\
+\bottomrule
+\end{tabular}
+\caption{凍結的損壞與十個主要損壞--測量檢驗。170-chart
+development matrix 對每個非零 cell 使用一個 realization，共產生含原譜
+4{,}760 張變體；confirmation 使用五個 seeded replicates。C3--C5 保留
+音符時間，C4 與 C6 保存或控制密度。C1s 把譜中 $n$ 個音符的
+$\max(1,\operatorname{round}(np))$ 個移動 $\pm$60\,ms。C5 的 pattern-IC 與 raw
+pattern NLL 是沒有方向性 gate 的 secondary analyses。}
+\label{tab:probes}
+\end{table*}
+
+development 反應矩陣屬探索性分析。它在 170 張 development 譜上報告
+最大劑量的標準化變化與逐譜淨方向——相對各自原譜上升的比例減下降比例。
+這些譜不作為彼此獨立的推論單位；矩陣沒有 chance band，也不宣稱 cell
+層級顯著性。raw 特徵與其衍生分數在同一批變體上計算；等價量不計為獨立
+佐證，並另報與音符數的關聯。development 的 C5 檢查由一個 LM 選擇常見
+模式改寫、另一個 LM 評分；perplexity 反轉仍在。
+
+\textbf{凍結 confirmation。} \tabref{tab:probes} 的十個主要檢驗在凍結前
+未接觸的 80-song panel 上評估。每個非零 corruption cell 與每個 control condition 使用固定的
+五個 base seeds：1103、2207、3301、4409、5519。replicates 先在每張譜、
+每個 dose 內取平均。把所有測量定向為越大越好後，第一個統計量是原譜加
+三個凍結 severity 與測量間的逐譜 Spearman 相關；若四個反應全為常數，
+事前定義為零敏感度。第二個統計量是定向後的最大劑量值減去該 pair 的固定
+scoped sham。course 只有在原譜值、全部 target doses 與 replicates、sham
+及必要 controls 皆可得時才算完整。歌曲至少有一個完整 course 才進入該
+檢驗；no-op 或缺失 cells 保留在 exclusion ledger。完整 courses 先在歌內平均，因此兩個
+統計量的推論單位都是歌曲，而非譜或 course。
+
+具範圍的 controls 測試各宣告 family 內的不變性。identity 重算對每個保留
+測量皆須精確相同；音符、authored grid 與 duration 共同平移 +1 秒，對
+timing、density、grammar、structure 不變；Don--Ka 顏色雙射只作為 timing
+與 density 的 sham，不假定它對 grammar 或 form 中立；60\,ms 的 C2 平移
+則是 chart-only density、grammar、structure 的 sham。必要 control 失敗
+使受影響檢驗為 inconclusive，不會被平均掉；各 metric 的等價容差與
+timestamp 捨入規則固定在釋出契約中。chart-only 的間隔運算使用整數微秒
+時鐘，比最小報告容差細三個數量級，使 interval token 與半開密度視窗在
+時間原點平移下保持不變。
+
+點估計為 song-level 值的平均。我們用 seed 20260712 做 10{,}000 次
+song-cluster bootstrap，報 nominal 95\% percentile intervals；十個主要
+檢驗的 confirmation gate 使用 Bonferroni-adjusted 99.5\% intervals。
+一個檢驗只有在至少 72/80 首歌可評、controls 通過、且兩個統計量的調整
+上界都低於零時才為 \texttt{SURVIVES}。相同 gates 通過後，任一統計量的
+調整下界大於等於零則為 \texttt{REFUTED}；其餘為 \texttt{INCONCLUSIVE}。
+C5 的凍結組合規則要求兩個 co-primary 檢驗都存活；\secref{sec:dependency}
+顯示它們測的是同一個有效軸。provenance、panel 或 hash 失敗則為
+\texttt{INVALID}。
+
+確認只在完整協定——資料集版本、損壞與劑量、主要測量、controls、閾值、
+校準與原始碼——以雜湊 manifest 凍結後才開啟；任何不符都會在產生
+verdict 前中止執行。C5 LM 固定為完整 stored-order train split、
+trigram order 3、add-$\alpha=0.05$。
+
+\subsection{受評系統}\label{sec:systems}
+
+我們評估五個公開生成器，跨三種音符格式：兩個太鼓系統——
+Mapperatorinator v32~\cite{mapperatorinator}（社群開發、MIT 授權的
+多模式 osu! beatmap 生成框架，此處以 taiko 模式評估）與 FDG 發表的
+TaikoNation~\cite{halina2021taikonation}（自作者公開研究 repo
+重現\footnote{TaikoNation repo 未聲明軟體授權。released artifact 含
+provenance 與衍生指標紀錄，不含 TaikoNation 程式碼、checkpoint、輸入
+素材或生成譜資料。}）——再加上僅施用時值與音樂呼應測量的三個系統：
+Dance Dance Convolution 的 onset 管線（ddconset）~\cite{donahue2017ddc}、
+Gen\'eLive! 的公開 timing-only 配置~\cite{takada2023genelive}、以及
+osu! 難度目標生成器 AutoOsu~\cite{autoosu}。三種格式為太鼓音符類型、
+timing-only onset 流、osu! 位置型物件。全部系統在其公開推論配置下，
+從音訊為同一批 40 首 development 歌曲製譜；本研究未在此語料上訓練或微調
+這些系統，但這些商業
+歌曲與各系統自身訓練資料的重疊無法排除（\secref{sec:discussion}）。
+course 對映在釋出配置中明確：Mapperatorinator 使用對應的太鼓 course；
+Gen\'eLive 的 Beginner、Easy、Medium、Hard、Challenge 設定對映到
+Easy、Normal、Hard、Oni、Ura，歌曲無 Ura 譜時 Challenge 以 Oni 為參照
+course；單一設定系統使用宣告的 Oni 參照。格式轉換到評估事件流在同一
+音符格式內共用（\secref{sec:systemresults}）。同批歌的人類譜提供參照列。難度條件式
+系統對每個可得 course 各產一譜（170 或 200 張）；其餘每歌一譜
+（40 張）。這些 profiles 是描述性的 development analyses，不屬於凍結的
+confirmation gate。
+
+\section{結果}\label{sec:results}
+
+\subsection{宣告測量會對目標缺陷作出反應}
+\label{sec:sensitivity}
+
+十個宣告檢驗全數通過兩項確認門檻，32 項指定控制全數通過，而且每項
+分析都保留 80 個歌曲群組（\tabref{tab:confirmation}）。由於兩個 C5
+檢驗代數等價（\secref{sec:dependency}），八項具名輸出上的十個檢驗，
+收斂為橫跨七個有效輸出軸的九個非冗餘損壞--測量檢驗。
+
+\begin{table*}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}llrlll@{}}
+\toprule
+Pair & 凍結反應 & Courses & $\bar\rho_{\mathrm{dose}}$ [99.5\% CI] &
+$\overline{\Delta}_{\mathrm{max-sham}}$ [99.5\% CI] & Verdict \\
+\midrule
+C1  & clean rate & 333 & $-.744\;[-.815,-.667]$ & $-.502\;[-.558,-.446]$ & Survives \\
+C1s & absolute-error p99 & 332 & $-.234\;[-.344,-.134]$ & $-.306\;[-.508,-.144]$\,ms & Survives \\
+C2  & absolute grid-phase offset & 333 & $-.916\;[-.981,-.826]$ & $-55.58\;[-61.43,-49.83]$\,ms & Survives \\
+C3  & transition familiarity & 333 & $-.800\;[-.856,-.737]$ & $-.231\;[-.262,-.199]$ & Survives \\
+C4  & repetition adequacy & 333 & $-.445\;[-.573,-.312]$ & $-.165\;[-.226,-.108]$ & Survives \\
+C5a & repetition adequacy & 333 & $-.358\;[-.459,-.258]$ & $-.131\;[-.189,-.078]$ & Survives \\
+C5b & surface-variety adequacy & 333 & $-.358\;[-.456,-.255]$ & $-.131\;[-.186,-.074]$ & Survives \\
+C6  & density adequacy & 333 & $-.693\;[-.784,-.579]$ & $-.582\;[-.672,-.483]$ & Survives \\
+C7  & density-spike limit & 333 & $-.940\;[-.950,-.930]$ & $-.619\;[-.644,-.593]$ & Survives \\
+C8  & repetition adequacy & 330 & $-.589\;[-.728,-.435]$ & $-.224\;[-.293,-.156]$ & Survives \\
+\bottomrule
+\end{tabular}
+\caption{80 個 \texttt{group\_id} 歌曲群組上的凍結確認。定向後數值越大
+越好，因此對損壞的敏感度表現為負的劑量相關，以及負的最大劑量減 sham
+對比。區間為家族校正 99.5\% 歌曲群組 bootstrap 區間。C5a 與 C5b 代數
+等價，合計只算一個有效檢驗（\secref{sec:dependency}）；兩列區間的微小
+差異來自分開的 bootstrap streams。}
+\label{tab:confirmation}
+\end{table*}
+
+正式執行從 333 張譜產生 50{,}283 筆紀錄。C1s 保留 332 個完整 course，
+C8 保留 330 個，其餘各檢驗皆保留 333 個。32 項控制全數通過，觀察到的
+最大絕對差異為零；19 筆確定性 no-op 保留在釋出的 exclusion ledger 中。
+
+\subsection{C5 依賴關係只留下單一有效軸}
+\label{sec:dependency}
+
+正式的 C5 all-pairs 規則在機械上成立，因為兩項具名測量都在常見模式改寫
+下惡化；但兩者不能解讀為相互佐證的測量。repeated 4-gram rate 正好等於
+一減 unique 4-gram rate，鏡像的 symmetric-band 分數除浮點誤差外完全
+相同。因此，C5 只確立一個有效 4-gram 重複／唯一性檢驗的敏感度。
+
+pattern-IC 範圍分數維持為不設方向的次要分析：其最大劑量變化為 $+0.021$，
+nominal 95\% 區間為 $[-0.034,0.077]$；劑量統計量同樣跨過零
+（$-0.106$，$[-0.225,0.016]$）。raw pattern NLL 從 2.087 降至 1.715
+（最大劑量變化 $-0.373$，95\% CI $[-0.399,-0.346]$）。LM 因而賦予改寫
+譜更高似然，卻未建立 pattern 改善。可支持的跨軸結果更窄：有效的 4-gram
+檢驗抓到 pattern-IC 與 LM likelihood 未標為損壞的改寫。若要檢驗獨立
+互補性，必須事前指定真正不等價的結構測量。
+
+\subsection{本文所提元件在發展組上的行為}
+\label{sec:newmetricresults}
+
+\tabref{tab:suite} 中僅有發展證據的元件，是以候選測量的身分評估，不提出
+保留資料信賴度主張。把原譜與三個劑量合併計算的 Spearman 反應，支持彼此
+不同的操作角色。交互回應在循環崩解與小節洗牌下下降
+（$\rho=-.612$ 與 $-.506$），在時值抖動與整體平移下則幾乎不變
+（$-.086$ 與 $-.003$）。停滯--疏離代理量對循環崩解有強烈反應
+（定向為越大越好後 $\rho=-.924$），在時值抖動與整體平移下則實質不變
+（$-.007$ 與 $+.010$）。這些結果支持發展組上的結構敏感度，但尚未建立
+玩家感受到的呼應或無聊。
+
+兩項音訊呼應測量捕捉不同時間尺度。連打首音 onset 支持度在整體平移下
+下降（$\rho=-.559$）；小節層級密度--能量呼應在一致密度縮放下保持穩定
+（$\rho=+.005$），在小節洗牌下下降（$\rho=-.386$）。它對爆發插入的反應
+（$\rho=-.092$）偏弱，因此應具體解讀為小節尺度共變，而非通用
+音訊貼合分數。依難度計算的人類譜差距同樣是聯合分佈描述：它能標示不同於
+訓練點雲的特徵組合，卻不能判定不尋常的譜是有創意還是品質不佳。在最大
+強度下，其依難度計算的分數在 C3--C8 的淨方向介於 $-.32$ 與 $-.88$。
+整體平移下，每個劑量的中位變化皆為零，最大劑量淨方向為 $-.02$。C5 的
+反應只在聚合且特定劑量下成立：最大劑量時分數惡化，兩個較低劑量則沒有，
+各難度的方向也不一致。這些發展結果支持把元件納入釋出套件，同時保留
+\tabref{tab:suite} 所示的證據邊界。釋出的發展表記錄五項元件對全部
+九種損壞的反應。
+
+\subsection{孤立代理量可能獎勵已知損壞}
+\label{sec:reductio}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{figs/figA_complementarity.pdf}
+\caption{一個測量漏掉缺陷、另一個測量加以偵測的兩個案例。長條顯示相對
+原譜上升的譜比例減下降比例；由淺至深標示發展組上的三個強度（描述性
+結果，非獨立譜信賴敘述）。\textbf{左}：把音符改寫向 LM
+最常見的選擇，使 LM loss 下降、pattern-IC 範圍分數上升；4-gram
+重複／唯一性軸提供相反證據（其兩個代數等價的凍結名稱只畫一次）。
+\textbf{右}：以 $\pm60$\,ms 移動名目 0.5--2\% 的音符，平均時值誤差的
+跨譜中位數仍為零，最近格點配對把約 70\% 的音符重新配回 6\,ms 內；
+音符序列 LM 偵測到間隔改變（淨方向 $+0.77$ 至 $+0.87$）。}
+\label{fig:complementarity}
+\end{figure*}
+
+兩個借來的指標在損壞下反號（\figref{fig:complementarity} 左）。
+\emph{Perplexity 獎勵常見模式}：perplexity 是一張譜平均逐音符 trigram
+loss 的指數。發展組人類譜平均為 9.44；向 LM 最常見模式改寫，使
+perplexity 下降 37\%（9.44 $\to$ 5.98）。Dance Dance Convolution 把
+perplexity 作為保留人類譜上的模型適配度~\cite{donahue2017ddc}；若移植到
+生成結果作為無參照品質讀數，通常的「越低越好」解讀便會偏好受損譜。這是
+似然／品質背離~\cite{theis2016note}的譜面層級實例。一個 LM 產生改寫、
+另一個 LM 評分時，反轉仍然存在（9.44 $\to$ 6.04，$-36\%$）。
+pattern-IC 範圍分數移向其人類範圍，且隨三個劑量上升。因此，校準無法單獨
+修復 C5：這一軸量的是典型性，而改寫後的譜可以在失去多樣性時變得更典型。
+有效的 4-gram 軸（\secref{sec:dependency}）在發展組上從 0.99 降至
+0.87。\emph{結構度獎勵崩解}：以譜面自身最主要的 4-gram 循環取代
+原譜，使自相似結構度~\cite{wu2020jazz}上升 62\%（0.0848 $\to$ 0.1370）、
+集合層級 Self-BLEU~\cite{zhu2018texygen}從 0.845 上升至 0.898——
+copy-paste 輸出依構造會更加自相似——而 4-gram 重複／唯一性分數
+則從 0.99 降至 0.83。
+
+另外兩項觀察結果補足論證。\emph{方向不穩定}：對
+\secref{sec:systemresults} 兩個公開可得、輸出位於人類語料高 entropy 側的
+太鼓生成器，perplexity 以預期方向區分人類與生成譜（AUC 0.80）；但
+C5 證明相同讀法在低 entropy 側會反轉。若帶號品質指標的
+符號取決於系統位在人類分佈的哪一側，它便不能用來排名；同難度範圍分數把
+兩側一致解讀為偏離典型性。C5 顯示該分數為何必須與 4-gram
+重複／唯一性軸合併閱讀。\emph{譜長混淆}：在相同系統池上，
+type--token ratio 與音符數的相關為 $|\rho|=0.85$，distinct-2 為 $0.56$，
+範圍分數則至多為 $0.28$。
+
+\subsection{外部音樂時間揭露整體錯位}
+\label{sec:anchorresults}
+
+地板在此失守：一張譜的密度、pattern 與音符類型——主要只讀譜面
+讀數——可以看似合理，同時相對音樂偏晚。C2 把每個音符平移相同的 15、30
+或 60\,ms。在發展組上，沒有任何主要只讀譜面輸出，變化超過 0.03 個人類
+標準差。這符合預期：只讀取間隔與音符類型的測量，在所有時間平移同量時
+不會改變。
+
+最近格點配對也錯過平移，因為密格線把每個音符配到另一個鄰近點。格線相位
+偏移搜尋則從兩種參照來源都回收精確中位數 15.00、30.00 與 60.00\,ms。每個
+來源、每個平移量下，至少 169/170 張譜落在注入值的 3\,ms 內。連打首音
+onset 支持度測量也在音符 onset 處偵測到平移（各強度淨方向 $-0.74$ 至
+$-0.88$），並在音符時間保留時保持不變。在密集時值
+抖動（C1）下，每張譜在每個強度的 6\,ms 內音符比例都下降；$\pm10$\,ms
+時，測得容差外比例的中位數為 0.40，符合
+$P(|U(-10,10)|>6)=0.4$。
+
+\subsection{不同測量抓到不同缺陷}
+\label{sec:complementarity}
+
+三種損壞顯示結果為何必須維持分開（\figref{fig:complementarity}、
+\figref{fig:responsemap}）：
+
+\begin{itemize}
+\item \textbf{C2 整體平移}對每個主要只讀譜面測量與最近格點配對都不可見；
+  格線相位偏移搜尋與連打首音 onset 支持度能偵測它。
+\item \textbf{C1s 稀疏時值錯誤}多數被最近格點重新配對，因此平均時值誤差的
+  跨譜中位數維持為零。音符序列 LM 反應強烈，因為移動一個音符會改變兩個
+  相鄰間隔；密度實質不變，形式只有微弱反應。
+\item \textbf{C5 常見模式改寫}在發展組降低 perplexity、提高 pattern-IC
+  範圍適配；確認性 pattern-IC 區間跨過零，raw NLL 仍下降。有效的
+  4-gram 重複／唯一性檢驗惡化，提供跨軸涵蓋。
+\end{itemize}
+
+每一組都漏掉另一組能偵測的缺陷。若將它們平均，便需要目前證據無法提供的
+權衡權重。
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{figs/figC_coupling.pdf}
+\caption{14 個非冗餘 calibrated chart-only scores 對各損壞在發展組最大
+強度下的反應，包含 band-typicality scores 與單側 checks。紅色表示分數
+下降；藍色表示上升。數值以人類參照譜的標準差為單位，截斷於 $\pm4$。
+黑框標示先在發展組選定、再凍結供確認的目標列，並非統計顯著性。
+矩陣不是對角的：時值抖動也改變局部 pattern 分數，因為那些 pattern 包含
+量化音符間隔。C1s 使用名目 0.5--2\% 劑量，實際數量為
+$\max(1,\operatorname{round}(np))$，所以格子偏淡；
+\figref{fig:complementarity} 的原始音符序列測量仍能偵測。完整的釋出測量
+矩陣隨指標紀錄提供。}
+\label{fig:responsemap}
+\end{figure*}
+
+\subsection{系統 profiles}
+\label{sec:systemresults}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{figs/figB_timing_tiers.pdf}
+\caption{受評系統在 40 首發展歌曲上的時值，使用作者編定格線。每條顯示
+落在 6\,ms 內、6--12、12--18、18\,ms 以上或未配對的平均音符比例；$n$
+為譜數。右側顯示 6\,ms 內比例的第 10 百分位、中位數、第 90 百分位與最差
+譜面。近乎為一的人類列，是以其作者編定小節 metadata 作為參照的一致性
+檢查，不是模型結果。}
+\label{fig:tiers}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.96\textwidth]{figs/figE_difficulty.pdf}
+\caption{Mapperatorinator 在配對發展譜上的探索性難度 profile。Easy 至 Oni
+各含 40 個歌曲--course 配對；Ura 含 10 個。(a) 與 (c) 的點為中位數，
+豎線跨第 10 至 90 百分位。\textbf{(a)} 生成／人類音符率比；1 表示密度
+相等。Easy 至 Ura 的中位比例依序為 2.15、2.35、1.93、1.31、1.07。
+\textbf{(b)} 依宣告角色分列的 calibrated score 中位數。四欄是
+band-typicality scores，1 表示位於範圍內；轉移熟悉度是單側分數，越大
+越好。\textbf{(c)} 音符落在作者編定格線 6\,ms 內的比例。時值不隨
+course 單調改善。可支持的發現更窄：音符率、短間隔與局部 pattern 的不匹配
+集中於 Easy 至 Hard。}
+\label{fig:difficulty}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{figs/figD_profile_matrix.pdf}
+\caption{人類參照與兩個使用太鼓音符類型的生成器，在發展組上的分開結果。
+第一欄是音符落在格線 6\,ms 內的中位比例；其餘格為 0 至 1 的 calibrated
+scores。音符率、短間隔、局部 pattern、4-gram 重複／唯一性檢驗各欄的 1
+表示中位數落在人類範圍；轉移熟悉度是單側分數，越大越好。兩個生成器在
+不同欄位上偏離：TaikoNation 在序列與 4-gram 軸，Mapperatorinator 在
+音符率與短間隔負荷。右側符號以中位閾值 0.5
+分開顯示過載、尖峰與可玩性檢查。其他音符格式只出現在時值比較
+（\figref{fig:tiers}）。人類轉移熟悉度分數為 0.75，因為在其他歌曲上訓練
+的 LM 仍會遇到未見的 trigrams；這是該欄的人類參照水準。}
+\label{fig:profiles}
+\end{figure*}
+
+發展組的系統 profiles 中，兩個問題彼此分離。
+圖~\ref{fig:tiers}--\ref{fig:profiles} 展示單一數字掩蓋
+重要差異的兩種方式。
+
+\textbf{相似的時值比例可能源自不同問題。} 兩個太鼓系統落在 6\,ms 內的
+音符中位比例幾乎相同（0.59 與 0.58），其餘時值行為卻不同：
+Mapperatorinator 有 10\% 的相鄰間隔超出相對容差，TaikoNation 則為
+41\%。格線相位偏移搜尋得到 26 與 55\,ms 的中位偏移；最近格點配對對兩者卻都
+報告不到 1\,ms 的 6\,ms deadzone 外平均誤差。TaikoNation 的譜面活動與
+音訊能量也幾乎無關（相關 $-0.003$），音符落在平均能量的 frame 上。DDC
+onset 系統在相同音訊上得到 2.5\,ms 偏移，可作為共享解碼偏移的控制。
+與 Mapperatorinator 共用 osu! 轉換路徑的 AutoOsu 讀出 19\,ms 中位偏移；
+不同的數值排除了共同轉換常數作為唯一解釋（\secref{sec:systems}）。
+
+\textbf{指定 course 會改變讀數。} Mapperatorinator 的生成／人類音符率比，
+從 Easy、Normal 的 2.15--2.35 降至 Oni 的 1.31 與 Ura 的 1.07
+（\figref{fig:difficulty}）。其音符率、短間隔與局部 pattern 分數在 Easy
+至 Hard 低於 0.5，在 Oni 與 Ura 則接近 1。時值沒有相同趨勢：落在 6\,ms
+內的中位比例依序為 0.56、0.60、0.59、0.57 與 0.62。因此，可支持的主張是
+難度不匹配，而非高難度下的全面改善。TaikoNation 只有單一設定；在該設定
+下，音符率與短間隔負荷落在人類範圍，卻有 55\% 的 trigrams 未見於依
+難度訓練的 LM，重複 4-gram rate 為 0.004。這些是不同弱點，不能作為
+單一總排名的基礎。
+
+\section{討論}\label{sec:discussion}
+
+ChartGenEval 的貢獻位於指標套件層級：每項輸出都有宣告的構念、解讀
+角色與證據層級；各維度保持分開，因為時值偏移、不熟悉的轉移、密度
+不匹配與結構停滯，描述的是不同問題。凍結確認承載保留資料證據
+（\secref{sec:sensitivity}）；其餘本文提出的元件維持僅有發展證據的
+狀態。
+
+\textbf{非典型是警示，不是品質判決。} 地板是必要條件而非充分條件：在
+地板之上，品質容許多種答案。受控損壞顯示，已知損壞傾向把分數
+推出人類範圍，卻不能證明所有不尋常的譜都不好。若一張譜仍可玩、貼合音樂
+且保留可學習的 pattern，不尋常數值可能反映創意選擇；若其他檢查也失敗，
+相同數值才更支持失效解讀。兩者仍需人類判斷加以區分。距離尺度可協助理解
+大幅偏離：發展組人類譜在序列軸上的最大值為 4.8 個半範圍寬，
+Mapperatorinator 與 TaikoNation 的中位數則分別為 2.1 與 12。本文只有
+\secref{sec:systemresults} 的 course 不匹配，完整示範了如何合併解讀這些
+訊號。
+
+\textbf{超越單一遊戲。} 時值與音樂呼應測量只讀音符時間，因此可原樣施用
+於三種音符格式。序列、形式與距離測量還需要目標遊戲的 tokenizer，以及
+供校準的人類譜；lane、位置或方向 token 都可取代太鼓音符類型。受控損壞
+作用於一般的定時、定型事件，因此相同設計可以測試哪些宣告反應
+能轉移到另一款遊戲。位置型遊戲仍需移動成本、手部分配與旋轉等額外檢查；目前測量不涵蓋
+這些要求。
+
+\textbf{效度範圍。} 受控損壞只確立對注入缺陷的敏感度，並未建立以玩家或
+專家評分為效標的效度。九種損壞不窮盡譜面品質：配錯歌曲、刪除音樂上
+重要的音符、刻意把音符放在格點之間等情況仍未測試。所報方向是群體結果，
+個別譜面在損壞後仍可能移向人類範圍。五項本文提出且僅有發展證據的元件，在提出更強
+品質主張前，仍需未接觸資料確認或玩家研究。凍結 C5 契約也曾把重複與表面
+多樣性當成兩個共同主要測量；其代數等價性只留下單一有效檢驗，未來確認應
+改用不等價的結構測量。
+
+\textbf{外部效度。} 人類範圍由單一遊戲、曲風廣度未明的語料定義。其他
+音符格式的系統只受評時值與音樂呼應，而且每個系統都只以其公開設定的一個
+seed 執行。發展歌曲與系統訓練語料可能重疊，本研究未加以控制。各格式轉換
+偏移雖受 \secref{sec:systemresults} 的共用路徑比較約束，仍無法完全排除。因此，
+系統 profiles 是比較性描述，不是排行榜。
+
+\textbf{測量與推論。} 時值與序列反應會重疊，因為序列 token 包含音符間隔
+（\figref{fig:responsemap}）。時值 clean rate 會懲罰新增的離格音符，卻
+沒有參照 recall 項，因此刪除可能提高分數；沒有外部格線時，這項測量也
+無法計算。正式確認使用作者編定格線，音訊估計格線只有發展證據。course 先在
+歌曲內平均，因此歌曲是推論單位；同一作者跨歌曲可能造成的依賴尚未建模。
+確定性的五 seed replicates 先在譜內平均，從未當成額外樣本。
+
+\FloatBarrier
+
+\section{結論}\label{sec:conclusion}
+
+我們提出 ChartGenEval，一套以地板優先觀點建立的節奏遊戲譜面六維度
+指標套件。時值是音樂貼合度的地板，套件只以官方譜面的作者編定時值圖
+測量它，從不使用其音符位置。在地板之上，本文提出的元件刻畫音樂呼應、
+長程結構與距人類譜的距離；既有譜面統計量的難度條件化版本，則補足
+序列、重複、密度與限制讀數。原始描述、雙側典型性與單側檢查
+保留各自角色，不合成整體分數。
+
+受控損壞支持九個非冗餘保留資料檢驗；其餘本文提出的
+元件目前只有發展證據。相同實驗也解釋套件為何必須維持分開：
+perplexity 可能獎勵常見
+模式改寫，自相似度可能獎勵循環崩解，主要只讀譜面輸出則無法偵測相對音樂
+的整體平移。整譜格線相位偏移補上最後這個盲點，又不把單一參照音符序列
+視為答案。這些發現確立目前語料與設計範圍內的損壞敏感度。
+
+施用於公開生成器後，分開輸出揭露單一排名會掩蓋的時值、序列、密度與
+course 特定弱點。我們於 \artifacturl{} 釋出實作與證據。未來的譜面指標
+可以先宣告所服務的構念與角色，再證明它會對目標缺陷作出相應反應，並在
+指定不變性控制下保持穩定，據此納入套件。
+
+\section*{倫理聲明}
+本研究使用 \secref{sec:data} 所述、自網路來源蒐集的社群轉錄譜面與
+對應音訊；這些潛在受版權保護的譜面與音訊不隨本文再散布。本研究不涉及
+個人資料。更好的自動評估主要惠及玩家與小型開發者。
+自動化內容農場仍是可能的濫用途徑，應由平台政策與審核機制處理。
+
+\section*{AI 使用聲明}
+AI 助理在作者指導下用於實驗編排、起草與編輯；所有數字皆由釋出程式碼
+產生、獨立重算並由作者查核。
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
