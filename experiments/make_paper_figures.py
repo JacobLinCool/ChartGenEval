@@ -54,6 +54,21 @@ plt.rcParams.update({"font.size": 8, "axes.titlesize": 8.5, "axes.labelsize": 8,
                      "ytick.labelsize": 7.5, "lines.linewidth": 1.4,
                      "lines.markersize": 4})
 
+# Display names for the evaluated systems, matching the formal names used in
+# the paper body rather than the lowercase record keys.
+DISPLAY_NAMES = {
+    "official": "human reference",
+    "mapperatorinator": "Mapperatorinator",
+    "taikonation": "TaikoNation",
+    "genelive": "GenéLive!",
+    "ddconset": "DDC onset",
+    "autoosu": "AutoOsu",
+}
+
+
+def display_name(system):
+    return DISPLAY_NAMES.get(system, system)
+
 
 def jrows(path):
     return [json.loads(l) for l in open(path) if l.strip()]
@@ -256,7 +271,7 @@ def figB(ext_records, out):
     for s in systems:
         rs = by_system[s]
         B = np.array([timing_buckets(r) for r in rs])
-        display = "human reference" if s == "official" else s
+        display = "human reference" if s == "official" else display_name(s)
         label = f"{display} (n={len(rs)})"
         tier_rows.append({"buckets": B.mean(axis=0)})
         labels.append(label)
@@ -355,10 +370,20 @@ def figC(probe_records, out):
         for j, p in enumerate(probes):
             if (m, p) in targets:
                 ax.add_patch(plt.Rectangle((j - 0.5, i - 0.5), 1, 1, fill=False,
-                                           edgecolor="black", lw=1.4))
+                                           edgecolor="black", lw=1.6))
+                # A signed value inside each frozen-target cell gives a second,
+                # non-color cue that survives grayscale printing and color
+                # vision differences.
+                val = cells[m].get(p)
+                if val is not None:
+                    ax.text(j, i, f"{val:+.1f}", ha="center", va="center",
+                            fontsize=5.6, fontweight="bold",
+                            color="white" if abs(val) > 1.6 else "#1a1a1a")
     cb = fig.colorbar(im, ax=ax, shrink=0.85)
     cb.set_label("change at highest strength (human SD, clipped ±4)")
-    ax.set_title("Calibrated chart-only scores under controlled damage")
+    ax.set_title("Calibrated chart-only scores under controlled damage\n"
+                 "black outline = frozen target; red = score falls, blue = rises",
+                 fontsize=8)
     fig.tight_layout()
     save(fig, out, "figC_coupling")
 
@@ -390,14 +415,19 @@ def figD(probe_records, ext_records, profiles, out):
         row = {cols[0][0]: float(np.median(timing[sys_]))}
         for label, key in cols[1:]:
             row[label] = med(chartside[sys_], key)
-        display = "human reference" if sys_ == "official" else sys_
+        display = "human reference" if sys_ == "official" else display_name(sys_)
         scores[display] = row
         constraints[display] = {n: (med(chartside[sys_], k) or 0) >= 0.5 for n, k in con_keys.items()}
-    fig, ax = plot_profile(
+    # Draw into a fixed ~text-width canvas so the rendered figure is close to
+    # 1:1 in the paper and its cell text stays legible (roughly 8 pt) instead
+    # of being downscaled from an oversized auto-sized figure.
+    fig, ax = plt.subplots(figsize=(6.9, 2.25))
+    plot_profile(
         scores,
         columns=[c for c, _ in cols],
         constraints=constraints,
         outline_failed_rows=False,
+        ax=ax,
     )
     fig.tight_layout()
     save(fig, out, "figD_profile_matrix")
@@ -513,7 +543,7 @@ def figE(probe_records, mapper_records, timing_records, out, tables_out):
     print("wrote", table_path)
 
     fig = plt.figure(figsize=(6.9, 3.0), layout="constrained")
-    gs = fig.add_gridspec(1, 3, width_ratios=(1.05, 2.35, 1.05), wspace=0.38)
+    gs = fig.add_gridspec(1, 3, width_ratios=(1.2, 2.0, 1.2), wspace=0.32)
     x = np.arange(len(courses))
 
     ax = fig.add_subplot(gs[0, 0])
@@ -524,7 +554,7 @@ def figE(probe_records, mapper_records, timing_records, out, tables_out):
     ax.axhline(1, color="#777777", lw=0.8, ls="--")
     ax.vlines(x, ratio_q[:, 0], ratio_q[:, 2], color=OURS_C, lw=2)
     ax.scatter(x, ratio_q[:, 1], color=OURS_C, s=26, zorder=3)
-    ax.set_title("(a) Generated / human\nnote rate", fontweight="bold")
+    ax.set_title("(a) Note-rate ratio", fontweight="bold", loc="left")
     ax.set(xticks=x, xticklabels=short_labels, xlabel="course", ylabel="ratio",
            ylim=(0.6, max(3.2, ratio_q[:, 2].max() + 0.1)))
     ax.grid(axis="y", color="#e6e6e6", lw=0.6)
@@ -534,7 +564,7 @@ def figE(probe_records, mapper_records, timing_records, out, tables_out):
     ax = fig.add_subplot(gs[0, 1])
     matrix = np.array([[r[metric] for _, metric in DIFFICULTY_PLOT_METRICS] for r in summary])
     im = ax.imshow(matrix, cmap="Blues", vmin=0, vmax=1, aspect="auto")
-    ax.set_title("(b) Calibrated scores by declared role", fontweight="bold")
+    ax.set_title("(b) Calibrated scores", fontweight="bold", loc="left")
     ax.set_yticks(x)
     ax.set_yticklabels([f"{label}  n={row['n']}" for label, row in zip(labels, summary)])
     ax.set_xticks(np.arange(len(DIFFICULTY_PLOT_METRICS)))
@@ -545,7 +575,7 @@ def figE(probe_records, mapper_records, timing_records, out, tables_out):
                     fontsize=6.5, color="white" if matrix[i, j] > 0.55 else "#1a1a1a")
     cb = fig.colorbar(im, ax=ax, fraction=0.035, pad=0.03)
     cb.set_ticks([0, 0.5, 1])
-    cb.set_label("score (higher = better by declared role)")
+    cb.set_label("score")
 
     ax = fig.add_subplot(gs[0, 2])
     timing_q = np.array([
@@ -554,7 +584,7 @@ def figE(probe_records, mapper_records, timing_records, out, tables_out):
     ])
     ax.vlines(x, timing_q[:, 0], timing_q[:, 2], color=BASE_C, lw=2)
     ax.scatter(x, timing_q[:, 1], color=BASE_C, s=26, zorder=3)
-    ax.set_title("(c) Notes within\n6 ms of the grid", fontweight="bold")
+    ax.set_title("(c) Within-6 ms fraction", fontweight="bold", loc="left")
     ax.set(xticks=x, xticklabels=short_labels, xlabel="course",
            ylabel="fraction of notes", ylim=(0, 1.02))
     ax.grid(axis="y", color="#e6e6e6", lw=0.6)

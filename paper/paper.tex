@@ -17,9 +17,26 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{placeins}
+\usepackage{needspace}
+\usepackage{balance}
 \usepackage{titlesec}
 \titlespacing*{\section}{0pt}{1.1em}{0.5em}
 \titlespacing*{\subsection}{0pt}{0.9em}{0.4em}
+
+% Discourage widows and orphans (e.g. the stray "a leaderboard." tail).
+\widowpenalty=10000
+\clubpenalty=10000
+% Give the many full-width floats more room so figure-heavy pages pack
+% tighter and leave fewer half-empty columns.
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\bottomfraction}{0.85}
+\renewcommand{\textfraction}{0.06}
+\renewcommand{\floatpagefraction}{0.72}
+\renewcommand{\dbltopfraction}{0.92}
+\renewcommand{\dblfloatpagefraction}{0.72}
+\setcounter{topnumber}{3}
+\setcounter{dbltopnumber}{3}
+\setcounter{totalnumber}{5}
 
 \newcommand{\secref}[1]{Section~\ref{#1}}
 \newcommand{\figref}[1]{Figure~\ref{#1}}
@@ -145,11 +162,11 @@ exploratory candidate evidence distinct from held-out confirmation.
 \includegraphics[width=0.96\textwidth]{figs/fig0_overview.pdf}
 \caption{Overview of the evaluation. We start from a human chart, add
 one known flaw at three strengths, and test the declared response of
-each ChartGenEval component. Chart-side statistics are interpreted
-relative to human charts at the requested difficulty. Timing uses the
-matched official chart's authored timing map without using its note
-placements; an audio-estimated grid serves as the fallback. Six dimensions
-remain separate because they answer different questions.}
+each ChartGenEval component. Chart-side statistics are read relative to
+human charts at the requested difficulty; timing uses the matched
+official chart's authored timing map, never its note placements, with an
+audio-estimated grid as the fallback. The six dimensions stay separate
+because they answer different questions.}
 \label{fig:overview}
 \end{figure*}
 
@@ -236,27 +253,30 @@ with the strongest evidence available in this study.
 
 \begin{table*}[t]
 \centering
-\scriptsize
-\setlength{\tabcolsep}{3.2pt}
-\begin{tabular}{@{}p{0.105\textwidth}p{0.31\textwidth}p{0.19\textwidth}p{0.13\textwidth}p{0.20\textwidth}@{}}
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}p{0.135\textwidth}p{0.375\textwidth}p{0.165\textwidth}p{0.235\textwidth}@{}}
 \toprule
-Construct & Primary output and reading & Required anchor & Origin & Evidence tier \\
+Construct & Primary output and reading & Origin & Evidence tier \\
 \midrule
-Timing & Grid clean rate and residual tail; whole-chart grid-phase offset & Authored timing map or audio-estimated grid & Proposed chart-to-grid profile & C1, C1s, and C2 confirmation \\
-Note sequence & LM loss as description; unseen-transition penalty as one-sided familiarity check & Course-conditioned training LM & Adapted n-gram statistics & C3 confirmation for transition familiarity \\
-Repetition and form & 4-gram typicality; ABAB reciprocity; stagnation--alienation structural proxy (\texttt{boredom\_v2}) & Course band; metrical grid for new structure measures & Adapted 4-gram score; two proposed measures & C4, C5, C8 confirmation for one 4-gram axis; new measures development only \\
-Response to music & Bar-level density--energy rank correlation; run-head onset support & Audio mel spectrogram; grid for bar windows & Two proposed measures & Development only \\
-Human-chart distance & Mean distance to 20 nearest training charts in a 32-dimensional chart representation & Course-specific human reference cloud & Proposed chart-specific instantiation & Development only \\
-Difficulty and limits & Density and strain typicality; overload and local density-spike limits & Same-course training charts & Adapted statistics and proposed calibration & C6 and C7 confirmation for density typicality and spike limit \\
+Timing & Grid clean rate and residual tail; whole-chart grid-phase offset & Proposed chart-to-grid profile & C1, C1s, C2 confirmation \\
+Note sequence & LM loss as description; unseen-transition penalty as a one-sided familiarity check & Adapted $n$-gram statistics & C3 confirmation (transition familiarity) \\
+Repetition and form & 4-gram typicality; ABAB reciprocity; stagnation--alienation proxy (\texttt{boredom\_v2}) & Adapted 4-gram score; two proposed measures & C4, C5, C8 confirmation (one 4-gram axis); new measures development only \\
+Response to music & Bar-level density--energy rank correlation; run-head onset support & Two proposed measures & Development only \\
+Human-chart distance & Mean distance to 20 nearest training charts in a 32-dimensional chart representation & Proposed chart-specific instantiation & Development only \\
+Difficulty and limits & Density and strain typicality; overload and density-spike limits & Adapted statistics; proposed calibration & C6, C7 confirmation (density typicality, spike limit) \\
 \bottomrule
 \end{tabular}
-\caption{ChartGenEval constructs, origins, and evidence boundaries.
-``Proposed'' marks operationalizations defined in this work; their
-primitive statistics may themselves be established. ``Confirmation'' refers
-only to the named frozen outputs. Development-only components were
-selected and revised on the 40-song development panel and were absent
-from the frozen primary tests. Criterion validity against player judgments
-lies outside every evidence tier.}
+\caption{ChartGenEval constructs, origins, and evidence boundaries. Each
+construct's required timing, audio, grid, or reference anchor is given
+in Methods (\secref{sec:data}, \secref{sec:layers}). ``Proposed'' marks
+operationalizations defined in this work; their primitive statistics may
+themselves be established. ``Confirmation'' refers only to the named
+frozen outputs. Development-only components were selected and revised on
+the 40-song development panel and were absent from the frozen primary
+tests. Criterion validity against player judgments lies outside every
+evidence tier.}
 \label{tab:suite}
 \end{table*}
 
@@ -447,9 +467,7 @@ serve as a timing reference.
 nearest-grid matching can pair shifted notes with different subdivision
 points and report small local errors. \textbf{Right:} we test candidate
 chart offsets and choose the one with the strongest grid agreement. The
-grids are as in \figref{fig:overview}: the authored timing map is
-primary, audio-estimated downbeats are the fallback, and neither comes
-from the generator's own output.}
+grids are as in \figref{fig:overview}.}
 \label{fig:timing}
 \end{figure*}
 
@@ -666,7 +684,7 @@ detects the rewrite that pattern-IC and LM likelihood do not label as
 damage. Testing independent complementarity requires a genuinely
 non-equivalent preregistered structure measurement.
 
-\subsection{Development behavior of the proposed components}
+\subsection{Behavior of the proposed components}
 \label{sec:newmetricresults}
 
 The development-only components in \tabref{tab:suite} were assessed as
@@ -702,7 +720,7 @@ evidence boundary shown in \tabref{tab:suite}. A released development
 table records the response of each of the five components to all nine
 corruptions.
 
-\subsection{Isolated proxies can reward known damage}
+\subsection{Isolated proxies can reward damage}
 \label{sec:reductio}
 
 \begin{figure*}[t]
@@ -711,16 +729,14 @@ corruptions.
 \caption{Two cases in which one measurement misses a flaw and another
 detects it. Bars show the fraction of charts moving up minus the
 fraction moving down relative to the intact chart; light to dark marks
-the three strengths on the development panel (descriptive, not
-independent-chart confidence statements). \textbf{Left:} rewriting notes
-toward the LM's most common choice lowers LM loss and raises the
-pattern-IC band score; the 4-gram repetition/uniqueness axis provides
-the contrasting evidence (its two algebraically equivalent frozen names
-are plotted once). \textbf{Right:} moving a nominal 0.5--2\% of notes by
-$\pm$60\,ms leaves the mean timing error at a cross-chart median of
-zero, and nearest-grid matching re-pairs about 70\% of these notes
-within 6\,ms; the note-sequence LM detects the changed intervals (net
-directions $+0.77$ to $+0.87$).}
+the three corruption strengths on the development panel (descriptive,
+not independent-chart confidence statements). \textbf{Left:}
+common-pattern rewriting lowers LM loss and raises the pattern-IC band
+score, while the 4-gram repetition/uniqueness axis moves the other way
+(its two algebraically equivalent frozen names are plotted once).
+\textbf{Right:} sparse $\pm$60\,ms timing errors leave the mean timing
+error near zero and are mostly re-paired by the nearest grid, while the
+note-sequence LM responds to the changed intervals.}
 \label{fig:complementarity}
 \end{figure*}
 
@@ -762,7 +778,7 @@ axis. \emph{Length confounds}: on the same pool, type--token
 ratio correlates with note count at $|\rho|=0.85$ and distinct-2 at
 $0.56$, against at most $0.28$ for the band scores.
 
-\subsection{External musical time reveals global misalignment}
+\subsection{External time reveals global misalignment}
 \label{sec:anchorresults}
 
 This is where the floor gives way: a chart can have plausible
@@ -814,18 +830,15 @@ would require trade-off weights that the evidence does not provide.
 \centering
 \includegraphics[width=0.92\textwidth]{figs/figC_coupling.pdf}
 \caption{How 14 nonredundant calibrated chart-only scores respond to
-each corruption at maximum strength on the development panel. They include band-typicality
-scores and one-sided checks. Red means the
-score falls; blue means it rises.
-Values are measured in standard deviations of the human reference
-charts and clipped at $\pm4$. Black boxes mark the target rows selected
-in development and subsequently frozen for confirmation; they do not
-mark statistical significance. The matrix is not diagonal:
-timing jitter also changes local pattern scores because those patterns
-include quantized note intervals. C1s uses nominal 0.5--2\% doses with actual
-count $\max(1,\operatorname{round}(np))$, so its cells are pale; the raw note-sequence measurement in
-\figref{fig:complementarity} detects it. The complete released
-measurement matrix is included with the metric records.}
+each corruption at maximum strength on the development panel. Cells
+cover band-typicality scores and one-sided checks. Red means the score
+falls, blue that it rises; values are in standard deviations of the
+human reference charts, clipped at $\pm4$. Black boxes mark the target
+rows selected in development and later frozen for confirmation; they do
+not mark statistical significance. C1s uses nominal 0.5--2\% doses, so
+its cells are pale; the raw note-sequence measurement in
+\figref{fig:complementarity} detects it. The complete released matrix
+ships with the metric records.}
 \label{fig:responsemap}
 \end{figure*}
 
@@ -836,12 +849,10 @@ measurement matrix is included with the metric records.}
 \centering
 \includegraphics[width=0.92\textwidth]{figs/figB_timing_tiers.pdf}
 \caption{Timing of the evaluated systems on the 40 development songs using
-the authored grid. Each bar shows the mean fraction of notes
-within 6\,ms, in the 6--12, 12--18, and above-18\,ms ranges, or
-unmatched. $n$ is the number of charts. The right strip shows the 10th
-percentile, median, 90th percentile, and worst chart for the
-within-6\,ms fraction. The near-unity human row is a consistency check on
-using its authored bar metadata as the reference, not a model result.}
+the authored grid. Each bar is the mean fraction of notes within 6\,ms
+and in the 6--12, 12--18, and above-18\,ms ranges, or unmatched; $n$ is
+the number of charts. The right strip shows the 10th percentile, median,
+90th percentile, and worst chart for the within-6\,ms fraction.}
 \label{fig:tiers}
 \end{figure*}
 
@@ -850,17 +861,13 @@ using its authored bar metadata as the reference, not a model result.}
 \includegraphics[width=0.96\textwidth]{figs/figE_difficulty.pdf}
 \caption{Exploratory difficulty profile for Mapperatorinator on paired
 development charts. Easy through Oni contain 40 song--course pairs; Ura
-contains 10. Dots are medians and vertical lines span the 10th to 90th
-percentiles in panels (a) and (c). \textbf{(a)} Generated-to-human
-note-rate ratio; 1 means equal density. Median ratios are 2.15, 2.35,
-1.93, 1.31, and 1.07 from Easy to Ura. \textbf{(b)} Median calibrated
-scores by declared role. Four columns are band-typicality scores, where
-1 means within range; familiar transitions is a one-sided score, where
-larger is better. \textbf{(c)} Fraction of
-notes placed within 6\,ms of the authored grid. Timing does not
-improve monotonically with course. The supported finding is narrower:
-the note-rate, short-interval, and local-pattern mismatch is
-concentrated in Easy through Hard.}
+contains 10. In panels (a) and (c), dots are medians and vertical lines
+span the 10th to 90th percentiles. \textbf{(a)} Generated-to-human
+note-rate ratio; 1 means equal density. \textbf{(b)} Median calibrated
+scores by declared role: four band-typicality columns, where 1 means
+within range, and one-sided familiar transitions, where larger is
+better. \textbf{(c)} Fraction of notes within 6\,ms of the authored
+grid.}
 \label{fig:difficulty}
 \end{figure*}
 
@@ -869,18 +876,14 @@ concentrated in Easy through Hard.}
 \includegraphics[width=0.92\textwidth]{figs/figD_profile_matrix.pdf}
 \caption{Separate development results for the human reference and the two
 generators that use Taiko note types. The first column is the median
-fraction of notes within 6\,ms of the grid. The other cells are calibrated
-scores between 0 and 1. For note rate, short intervals, local patterns,
-and the 4-gram repetition/uniqueness score, 1 means that the median lies within the human
-band; familiar transitions is one-sided and larger is better. The two
-generators depart on different columns: TaikoNation on sequence and the
-4-gram axis, Mapperatorinator on note rate and short-interval load.
-The symbols on the right show the overload, spike, and playability checks
-separately at a median threshold of 0.5. Other note formats appear only
-in the timing comparison (\figref{fig:tiers}). The human
-transition-familiarity score is 0.75 because an LM trained on other
-songs still encounters unseen trigrams; this is the human reference
-level for that column.}
+fraction of notes within 6\,ms of the grid; the other cells are
+calibrated scores in $[0,1]$. For note rate, short intervals, local
+patterns, and the 4-gram repetition/uniqueness score, 1 means the median
+lies within the human band; familiar transitions is one-sided (larger
+better), and even the human reference reads 0.75 because an LM still
+meets unseen trigrams. Symbols on the right show the overload, spike, and
+playability checks at a median threshold of 0.5. Other note formats
+appear only in the timing comparison (\figref{fig:tiers}).}
 \label{fig:profiles}
 \end{figure*}
 
@@ -888,7 +891,10 @@ In the development system profiles the two questions dissociate.
 Figures~\ref{fig:tiers}--\ref{fig:profiles} show two ways in which a
 single number would average away important differences.
 
-\textbf{Similar timing fractions can have different causes.} The two
+\textbf{Similar timing fractions can have different causes.} In
+\figref{fig:tiers}, the near-unity human row is a consistency check on
+using the authored bar metadata as the reference, not a model result.
+The two
 Taiko systems place nearly the same median fraction of notes within
 6\,ms (0.59 and 0.58). Their remaining timing behavior differs.
 Mapperatorinator places 10\% of adjacent intervals outside the relative
@@ -1035,6 +1041,7 @@ AI assistants were used for experiment orchestration, drafting, and
 editing under author direction; all numbers were produced by the
 released code, independently recomputed, and checked by the authors.
 
+\balance
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 

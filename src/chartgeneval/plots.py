@@ -141,18 +141,22 @@ def plot_profile(
                 dark = (M[i, j] - vmin) / max(vmax - vmin, 1e-9) > 0.55
                 ax.text(
                     j, i, fmt.format(M[i, j]),
-                    ha="center", va="center", fontsize=7.5,
+                    ha="center", va="center", fontsize=8.5,
                     color="white" if dark else "#1a1a1a",
                 )
+    if con_names:
+        # Separate the pass/fail checks from the score heatmap with a light
+        # divider so the glyphs read as their own labelled columns.
+        ax.axvline(len(columns) - 0.5 + 0.28, color="#bbbbbb", lw=0.8)
     for k, name in enumerate(con_names):
-        x = len(columns) - 0.5 + 0.6 + k * 0.62
-        ax.text(x, -0.85, name, ha="center", va="bottom", fontsize=6.5, rotation=45)
+        x = len(columns) - 0.5 + 0.62 + k * 0.62
+        ax.text(x, -0.72, name, ha="center", va="bottom", fontsize=7.5, rotation=30)
         for i, s in enumerate(systems):
             v = (constraints.get(s) or {}).get(name)
             glyph, color = ("✓", "#1e8449") if v else ("✗", BASE_C)
             if v is None:
                 glyph, color = "—", "#888888"
-            ax.text(x, i, glyph, ha="center", va="center", color=color, fontsize=9)
+            ax.text(x, i, glyph, ha="center", va="center", color=color, fontsize=11)
         if constraints and any((constraints.get(s) or {}).get(name) is False for s in systems):
             pass
     for i, s in enumerate(systems):

@@ -9,6 +9,8 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{placeins}
+\usepackage{needspace}
+\usepackage{balance}
 \usepackage{titlesec}
 \usepackage{fontspec}
 \usepackage{xeCJK}
@@ -16,6 +18,19 @@
 \setCJKmainfont[BoldFont={Songti TC Bold}]{Songti TC}
 \titlespacing*{\section}{0pt}{1.1em}{0.5em}
 \titlespacing*{\subsection}{0pt}{0.9em}{0.4em}
+
+% 抑制寡行／孤行，並放寬浮動物件參數，讓圖表密集頁排得更緊、少留半空欄。
+\widowpenalty=10000
+\clubpenalty=10000
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\bottomfraction}{0.85}
+\renewcommand{\textfraction}{0.06}
+\renewcommand{\floatpagefraction}{0.72}
+\renewcommand{\dbltopfraction}{0.92}
+\renewcommand{\dblfloatpagefraction}{0.72}
+\setcounter{topnumber}{3}
+\setcounter{dbltopnumber}{3}
+\setcounter{totalnumber}{5}
 
 \renewcommand{\abstractname}{摘要}
 \renewcommand{\refname}{參考文獻}
@@ -178,35 +193,34 @@ ChartGenEval 把 profile 建構與損壞敏感度測試分開。套件先定義�
 
 \begin{table*}[t]
 \centering
-\scriptsize
-\setlength{\tabcolsep}{3.2pt}
-\begin{tabular}{@{}p{0.105\textwidth}p{0.31\textwidth}p{0.19\textwidth}p{0.13\textwidth}p{0.20\textwidth}@{}}
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}p{0.135\textwidth}p{0.375\textwidth}p{0.165\textwidth}p{0.235\textwidth}@{}}
 \toprule
-構念 & 主要輸出與解讀 & 必要錨點 & 來源 & 證據層級 \\
+構念 & 主要輸出與解讀 & 來源 & 證據層級 \\
 \midrule
 時值 & 格線容差內比例與殘差尾部；整譜格線相位偏移 &
-作者編定時值圖或音訊估計格線 & 本文提出的譜面對格線 profile &
-C1、C1s、C2 確認 \\
+本文提出的譜面對格線 profile & C1、C1s、C2 確認 \\
 音符序列 & LM loss 作為描述；未見轉移懲罰作為單側熟悉度檢查 &
-依難度條件化的訓練 LM & 改編的 n-gram 統計 &
-C3 對轉移熟悉度的確認 \\
-重複與形式 & 4-gram 典型性；ABAB 交互回應；停滯--疏離結構代理量
-（\texttt{boredom\_v2}） & 難度範圍；新結構測量另需節拍格線 &
-改編的 4-gram 分數；兩項本文提出的操作化 &
-C4、C5、C8 確認同一個 4-gram 軸；本文提出的操作化僅有發展證據 \\
+改編的 $n$-gram 統計 & C3 確認（轉移熟悉度） \\
+重複與形式 & 4-gram 典型性；ABAB 交互回應；停滯--疏離代理量
+（\texttt{boredom\_v2}） & 改編的 4-gram 分數；兩項本文提出的操作化 &
+C4、C5、C8 確認（單一 4-gram 軸）；新測量僅有發展證據 \\
 音樂呼應 & 小節層級密度--能量等級相關；連打首音 onset 支持度 &
-音訊 mel spectrogram；小節視窗另需格線 & 兩項本文提出的操作化 & 僅有發展證據 \\
+兩項本文提出的操作化 & 僅有發展證據 \\
 人類譜距離 & 32 維譜面表徵中，到 20 張最近訓練譜的平均距離 &
-各難度的人類參照點雲 & 本文提出的譜面專用實例 & 僅有發展證據 \\
-難度與限制 & 密度與負荷典型性；過載與局部密度尖峰限制 &
-同難度訓練譜 & 改編統計量與本文提出的校準 &
-C6、C7 分別確認密度典型性與尖峰限制 \\
+本文提出的譜面專用實例 & 僅有發展證據 \\
+難度與限制 & 密度與負荷典型性；過載與密度尖峰限制 &
+改編統計量；本文提出的校準 & C6、C7 確認（密度典型性、尖峰限制） \\
 \bottomrule
 \end{tabular}
-\caption{ChartGenEval 的構念、來源與證據邊界。「本文提出」表示操作化
-由本文界定，不代表其中每個基礎統計量都是新的。「確認」只指具名的凍結輸出。
-僅有發展證據的操作化是在 40 首歌的發展組上選擇與修訂，未納入凍結主要檢驗。
-任何證據層級都不代表已建立以玩家評分為效標的效度。}
+\caption{ChartGenEval 的構念、來源與證據邊界。各構念所需的時值、音訊、
+格線或參照錨點，見方法一節（\secref{sec:data}、\secref{sec:layers}）。
+「本文提出」表示操作化由本文界定，不代表其中每個基礎統計量都是新的。
+「確認」只指具名的凍結輸出。僅有發展證據的操作化是在 40 首歌的發展組上
+選擇與修訂，未納入凍結主要檢驗。任何證據層級都不代表已建立以玩家評分為
+效標的效度。}
 \label{tab:suite}
 \end{table*}
 
@@ -340,9 +354,7 @@ $\max(6\,\mathrm{ms},2.5\%\times\mathrm{IOI})$ 的容差比較。每個音符
 \includegraphics[width=0.94\textwidth]{figs/figT_timing_alignment.pdf}
 \caption{為何時值需要整譜估計。\textbf{左}：最近格點配對可能把被平移
 的音符配到不同細分點、報出很小的局部誤差。\textbf{右}：我們測試候選的
-整譜偏移，選擇格線一致性最強者。格線如\figref{fig:overview}：作者編定
-時值圖為主要格線，音訊估計 downbeat 為後備，兩種格線皆不取自生成器
-自己的輸出。}
+整譜偏移，選擇格線一致性最強者。格線如\figref{fig:overview}。}
 \label{fig:timing}
 \end{figure*}
 
@@ -516,7 +528,7 @@ nominal 95\% 區間為 $[-0.034,0.077]$；劑量統計量同樣跨過零
 檢驗抓到 pattern-IC 與 LM likelihood 未標為損壞的改寫。若要檢驗獨立
 互補性，必須事前指定真正不等價的結構測量。
 
-\subsection{本文所提元件在發展組上的行為}
+\subsection{本文所提元件的行為}
 \label{sec:newmetricresults}
 
 \tabref{tab:suite} 中僅有發展證據的元件，是以候選測量的身分評估，不提出
@@ -541,20 +553,19 @@ nominal 95\% 區間為 $[-0.034,0.077]$；劑量統計量同樣跨過零
 \tabref{tab:suite} 所示的證據邊界。釋出的發展表記錄五項元件對全部
 九種損壞的反應。
 
-\subsection{孤立代理量可能獎勵已知損壞}
+\subsection{孤立代理量可能獎勵損壞}
 \label{sec:reductio}
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.92\textwidth]{figs/figA_complementarity.pdf}
 \caption{一個測量漏掉缺陷、另一個測量加以偵測的兩個案例。長條顯示相對
-原譜上升的譜比例減下降比例；由淺至深標示發展組上的三個強度（描述性
-結果，非獨立譜信賴敘述）。\textbf{左}：把音符改寫向 LM
-最常見的選擇，使 LM loss 下降、pattern-IC 範圍分數上升；4-gram
-重複／唯一性軸提供相反證據（其兩個代數等價的凍結名稱只畫一次）。
-\textbf{右}：以 $\pm60$\,ms 移動名目 0.5--2\% 的音符，平均時值誤差的
-跨譜中位數仍為零，最近格點配對把約 70\% 的音符重新配回 6\,ms 內；
-音符序列 LM 偵測到間隔改變（淨方向 $+0.77$ 至 $+0.87$）。}
+原譜上升的譜比例減下降比例；由淺至深標示發展組上的三個損壞強度（描述性
+結果，非獨立譜信賴敘述）。\textbf{左}：常見模式改寫使 LM loss 下降、
+pattern-IC 範圍分數上升，4-gram 重複／唯一性軸則往反方向移動（其兩個
+代數等價的凍結名稱只畫一次）。\textbf{右}：稀疏的 $\pm60$\,ms 時值錯誤
+使平均時值誤差接近零、且多被最近格點重新配對，音符序列 LM 則對改變的
+間隔作出反應。}
 \label{fig:complementarity}
 \end{figure*}
 
@@ -585,7 +596,7 @@ C5 證明相同讀法在低 entropy 側會反轉。若帶號品質指標的
 type--token ratio 與音符數的相關為 $|\rho|=0.85$，distinct-2 為 $0.56$，
 範圍分數則至多為 $0.28$。
 
-\subsection{外部音樂時間揭露整體錯位}
+\subsection{外部時間揭露整體錯位}
 \label{sec:anchorresults}
 
 地板在此失守：一張譜的密度、pattern 與音符類型——主要只讀譜面
@@ -627,14 +638,11 @@ $P(|U(-10,10)|>6)=0.4$。
 \centering
 \includegraphics[width=0.92\textwidth]{figs/figC_coupling.pdf}
 \caption{14 個非冗餘 calibrated chart-only scores 對各損壞在發展組最大
-強度下的反應，包含 band-typicality scores 與單側 checks。紅色表示分數
-下降；藍色表示上升。數值以人類參照譜的標準差為單位，截斷於 $\pm4$。
-黑框標示先在發展組選定、再凍結供確認的目標列，並非統計顯著性。
-矩陣不是對角的：時值抖動也改變局部 pattern 分數，因為那些 pattern 包含
-量化音符間隔。C1s 使用名目 0.5--2\% 劑量，實際數量為
-$\max(1,\operatorname{round}(np))$，所以格子偏淡；
-\figref{fig:complementarity} 的原始音符序列測量仍能偵測。完整的釋出測量
-矩陣隨指標紀錄提供。}
+強度下的反應，涵蓋 band-typicality scores 與單側 checks。紅色表示分數
+下降、藍色表示上升；數值以人類參照譜的標準差為單位，截斷於 $\pm4$。
+黑框標示先在發展組選定、再凍結供確認的目標列，並非統計顯著性。C1s 使用
+名目 0.5--2\% 劑量，所以格子偏淡；\figref{fig:complementarity} 的原始
+音符序列測量仍能偵測。完整的釋出矩陣隨指標紀錄提供。}
 \label{fig:responsemap}
 \end{figure*}
 
@@ -647,8 +655,7 @@ $\max(1,\operatorname{round}(np))$，所以格子偏淡；
 \caption{受評系統在 40 首發展歌曲上的時值，使用作者編定格線。每條顯示
 落在 6\,ms 內、6--12、12--18、18\,ms 以上或未配對的平均音符比例；$n$
 為譜數。右側顯示 6\,ms 內比例的第 10 百分位、中位數、第 90 百分位與最差
-譜面。近乎為一的人類列，是以其作者編定小節 metadata 作為參照的一致性
-檢查，不是模型結果。}
+譜面。}
 \label{fig:tiers}
 \end{figure*}
 
@@ -658,12 +665,9 @@ $\max(1,\operatorname{round}(np))$，所以格子偏淡；
 \caption{Mapperatorinator 在配對發展譜上的探索性難度 profile。Easy 至 Oni
 各含 40 個歌曲--course 配對；Ura 含 10 個。(a) 與 (c) 的點為中位數，
 豎線跨第 10 至 90 百分位。\textbf{(a)} 生成／人類音符率比；1 表示密度
-相等。Easy 至 Ura 的中位比例依序為 2.15、2.35、1.93、1.31、1.07。
-\textbf{(b)} 依宣告角色分列的 calibrated score 中位數。四欄是
-band-typicality scores，1 表示位於範圍內；轉移熟悉度是單側分數，越大
-越好。\textbf{(c)} 音符落在作者編定格線 6\,ms 內的比例。時值不隨
-course 單調改善。可支持的發現更窄：音符率、短間隔與局部 pattern 的不匹配
-集中於 Easy 至 Hard。}
+相等。\textbf{(b)} 依宣告角色分列的 calibrated score 中位數：四欄
+band-typicality，1 表示位於範圍內，另一欄單側轉移熟悉度、越大越好。
+\textbf{(c)} 音符落在作者編定格線 6\,ms 內的比例。}
 \label{fig:difficulty}
 \end{figure*}
 
@@ -671,14 +675,12 @@ course 單調改善。可支持的發現更窄：音符率、短間隔與局部 
 \centering
 \includegraphics[width=0.92\textwidth]{figs/figD_profile_matrix.pdf}
 \caption{人類參照與兩個使用太鼓音符類型的生成器，在發展組上的分開結果。
-第一欄是音符落在格線 6\,ms 內的中位比例；其餘格為 0 至 1 的 calibrated
-scores。音符率、短間隔、局部 pattern、4-gram 重複／唯一性檢驗各欄的 1
-表示中位數落在人類範圍；轉移熟悉度是單側分數，越大越好。兩個生成器在
-不同欄位上偏離：TaikoNation 在序列與 4-gram 軸，Mapperatorinator 在
-音符率與短間隔負荷。右側符號以中位閾值 0.5
-分開顯示過載、尖峰與可玩性檢查。其他音符格式只出現在時值比較
-（\figref{fig:tiers}）。人類轉移熟悉度分數為 0.75，因為在其他歌曲上訓練
-的 LM 仍會遇到未見的 trigrams；這是該欄的人類參照水準。}
+第一欄是音符落在格線 6\,ms 內的中位比例；其餘格為 $[0,1]$ 的 calibrated
+scores。音符率、短間隔、局部 pattern、4-gram 重複／唯一性各欄的 1 表示
+中位數落在人類範圍；轉移熟悉度是單側分數（越大越好），連人類參照也只有
+0.75，因為 LM 仍會遇到未見的 trigrams。右側符號以中位閾值 0.5 分開顯示
+過載、尖峰與可玩性檢查。其他音符格式只出現在時值比較
+（\figref{fig:tiers}）。}
 \label{fig:profiles}
 \end{figure*}
 
@@ -686,7 +688,9 @@ scores。音符率、短間隔、局部 pattern、4-gram 重複／唯一性檢�
 圖~\ref{fig:tiers}--\ref{fig:profiles} 展示單一數字掩蓋
 重要差異的兩種方式。
 
-\textbf{相似的時值比例可能源自不同問題。} 兩個太鼓系統落在 6\,ms 內的
+\textbf{相似的時值比例可能源自不同問題。} 在\figref{fig:tiers}中，近乎
+為一的人類列是以其作者編定小節 metadata 作為參照的一致性檢查，不是模型
+結果。兩個太鼓系統落在 6\,ms 內的
 音符中位比例幾乎相同（0.59 與 0.58），其餘時值行為卻不同：
 Mapperatorinator 有 10\% 的相鄰間隔超出相對容差，TaikoNation 則為
 41\%。格線相位偏移搜尋得到 26 與 55\,ms 的中位偏移；最近格點配對對兩者卻都
@@ -785,6 +789,7 @@ course 特定弱點。我們於 \artifacturl{} 釋出實作與證據。未來的
 AI 助理在作者指導下用於實驗編排、起草與編輯；所有數字皆由釋出程式碼
 產生、獨立重算並由作者查核。
 
+\balance
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 
