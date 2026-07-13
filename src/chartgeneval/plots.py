@@ -12,7 +12,7 @@ visual language:
 
 Design rules encoded here (paper section "presentation protocol"):
 
-* perceptual buckets (deadzone multiples), never raw-ms distributions
+* perceptual buckets (tolerance multiples), never raw-ms distributions
 * per-chart aggregation first; pooled-note statistics are not drawn
 * n/a is data: rendered as an explicit grey dash, never imputed
 * radar: fixed axis order, outline only, never filled -- area is not a score
@@ -28,14 +28,14 @@ from __future__ import annotations
 import numpy as np
 
 OURS_C = "#2471a3"  # calibrated / catching metric (blue)
-BASE_C = "#c0392b"  # baseline / blind metric (red)
+BASE_C = "#d55e00"  # baseline / blind metric (vermillion)
 
 # Perceptual severity buckets for the timing family (luminance-ordered so the
 # stacked bar survives grayscale printing).
 TIER_BUCKETS = [
     ("within 6 ms", "#d6eaf8"),
-    ("6–12 ms", "#f5b041"),
-    ("12–18 ms", "#dc7633"),
+    ("6-12 ms", "#f5b041"),
+    ("12-18 ms", "#dc7633"),
     (">18 ms", "#922b21"),
     ("unmatched", "#5d6d7e"),
 ]
@@ -68,6 +68,7 @@ def plot_profile(
     vmax=1.0,
     fmt="{:.2f}",
     outline_failed_rows=True,
+    constraint_order=None,
     ax=None,
 ):
     """System x family profile. ``scores``: ``{system: {column: value|None}}``.
@@ -121,7 +122,10 @@ def plot_profile(
 
     con_names = []
     if constraints:
-        con_names = sorted({k for row in constraints.values() for k in row})
+        available = {k for row in constraints.values() for k in row}
+        con_names = list(constraint_order) if constraint_order is not None else sorted(available)
+        if set(con_names) != available:
+            raise ValueError("constraint_order must name every constraint exactly once")
 
     if ax is None:
         fig, ax = plt.subplots(
@@ -132,7 +136,19 @@ def plot_profile(
 
     masked = np.ma.masked_invalid(M)
     cmap = plt.get_cmap("Blues").with_extremes(bad="#eeeeee")
-    ax.imshow(masked, cmap=cmap, vmin=vmin, vmax=vmax, aspect="auto")
+    x_edges = np.arange(len(columns) + 1) - 0.5
+    y_edges = np.arange(len(systems) + 1) - 0.5
+    ax.pcolormesh(
+        x_edges,
+        y_edges,
+        masked,
+        cmap=cmap,
+        vmin=vmin,
+        vmax=vmax,
+        shading="flat",
+        rasterized=False,
+    )
+    ax.set_ylim(len(systems) - 0.5, -0.5)
     for i in range(len(systems)):
         for j in range(len(columns)):
             if np.isnan(M[i, j]):
@@ -147,10 +163,23 @@ def plot_profile(
     if con_names:
         # Separate the pass/fail checks from the score heatmap with a light
         # divider so the glyphs read as their own labelled columns.
-        ax.axvline(len(columns) - 0.5 + 0.28, color="#bbbbbb", lw=0.8)
+        constraint_step = 0.78
+        right = len(columns) - 0.5 + 0.45 + constraint_step * len(con_names)
+        ax.add_patch(
+            plt.Rectangle(
+                (len(columns) - 0.22, -1.0),
+                right - (len(columns) - 0.22),
+                len(systems) + 0.5,
+                facecolor="#f7f9fa",
+                edgecolor="none",
+                zorder=-1,
+            )
+        )
+        ax.axvline(len(columns) - 0.22, color="#b7c6cf", lw=0.8)
     for k, name in enumerate(con_names):
-        x = len(columns) - 0.5 + 0.62 + k * 0.62
-        ax.text(x, -0.72, name, ha="center", va="bottom", fontsize=7.5, rotation=30)
+        constraint_step = 0.78
+        x = len(columns) - 0.5 + 0.70 + k * constraint_step
+        ax.text(x, -0.78, name, ha="center", va="center", fontsize=7.0)
         for i, s in enumerate(systems):
             v = (constraints.get(s) or {}).get(name)
             glyph, color = ("✓", "#1e8449") if v else ("✗", BASE_C)
@@ -172,10 +201,16 @@ def plot_profile(
                 )
             )
     ax.set_xticks(range(len(columns)))
-    ax.set_xticklabels(columns, rotation=30, ha="right")
+    ax.set_xticklabels(columns, rotation=0, ha="center", fontsize=7.0,
+                       linespacing=1.2)
     ax.set_yticks(range(len(systems)))
     ax.set_yticklabels(systems)
-    ax.set_xlim(-0.5, len(columns) - 0.5 + (0.7 + 0.62 * len(con_names) if con_names else 0))
+    ax.set_xlim(
+        -0.5,
+        len(columns) - 0.5 + (0.45 + 0.78 * len(con_names) if con_names else 0),
+    )
+    if con_names:
+        ax.set_ylim(len(systems) - 0.5, -1.0)
     ax.tick_params(length=0)
     for spine in ax.spines.values():
         spine.set_visible(False)
@@ -223,7 +258,8 @@ def plot_timing_tiers(rows, *, labels=None, chart_clean_rates=None, ax=None):
     ``rows``: list of timing aggregates (means of per-chart values -- aggregate
     per chart first). ``chart_clean_rates``: optional ``{label: array}`` of
     per-chart clean rates; draws a p10--median--p90 strip with the worst chart
-    marked ×, making tail charts visible next to the corpus bar.
+    marked by a downward triangle, making tail charts visible next to the
+    corpus bar.
     """
     plt = _mpl()
     n = len(rows)
@@ -238,7 +274,7 @@ def plot_timing_tiers(rows, *, labels=None, chart_clean_rates=None, ax=None):
         if strip:
             fig, (ax, ax_strip) = plt.subplots(
                 1, 2, figsize=(6.9, 0.44 * n + 1.5), sharey=True,
-                gridspec_kw={"width_ratios": [4, 1], "wspace": 0.04},
+                gridspec_kw={"width_ratios": [4, 1], "wspace": 0.12},
             )
         else:
             fig, ax = plt.subplots(figsize=(6.9, 0.44 * n + 1.5))
@@ -255,7 +291,7 @@ def plot_timing_tiers(rows, *, labels=None, chart_clean_rates=None, ax=None):
     ax.set_xlim(0, 1.0)
     ax.set_xlabel("fraction of notes by timing-error range")
     ax.legend(loc="upper center", ncols=len(TIER_BUCKETS), frameon=False,
-              fontsize=6.4, bbox_to_anchor=(0.62, -0.30))
+              fontsize=6.6, bbox_to_anchor=(0.62, -0.18))
 
     if strip and ax_strip is not None:
         for yi, lab in zip(y, labels):
@@ -264,12 +300,15 @@ def plot_timing_tiers(rows, *, labels=None, chart_clean_rates=None, ax=None):
                 continue
             p10, med, p90 = np.percentile(vals, [10, 50, 90])
             ax_strip.plot([p10, p90], [yi, yi], color="#5d6d7e", lw=1.4)
-            ax_strip.plot([med], [yi], "o", color=OURS_C, ms=3.5)
-            ax_strip.plot([vals.min()], [yi], "x", color=BASE_C, ms=4)
+            # Vertical offsets keep coincident human-reference statistics
+            # distinguishable without guide lines or a legend.
+            ax_strip.plot([med], [yi + 0.08], "o", color=OURS_C, ms=3.5)
+            ax_strip.plot([vals.min()], [yi - 0.08], "v", color=BASE_C, ms=4)
         ax_strip.set_xlim(-0.05, 1.05)
-        ax_strip.set_xticks([0, 0.5, 1])
+        # The shared boundary already carries the main bar's 1.0 tick. Omitting
+        # the strip's 0.0 prevents the two labels from colliding in print.
+        ax_strip.set_xticks([0.5, 1])
         ax_strip.set_xlabel("within-6-ms fraction", fontsize=7)
-        ax_strip.set_title("p10–med–p90, × = worst", fontsize=6.2, color="dimgray")
         for spine in ("top", "right", "left"):
             ax_strip.spines[spine].set_visible(False)
         ax_strip.tick_params(left=False)

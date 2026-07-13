@@ -28,8 +28,8 @@ dependencies = ["numpy>=1.23,<2.3"]
 scipy = ["scipy>=1.10"]
 # Audio-side grids (librosa) and mel loading.
 audio = ["scipy>=1.10", "librosa>=0.10", "soundfile>=0.12"]
-# Figure rendering for make_figures.py.
-plots = ["matplotlib>=3.6"]
+# Figure rendering, including static instances for localized variable fonts.
+plots = ["matplotlib>=3.6", "fonttools>=4.40"]
 # Dataset reproduction (calibration + probes from taiko-1000-parsed).
 data = ["datasets>=3.0"]
 # Everything for running the reproduction scripts + tests.
@@ -38,6 +38,7 @@ dev = [
     "librosa>=0.10",
     "soundfile>=0.12",
     "matplotlib>=3.6",
+    "fonttools>=4.40",
     "datasets>=3.0",
     "pytest>=7.0",
 ]

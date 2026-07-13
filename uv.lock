@@ -273,6 +273,7 @@ data = [
 ]
 dev = [
     { name = "datasets" },
+    { name = "fonttools" },
     { name = "librosa" },
     { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "matplotlib", version = "3.11.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -283,6 +284,7 @@ dev = [
     { name = "soundfile" },
 ]
 plots = [
+    { name = "fonttools" },
     { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "matplotlib", version = "3.11.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
 ]
@@ -296,6 +298,8 @@ scipy = [
 requires-dist = [
     { name = "datasets", marker = "extra == 'data'", specifier = ">=3.0" },
     { name = "datasets", marker = "extra == 'dev'", specifier = ">=3.0" },
+    { name = "fonttools", marker = "extra == 'dev'", specifier = ">=4.40" },
+    { name = "fonttools", marker = "extra == 'plots'", specifier = ">=4.40" },
     { name = "librosa", marker = "extra == 'audio'", specifier = ">=0.10" },
     { name = "librosa", marker = "extra == 'dev'", specifier = ">=0.10" },
     { name = "matplotlib", marker = "extra == 'dev'", specifier = ">=3.6" },

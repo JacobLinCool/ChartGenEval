@@ -30,13 +30,13 @@ METRIC_NAME = "timing"
 # Perception-grounded thresholds (timing just-noticeable-difference literature).
 # These are perceptual constants, distinct from the matcher engineering
 # parameters (anchor gates 10-50 ms, merge window 4 ms) defined below.
-# The absolute deadzone is aligned with the relative JND floor: a single
-# 6 ms perceptual constant. Deviations below it are imperceptible; violation
+# The absolute tolerance is aligned with the relative JND floor: a single
+# 6 ms perceptual constant at the just-noticeable-difference scale. Violation
 # tiers are expressed as multiples of it (1x detectable, 2x/3x severity).
-TAU_ABS_S = 0.006  # absolute deviation deadzone: deviations below are imperceptible
+TAU_ABS_S = 0.006  # absolute alignment tolerance (at the ~6 ms JND scale)
 REL_FLOOR_S = 0.006  # relative interval-distortion detection floor
 REL_FRAC = 0.025  # Weber fraction of the local inter-anchor interval
-VIOLATION_TIERS = (1, 2, 3)  # exceedance tiers as multiples of the deadzone
+VIOLATION_TIERS = (1, 2, 3)  # exceedance tiers as multiples of the tolerance
 
 
 @dataclass(frozen=True)
@@ -619,7 +619,7 @@ def compute(events, ctx):
         out[f"absolute_violation_rate{suffix}"] = float(np.mean(mask))
         out[f"n_absolute_violation{suffix}"] = int(np.sum(mask))
     # Clean rate: fraction of ALL notes (unsupported included in the
-    # denominator) that are matched to an anchor within the deadzone.
+    # denominator) that are matched to an anchor within the tolerance.
     n_clean = n_matched - out["n_absolute_violation"]
     out["clean_rate"] = float(n_clean / n_notes) if n_notes else None
     out["signed_offset_mean_ms"] = float(np.mean(e) * 1000.0)
@@ -643,7 +643,7 @@ def compute(events, ctx):
             out["relative_error_mean_ms"], out["relative_error_p95_ms"] = _summary_ms(rel_resid)
             out["relative_error_p90_ms"] = _percentile_ms(rel_resid, 90)
             out["relative_error_p99_ms"] = _percentile_ms(rel_resid, 99)
-            # r is the raw (pre-deadzone) interval distortion; the deadzone
+            # r is the raw (pre-tolerance) interval distortion; the tolerance
             # envelope theta is applied only here, after the relative
             # deviation is computed.
             for tier in VIOLATION_TIERS:

@@ -39,3 +39,6 @@ paper/*.synctex.gz
 /paper/OUTLINE.md
 /paper/PAPER.zh-TW.md
 /paper/archive-v4/
+
+# Scratch PDF page renders (review only)
+/tmp/
