@@ -101,32 +101,31 @@ admits many valid note sequences. Agreement with one official chart
 therefore conflates valid alternatives with errors. We introduce
 ChartGenEval, a six-dimensional metric suite that uses the matched
 official chart only for its authored timing map, never its note
-placements. Its whole-chart grid-phase offset recovers injected
-15--60\,ms shifts with zero median error, although every primary
-chart-only output changes by less than 0.03 human standard deviations.
+placements. For injected whole-chart shifts of 15, 30, and 60\,ms, its
+median grid-phase estimates match the true shifts. By contrast, every
+primary chart-only output changes by less than 0.03 human standard
+deviations.
 
 ChartGenEval reports this timing profile alongside five higher-level
 dimensions: note sequence, repetition and form, response to music,
 same-difficulty human-chart distance, and difficulty and playability
 limits. The dimensions remain separate, with no overall total. Nine
 nonredundant corruption--measurement pairs met prespecified sensitivity
-and invariance criteria on 80 held-out song groups; all 32 scoped
-controls passed. The stress tests also show why isolated proxies can be
+and invariance criteria on 80 held-out song groups; all 32 applicable
+control checks passed. The stress tests also show why isolated proxies can be
 misleading: common-pattern rewriting lowers language-model perplexity
-by 37\%, while loop collapse raises self-similarity by 62\%. Five
-additional components retain development evidence, and criterion
-validity against player judgments remains open. We release the
-implementation, calibration, corruptions, and per-chart records at
-\artifacturl. Descriptive profiles of five public generators distinguish
-timing and difficulty-specific departures that a single aggregate would
-obscure.
+by 37\%, while loop collapse raises self-similarity by 62\%. Together,
+this automated six-dimensional profile can support fast comparison and
+iteration of chart-generation models. Depending on their roles, its
+outputs can serve as rewards, constraints, or monitoring signals in
+training methods such as reinforcement learning.
 \end{abstract}
 
 \section{Introduction}\label{sec:intro}
 
-Automatic chart generation for rhythm games---mapping audio to a
-playable sequence of timed, typed notes---has progressed from
-onset-detection pipelines to conditional sequence
+Automatic chart generation for rhythm games maps audio to a playable
+sequence of timed, typed notes. Research has progressed from
+onset-detection methods to conditional sequence
 models~\cite{donahue2017ddc,halina2021taikonation,takada2023genelive,
 hanzen2025tcp}. Evaluation has not kept pace. A chart dictates what the
 player must do and when; it answers to the music and to the player at
@@ -150,26 +149,27 @@ own question, and an aggregate of them hides its trade-offs.
 
 Free note choice still leaves a timing question. Conventional
 grid-based charts organize notes relative to a song's musical-time
-framework. We operationalize this component of musical fit as alignment
-to an external grid. The matched official chart supplies its authored
+framework. We measure this part of musical fit as alignment to an
+external grid. The matched official chart supplies its authored
 bar, meter, and tempo map, while its note placements are excluded as
 targets. This split preserves freedom of note
 choice while exposing chart-wide shifts that interval- and type-based
-statistics cannot observe. The proposed grid-phase offset recovers
-injected 15--60\,ms shifts that every primary chart-only measurement
-misses.
+statistics cannot observe. The proposed grid-phase offset gives the
+correct median estimate for injected shifts of 15, 30, and 60\,ms,
+while every primary chart-only measurement remains nearly unchanged.
 
-\textbf{ChartGenEval} reports the timing profile alongside five
-higher-level dimensions: note sequence, repetition and form, response to
-music, same-difficulty human-chart distance, and difficulty and limits.
-Some outputs are raw descriptions; others measure two-sided departure
-from same-course human ranges or apply one-sided feasibility checks.
-These roles remain separate, and the suite defines no universal total.
+\textbf{ChartGenEval} automatically computes a profile across six
+dimensions: timing, note sequence, repetition and form, response to
+music, same-difficulty human-chart distance, and difficulty and
+playability. Its outputs serve three roles: target signals for model
+improvement, feasibility constraints, and monitoring signals for model
+comparison and error analysis. These roles remain separate, so each
+dimension keeps its meaning.
 
 Controlled corruptions provide the sensitivity evidence. Starting from
 a human chart, we apply a dose-controlled transformation designed to
 impair one property and ask whether its target measurement responds while
-scoped controls remain invariant. The nine transformations cover dense
+the applicable control checks remain unchanged. The nine transformations cover dense
 timing jitter, sparse timing errors, a whole-chart shift, note-type
 shuffling, loop collapse, common-pattern rewriting, density scaling,
 burst insertion, and bar shuffling. We selected and revised candidate
@@ -183,23 +183,19 @@ measurements miss a constant chart--audio shift.
 
 Our contributions are:
 \begin{enumerate}
-\item \textbf{An evidence-scoped metric profile.} ChartGenEval anchors
-  timing to the song while keeping five higher-level dimensions and
-  one-sided feasibility checks separate. Each output has a stated input,
-  role, and evidence basis.
+\item \textbf{Automated six-dimensional feedback.} ChartGenEval
+  computes separate signals for timing, note sequence, repetition and
+  form, response to music, human-chart distance, and difficulty and
+  playability. These signals can support model comparison, iteration, and
+  reward-based training.
 \item \textbf{Controlled-corruption evidence.} Nine dose-controlled
   corruptions yield nine nonredundant held-out tests of target response
-  and scoped invariance. The same design exposes proxy sign reversals
+  and specified invariance checks. The same design exposes proxy sign reversals
   and the global-shift blind spot of chart-only measurements.
-\item \textbf{Chart-specific measurements and system profiles.} The
-  suite adds a grid-phase offset and five development-stage components
-  for chart--audio response, long-form structure, and same-course human
-  distance. Applied descriptively to five public generators, the profile
-  separates timing, sequence, density, and difficulty-specific departures.
+\item \textbf{Chart-specific measurements.} The suite adds a grid-phase
+  offset and five development-stage components for chart--audio response,
+  long-form structure, and human-chart distance.
 \end{enumerate}
-
-We release the implementation, corruption procedures, calibration
-values, and per-chart records at \artifacturl.
 
 \section{Related Work}\label{sec:related}
 
@@ -242,24 +238,11 @@ research~\cite{friberg1995jnd,london2012hearing}
 
 \subsection{ChartGenEval metric suite}\label{sec:suite}
 
-ChartGenEval separates measurement design from sensitivity testing. The
-suite first defines each construct, required input, output, and
-interpretive role. Controlled corruptions then test whether a target
-measurement responds to a targeted change while scoped controls remain
-invariant (\figref{fig:validation}). Table~\ref{tab:suite} distinguishes
-the measurements proposed here from adaptations of established chart
+ChartGenEval automatically computes six groups of measurements.
+Controlled corruptions test target sensitivity across doses, while
+applicable control checks test invariance. Table~\ref{tab:suite} distinguishes the
+measurements proposed here from adaptations of established chart
 statistics and states the strongest evidence available for each role.
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.96\textwidth]{figs/figV_validation_logic.pdf}
-\caption{Controlled-corruption validation. We apply one targeted change
-at three strengths, measure the target response, and test scoped
-invariance conditions. The six measurement roles remain separate because
-they answer different questions; favorable movement under one output
-cannot compensate for a missed timing, structure, or feasibility problem.}
-\label{fig:validation}
-\end{figure*}
 
 \begin{table*}[t]
 \centering
@@ -281,13 +264,16 @@ Difficulty and limits & Density and strain typicality; overload and density-spik
 \caption{ChartGenEval constructs, origins, and evidence boundaries. Each
 construct's required timing, audio, grid, or reference anchor is given
 in Methods (\secref{sec:data}, \secref{sec:layers}). ``Proposed'' marks
-operationalizations defined in this work; their primitive statistics may
-themselves be established. Held-out evidence refers only to the named
-outputs. Development-only components were selected and revised on the
-40-song development panel. Criterion validity against player judgments
-lies outside every evidence category.}
+measurements defined in this work; their basic statistics may already be
+established. Held-out evidence refers only to the named outputs.}
 \label{tab:suite}
 \end{table*}
+
+All ChartGenEval outputs are computed automatically, but they serve
+different roles. Directional outputs can act as rewards or penalties,
+playability checks as constraints, and descriptive outputs as monitoring
+signals. A training method, including reinforcement learning, can choose
+and weight these signals for its task.
 
 The proposed measurements target gaps left by individual chart
 statistics. The \emph{whole-chart grid-phase offset} searches shifts from
@@ -318,13 +304,13 @@ eligible 16-note color window is exactly periodic with period at most
 four. A bar is alienated when no bar with similarity at least .75
 occurs within 32 bars in either direction. The raw output is the
 fraction of active bars in the union of these sets. We interpret the
-output only as a structural description; perceived boredom requires
-player evidence. Finally, the \emph{human-chart
-gap} represents each chart with 32 interval, note-type, density, and
-variety features. Features are standardized within course; the raw gap
+output as a structural signal. Finally, the \emph{human-chart
+distance} represents each chart with 32 interval, note-type, density, and
+variety features. Features are standardized within course; the raw distance
 is the mean Euclidean distance to the 20 nearest training charts of
 that course. Its bounded display score is $\exp(-g/a)$, where $g$ is
-the raw gap and $a$ is the course's 90th percentile leave-one-out gap.
+the raw distance and $a$ is the course's 90th percentile leave-one-out
+distance.
 The representation is chart-specific; its entropy, bigram, and
 nearest-neighbor primitives are established statistics.
 
@@ -334,18 +320,20 @@ We use taiko-style chart files and associated audio gathered from
 community resources available online. The chart files transcribe the
 official difficulty courses; we use them as human reference charts.
 Because the underlying charts and audio are potentially copyrighted
-content, the corpus itself is not distributed; the released materials
-contain derived calibration statistics and per-chart records. Source
-rows are grouped by underlying song, with inconsistent source mappings
-rejected. The training split has
-924 source rows, 813 canonical song groups, and 3{,}880 course charts;
-its difficulty-course charts are used to fit the calibration and the
-LM. The test split has 140 source rows forming 120 song groups. Forty
-groups, comprising 170 human charts across the available courses, form
-the development panel used for metric and corruption design, figures,
-and system profiles. The remaining 80 groups form the held-out panel
-and were left unexamined while the measurements, corruptions, and
-evaluation criteria were developed.
+content, the corpus itself is not distributed. Source rows are grouped
+by underlying song, with inconsistent source mappings rejected. The
+training and test splits serve different purposes. The training split
+has 924 source rows covering 813 unique song groups and 3{,}880 course
+charts. We use these charts to fit the calibration and LM. The test
+split has 140 source rows forming 120 song groups. The first 40 groups
+contain 170 human charts and form the development panel for metric and
+corruption design, figures, and system profiles. The remaining 80
+groups contain 333 course charts and form the held-out panel for
+confirmatory tests. The dataset also has a validation split of 80 song
+groups, which is not used in the reported analyses. Across the
+development and held-out analyses, controlled corruptions cover all 120
+test songs: 40 for development and 80 for held-out confirmation. The
+public-system comparison uses the 40 development songs.
 
 The five additional proposed components were selected and revised on
 the development panel, so their evidence remains exploratory.
@@ -423,12 +411,10 @@ changes often move these values away from the human band. An unusual
 chart that remains playable and follows the music may still be creative
 (\secref{sec:discussion}).
 
-We use each result according to its role and evidence basis.
 Playability limits remain separate, non-compensable feasibility checks. On human charts in the
 development panel, 88\%, 89\%, and 97\% score at least 0.99 on the
 note-rate, short-interval, and density-spike checks, respectively.
-Values such as estimated global shift remain descriptive. The public
-interface returns named measurements and checks separately.
+Values such as estimated global shift remain descriptive.
 
 \subsection{Measuring timing against the song}\label{sec:timingmethod}
 
@@ -443,19 +429,40 @@ Unmatched generated notes remain in the denominator, so added off-grid
 notes lower the within-tolerance rate. The measure has no reference-note
 recall term: deleting unmatched generated notes can raise the rate. We
 therefore interpret it together with note count and same-difficulty
-density. We summarize each chart
-first, then report medians and tails across charts.
+density. We summarize each chart first, then report medians and tails
+across charts.
+
+A common shift $\delta$ leaves every inter-note interval unchanged:
+\begin{equation}
+(t_{i+1}+\delta)-(t_i+\delta)=t_{i+1}-t_i.
+\label{eq:shift-invariance}
+\end{equation}
+The note types are also unchanged. Chart-only measurements built from
+these intervals and types therefore stay unchanged or nearly unchanged.
 
 Nearest-grid matching can miss a constant shift (\figref{fig:timing}).
 On a dense grid, each shifted note may simply be paired with another
 nearby grid point. We therefore estimate one offset for the whole chart.
-For every candidate between $-250$ and $+250$\,ms, we measure how many
-notes align with fixed subdivisions inside the reference bars, then
-select the offset with the strongest agreement. The authored grid takes
-these bars from the official chart's timing map, not its note sequence;
-the audio-estimated grid infers them from audio downbeats. Combining bar,
-beat, and eighth-note subdivisions resolves most periodic ties; the
-smallest-magnitude offset breaks any remaining tie.
+Let $G_k$ be the fixed bar, beat, and eighth-note grids, and let
+$d(x,G_k)=\min_{g\in G_k}|x-g|$. For note times $t_i$, we score a
+candidate shift by
+\begin{equation}
+\begin{aligned}
+S(\delta)
+ &= \sum_k w_k\,\frac{1}{n}\sum_i
+ \left[1-\frac{d(t_i-\delta,G_k)}{\tau}\right]_+,\\
+\hat{\delta}
+ &= \operatorname*{arg\,max}_{\delta\in[-250,250]\,\mathrm{ms}}
+ S(\delta),
+\end{aligned}
+\label{eq:phase-offset}
+\end{equation}
+where $[z]_+=\max(z,0)$, $\tau=12$\,ms, and the bar, beat, and
+eighth-note weights are 0.2, 0.3, and 0.5. We search in 0.5\,ms steps.
+The authored grid comes from the official chart's timing map, not its
+note sequence; the audio-estimated grid comes from audio downbeats.
+Combining the three grids resolves most periodic ties; the
+smallest-magnitude offset is chosen for near-ties.
 Both timing summaries require one of these external grids. If neither an
 authored map nor an audio-estimated grid is available, timing is reported
 as unavailable. BPM alone supplies a period but no phase, so it cannot
@@ -467,7 +474,7 @@ serve as a timing reference.
 \caption{Why timing needs a whole-chart estimate. \textbf{Left:}
 nearest-grid matching can pair shifted notes with different subdivision
 points and report small local errors. \textbf{Right:} a schematic agreement
-curve over candidate whole-chart offsets; its maximum recovers the injected
+curve over candidate whole-chart offsets; the curve peaks at the injected
 $+60$\,ms shift. The grids are fixed before evaluating the generated chart.}
 \label{fig:timing}
 \end{figure*}
@@ -526,9 +533,9 @@ leaving songs as the inferential unit. Each test used an oriented dose
 correlation and a maximum-dose-minus-sham contrast. We computed
 song-cluster bootstrap intervals and applied Bonferroni-adjusted 99.5\%
 intervals across the ten rows. A response met the criterion when at
-least 72 songs were evaluable, every scoped invariance control passed,
-and both adjusted upper bounds were below zero. Appendix~\ref{app:protocol}
-records the complete analysis specification and provenance checks.
+least 72 songs were evaluable, every required control passed,
+and both adjusted upper bounds were below zero.
+Appendix~\ref{app:protocol} provides the full protocol.
 
 The controls match the invariance claimed by each measurement family.
 They include exact re-evaluation, a joint shift of notes and grid, a
@@ -544,11 +551,9 @@ Two systems produce Taiko note types: Mapperatorinator
 v32~\cite{mapperatorinator}, a community-developed, MIT-licensed
 framework for multi-gamemode osu! beatmap generation evaluated here in
 taiko mode, and the FDG-published TaikoNation
-system~\cite{halina2021taikonation}, reproduced from the authors'
-public research repository\footnote{The TaikoNation repository does not
-state a software license. The released artifact contains provenance and
-derived metric records, but no TaikoNation code, checkpoints, input
-assets, or generated chart data.}. Three systems enter only the timing
+system~\cite{halina2021taikonation}, run from the authors' public
+research repository.
+Three systems enter only the timing
 and music-response measurements: Dance Dance Convolution's onset
 pipeline (ddconset)~\cite{donahue2017ddc}, the public timing-only
 configuration of Gen\'eLive!~\cite{takada2023genelive}, and
@@ -557,8 +562,8 @@ systems chart the same 40 development songs from audio in
 their public inference configurations. We did not train or fine-tune
 these systems on this corpus, although overlap between these commercial songs and the
 systems' own training data cannot be excluded
-(\secref{sec:limitations}). Course mappings are explicit in the released
-configuration. Mapperatorinator uses the corresponding Taiko course.
+(\secref{sec:limitations}). Course mappings are as follows.
+Mapperatorinator uses the corresponding Taiko course.
 Gen\'eLive's Beginner, Easy, Medium, Hard, and Challenge settings map to
 Easy, Normal, Hard, Oni, and Ura; when a song has no Ura chart,
 Challenge uses Oni as its reference course. Single-setting systems
@@ -575,8 +580,8 @@ profiles as descriptive development analyses.
 \subsection{Nine effective tests meet the held-out criteria}
 \label{sec:sensitivity}
 
-All ten prespecified rows met both response criteria, all 32 scoped
-controls passed, and every analysis retained all 80 song clusters
+All ten prespecified rows met both response criteria, all 32 applicable
+control checks passed, and every analysis retained all 80 song clusters
 (\tabref{tab:confirmation}). The two C5 rows are algebraically
 equivalent, so the result represents nine nonredundant
 corruption--measurement pairs across seven effective output axes.
@@ -632,7 +637,7 @@ measurements are invariant to a common translation.
 
 Nearest-grid matching also misses the shift: a dense lattice can pair
 each shifted note with a different nearby subdivision. The grid-phase
-offset search instead recovers median shifts of 15.00, 30.00, and
+offset search instead returns median estimates of 15.00, 30.00, and
 60.00\,ms from both reference sources. For every source and shift, at
 least 169 of 170 charts are within 3\,ms of the injected value. Run-head
 onset support also responds at note onsets (net direction $-0.74$ to
@@ -698,7 +703,7 @@ Two observational results complete the case. \emph{Direction
 instability}: against the two publicly available taiko generators of
 \secref{sec:systemresults}, whose outputs lie on the high-entropy side of the human corpus,
 perplexity separates human from generated charts in the expected
-direction (AUC 0.80)---yet C5 proves the
+direction (AUC 0.80), yet C5 shows that the
 same reading inverts on the low-entropy side. A signed quality metric whose sign
 depends on which side of the human distribution the system sits cannot
 support a stable ranking; the same-difficulty band score treats both sides
@@ -709,9 +714,8 @@ ratio correlates with note count at $|\rho|=0.85$ and distinct-2 at
 $0.56$, against at most $0.28$ for the band scores.
 
 These cases establish complementarity without supplying aggregation
-weights. A single total would embed value judgments that the present
-corruption evidence and player-free design do not identify. The complete
-metric--corruption response matrix appears in
+weights. We therefore keep the outputs separate instead of hiding their
+trade-offs in one total. The complete metric--corruption response matrix appears in
 Appendix~\figref{fig:responsemap}.
 
 \subsection{Development evidence for the proposed components}
@@ -725,29 +729,29 @@ while remaining nearly unchanged under timing jitter and global
 translation ($-.086$ and $-.003$). The stagnation--alienation proxy
 responds strongly to loop collapse ($\rho=-.924$ after orienting larger
 as better) and changes little under timing jitter or global translation
-($-.007$ and $+.010$). These results support structural sensitivity;
-perceived call-and-response and boredom require player evidence.
+($-.007$ and $+.010$). These results support sensitivity to the targeted
+structural changes.
 
 The two audio-response measures capture different scales. Run-head
 onset support decreases under a global shift ($\rho=-.559$), whereas
 bar-level density--energy response is stable under uniform density
 scaling ($\rho=+.005$) and falls under bar shuffling ($\rho=-.386$).
 Its weak burst-insertion response ($\rho=-.092$) confines the reading to
-bar-scale covariation. The same-course human-chart gap describes a joint
+bar-scale covariation. The same-course human-chart distance describes a joint
 feature distribution: it flags combinations unlike the training cloud
 without classifying unusual charts as creative or poor. Its
 course-conditioned score has maximum-dose net directions from $-.32$ to
 $-.88$ under C3--C8 and a median change of zero under global
-translation. A released development table records all five components
-against all nine corruptions.
+translation.
 
 \subsection{System profiles}
 \label{sec:systemresults}
 
-The descriptive system profiles separate two effects that a single
-number would merge: similar headline timing fractions can arise from
-different timing behavior, and the requested course can change the
-reading of chart-side measurements.
+The descriptive system profiles in \figref{fig:tiers} and
+\figref{fig:profiles} separate two effects that a single number would
+merge: similar headline timing fractions can arise from different
+timing behavior, and the requested course can change the reading of
+chart-side measurements.
 
 \begin{figure*}[t]
 \centering
@@ -809,29 +813,28 @@ is therefore a difficulty mismatch, not a general improvement
 at high difficulty. TaikoNation exposes only one setting; at that
 setting, note rate and short-interval load fit the human range, while
 55\% of its trigrams are unseen in the course-conditioned training LM
-and its repeated-4-gram rate is
-0.004. These are different departures, not a basis for one overall
-ranking.
+and its repeated-4-gram rate is 0.004.
 
 \section{Discussion}\label{sec:discussion}
 
-The results support a profile, not a ranking. The held-out tests show
-that seven effective output axes respond to their targeted corruptions,
-while the development analyses expose blind spots and favorable proxy
-movement when isolated measurements are read as quality scores.
-Combining these dimensions would require value judgments and criterion
-evidence that this study does not supply.
+ChartGenEval provides automatic six-dimensional feedback for chart
+generators. The held-out tests show that seven effective output axes
+respond to their targeted corruptions, while the development analyses
+expose blind spots in common proxies. The profile can compare model
+versions and show which dimension changed. Directional outputs can act
+as rewards or penalties, playability checks as constraints, and
+descriptive outputs as monitoring signals. A reinforcement-learning
+setup can choose and weight these signals for its task.
 
 \textbf{Atypicality requires context.} Controlled corruptions show that
 targeted changes often move scores outside the same-course human band,
 but the converse does not follow: an unusual chart may represent a
 creative choice. Timing and feasibility checks help interpret that
-departure, and player judgments are needed when those signals disagree.
+departure. When signals disagree, the profile keeps the trade-off
+visible.
 The distance scale puts large departures in context: the development
 human maximum is 4.8 half-range widths on the sequence axis, while the
-Mapperatorinator and TaikoNation medians are 2.1 and 12. The course
-analysis in \secref{sec:systemresults} illustrates how multiple signals
-support a scoped interpretation without producing a leaderboard.
+Mapperatorinator and TaikoNation medians are 2.1 and 12.
 
 \textbf{Transfer follows measurement roles.} Timing and music-response
 measurements read only note times, which allowed direct application to
@@ -844,24 +847,21 @@ and rotation checks.
 
 \section{Limitations}\label{sec:limitations}
 
-\textbf{Construct validity and corruption coverage.} Controlled
-corruptions establish sensitivity to operational changes, not criterion
-validity against player or expert judgments. The nine corruptions omit
+\textbf{Evidence scope.} Controlled corruptions show that measurements
+respond to known changes; they do not directly measure player
+experience. The nine corruptions omit
 wrong-song pairing, deletion of musically important notes, and deliberate
 off-grid placement. Individual charts may also move toward a human band
-after a corruption. The five additional components require held-out or
-player evidence before stronger quality claims. Finally, the two
+after a corruption. The five additional components have only
+development-panel evidence. Finally, the two
 prespecified C5 output names are algebraically equivalent; future work
 should test an independent structure measurement.
 
 \textbf{Corpus and system scope.} One game corpus defines the human
-ranges. The source metadata carries no charter or game-version field and
-leaves genre unlabeled for almost every song, so author-, version-, and
-genre-level concentration cannot be characterized; the released coverage
-record instead reports a broad difficulty and tempo span within each
-course (Appendix~\figref{fig:coverage}). Other note formats receive only
-timing and music-response measurements, and each public system runs in
-one public configuration at one seed. Possible overlap between
+ranges. Its difficulty and tempo coverage is summarized in
+Appendix~\figref{fig:coverage}. Other note formats receive only timing
+and music-response measurements, and each public system runs in one
+public configuration at one seed. Possible overlap between
 development songs and system training corpora remains uncontrolled. The
 shared-path comparison argues against one conversion constant as the
 sole source of the observed offsets, but format-specific conversion
@@ -875,9 +875,9 @@ results use the authored grid, while the audio-estimated alternative has
 development evidence only. Sequence tokens include note intervals, so
 timing and sequence responses can overlap
 (Appendix~\figref{fig:responsemap}). Courses are averaged within song,
-leaving songs as the inferential unit; possible author-level dependence
-across songs is not modeled. Deterministic corruption replicates are
-averaged within chart and do not create additional samples.
+leaving songs as the inferential unit. Deterministic corruption
+replicates are averaged within chart and do not create additional
+samples.
 
 \FloatBarrier
 
@@ -894,30 +894,47 @@ Nine nonredundant corruption--measurement pairs met the held-out
 sensitivity and invariance criteria on 80 song groups. The same study
 shows that chart-only measurements miss a global shift, while
 perplexity and self-similarity can move favorably under targeted
-corruptions. Descriptive system profiles expose timing, sequence,
-density, and course-specific departures that an aggregate would hide.
-We release the implementation and evidence at \artifacturl. Future
-metrics can join the profile by stating their construct and role, then
-demonstrating the corresponding response and invariance boundaries.
+corruptions.
+
+The resulting profile provides automatic feedback for comparing and
+iterating chart generators. Directional outputs can guide reward-based
+optimization, feasibility checks can act as constraints, and
+descriptive outputs can track model behavior. This role-based design
+can support reinforcement learning while keeping each dimension
+separate.
 
 \section*{Ethics Statement}
 The study uses community-transcribed charts and associated audio
 gathered from online sources as described in \secref{sec:data}; these
 potentially copyrighted materials are not redistributed. The released
-artifact contains measurements, evaluation code, and provenance records,
-but no source charts, audio, personal data, or chart generator. More
-capable evaluation can lower the cost of automated content production;
-platform policy and moderation therefore remain necessary for
-high-volume deployment.
+materials exclude source charts, audio, personal data, and chart
+generators. More capable evaluation can lower the cost of automated
+content production; platform policy and moderation therefore remain
+necessary for high-volume deployment.
 
 \section*{AI Usage Statement}
 AI assistants were used for experiment orchestration, drafting, and
-editing under author direction; all numbers were produced by the
-released code, independently recomputed, and checked by the author.
+editing under author direction; the author checked all reported values.
 
 \appendix
 
-\section{Held-Out Evaluation Protocol}\label{app:protocol}
+\section{Corpus Coverage and Held-Out Evaluation Protocol}\label{app:protocol}
+
+\subsection{Corpus coverage}
+
+The calibration corpus is summarized by course, star level, and tempo.
+\figref{fig:coverage} shows its difficulty and tempo coverage.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.98\textwidth]{figs/figCC_corpus_coverage.pdf}
+\caption{Course difficulty and tempo coverage of the human reference corpus
+that defines the calibration bands. \textbf{(a)} Star-level counts per course
+across the 3{,}880 training charts: each course spans a broad, shifting
+difficulty range. \textbf{(b)} Tempo histogram (median 170\,BPM, range
+65--376).}
+\label{fig:coverage}
+\end{figure*}
 
 \subsection{Panel construction and integrity}
 
@@ -927,31 +944,29 @@ contains 120 canonical song groups in stored order. Groups 0--39 form
 the development panel, and groups 40--119 form the held-out panel.
 Before inspecting held-out results, we fixed the dataset revision,
 corruptions and doses, target measurements, controls, thresholds,
-calibration, runtime, analysis code, and source hashes in a manifest.
-The analysis aborts if any recorded input or source hash differs.
+calibration, and analysis plan.
 
 \subsection{Replicates, completeness, and inferential units}
 
-Every nonzero corruption cell and control condition uses base seeds
-1103, 2207, 3301, 4409, and 5519. Replicates are averaged within chart
-and dose. A course is complete only when its intact value, every target
-dose and replicate, scoped sham, and required controls are available. A
+Every nonzero corruption cell and control condition uses five fixed base
+seeds. Replicates are averaged within chart and dose. A course is
+complete only when its intact value, every target
+dose and replicate, specified sham, and required controls are available. A
 song enters a test with at least one complete course, and complete
 courses are averaged within song. Songs, rather than charts, courses, or
 replicates, are the inferential units for both response statistics.
-Deterministic no-op and missing cells are retained in the exclusion
-records.
+Deterministic no-op and missing cells do not enter the analysis.
 
-\subsection{Scoped controls and numerical invariance}
+\subsection{Control checks and numerical invariance}
 
 Identity re-evaluation applies to every retained measurement. A joint
 +1-second shift of notes, authored grid, and duration tests invariance to
-the time origin. A Don--Ka color bijection is scoped to timing and
+the time origin. A Don--Ka color bijection applies to timing and
 density, where color is irrelevant; it is not a grammar or form control.
 The 60\,ms C2 translation is the sham for chart-only density, grammar,
 and structure measurements. A required control failure prevents support
-for the affected target response. The released specification records
-metric-specific equivalence tolerances and timestamp-rounding rules.
+for the affected target response. Each measurement uses a specified
+equivalence tolerance and timestamp-rounding rule.
 Chart-only interval arithmetic uses integer microseconds, three orders
 of magnitude finer than the smallest reported tolerance.
 
@@ -961,10 +976,10 @@ After orienting outputs so that larger is better, the first statistic is
 the within-chart Spearman correlation between the four severities
 (intact plus three doses) and the measurement; an all-constant response
 has zero sensitivity. The second statistic is the oriented
-maximum-dose value minus the scoped sham. Point estimates average
-song-level values. We use 10{,}000 song-cluster bootstrap draws with
-seed 20260712, report nominal 95\% intervals for secondary analyses,
-and apply Bonferroni-adjusted 99.5\% intervals to the ten primary rows.
+maximum-dose value minus the specified sham. Point estimates average
+song-level values. We use 10{,}000 song-cluster bootstrap draws:
+secondary analyses report nominal 95\% intervals, and the ten primary
+rows use Bonferroni-adjusted 99.5\% intervals.
 A response is supported when at least 72 of 80 songs are evaluable, all
 controls pass, and both adjusted upper bounds are below zero. A
 nonnegative adjusted lower bound contradicts the response; other cases
@@ -979,10 +994,14 @@ The held-out execution produced 50{,}283 observation records from 333
 charts. C1s retained 332 complete courses and C8 retained 330; every
 other effective pair retained 333. All 32 controls passed with maximum
 observed absolute difference zero. Nineteen deterministic no-op cells
-remain in the released exclusions. The artifact preserves the complete
-observation, reduction, exclusion, and provenance records.
+were excluded.
+
+\FloatBarrier
 
 \section{Controlled-Corruption Specifications}\label{app:corruptions}
+
+\figref{fig:corruptionatlas} visualizes the operational change made by
+each corruption and its prespecified target measurement.
 
 \begin{figure*}[t]
 \centering
@@ -1009,10 +1028,10 @@ them. The perplexity reversal remains (9.44 $\to$ 6.04, $-36\%$).
 
 \section{Metric Guide and Extended Results}\label{app:visuals}
 
-The guide below connects each construct to its inputs, representative
-outputs, and present evidence. The following matrices then show
-cross-family responses and the course-specific difficulty pattern that
-support the scoped readings in the main text.
+\figref{fig:metricguide} connects each construct to its required inputs,
+representative outputs, and strongest present evidence. The evidence
+labels distinguish outputs with held-out corruption tests from components
+supported by development analyses.
 
 \begin{figure*}[t]
 \centering
@@ -1021,11 +1040,13 @@ support the scoped readings in the main text.
 question, illustrates the relevant signal, lists representative outputs,
 and marks the strongest evidence. ``Held-out subset'' means that only
 the named outputs in \tabref{tab:suite} have held-out corruption
-evidence. Typicality describes departure from same-course human ranges;
-criterion validity against player judgment remains outside the present
-evidence.}
+evidence. Typicality describes departure from same-course human ranges.}
 \label{fig:metricguide}
 \end{figure*}
+
+\figref{fig:responsemap} shows that targeted corruptions can affect
+multiple score families, motivating interpretation as a profile rather
+than as isolated interchangeable measurements.
 
 \begin{figure*}[t]
 \centering
@@ -1041,6 +1062,8 @@ cross-family coupling.}
 \label{fig:responsemap}
 \end{figure*}
 
+\FloatBarrier
+
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.96\textwidth]{figs/figE_difficulty.pdf}
@@ -1054,32 +1077,12 @@ difficulty.}
 \label{fig:difficulty}
 \end{figure*}
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.86\textwidth]{figs/figCC_corpus_coverage.pdf}
-\caption{Coverage of the human reference corpus that defines the calibration
-bands, over the two axes the source metadata records. \textbf{(a)} Star-level
-counts per course across the 3{,}880 training charts: each course spans a
-broad, shifting difficulty range. \textbf{(b)} Tempo histogram (median
-170\,BPM, range 65--376). The source metadata carries no charter or
-game-version field and leaves genre unlabeled for almost every song, so
-author-, version-, and genre-level concentration cannot be reported
-(\secref{sec:limitations}).}
-\label{fig:coverage}
-\end{figure*}
-
 \FloatBarrier
 
-\section{Reproducibility and Released Materials}
+\section{Released Materials}
 
-The released materials at \artifacturl{} include the implementation,
-calibration values, controlled-corruption definitions, system
-conditions, per-chart measurements, corpus coverage statistics, held-out
-observation and reduction tables, exclusion records, and provenance
-manifests. Running
-\texttt{python experiments/make\_paper\_figures.py} regenerates every
-paper figure from the versioned records, including the English and
-Traditional Chinese schematic assets.
+Code, evaluation records, and plotting scripts are available at
+\artifacturl.
 
 \balance
 \bibliographystyle{IEEEtran}

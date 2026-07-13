@@ -4,8 +4,6 @@
 Figure set (visual protocol -- see ``chartgeneval.plots``):
 
   fig0_thesis.pdf            First-page map of the six evaluation dimensions.
-  figV_validation_logic.pdf Plain-language overview of controlled-corruption
-                            validation and the six questions in the profile.
   figT_timing_alignment.pdf  Why local nearest-grid matching can miss a global
                              shift and how a whole-chart offset search finds it.
 
@@ -506,80 +504,6 @@ def fig0_thesis(out, locale="en"):
             f"{locale} dimension icon {i + 1}", pad=0.004,
         )
     save(fig, out, localized_name("fig0_thesis", locale))
-
-
-# ---------------- figV: controlled-corruption validation logic --------------
-
-
-def figV(out):
-    """Explain the controlled-corruption validation logic."""
-    fig = plt.figure(figsize=(6.9, 2.35))
-    gs = fig.add_gridspec(1, 3, width_ratios=(1.15, 1.0, 2.0), wspace=0.35)
-
-    ax = fig.add_subplot(gs[0, 0])
-    ax.set_title("1  TARGETED CHANGE", loc="left", color=BLUE)
-    original = np.array([0.5, 1.0, 1.75, 2.5, 3.0, 3.5])
-    damaged = original + 0.18
-    ax.scatter(original, np.full_like(original, 0.72), s=26, color=BLUE, zorder=3)
-    ax.scatter(damaged, np.full_like(damaged, 0.28), s=28, color=VERMILLION,
-               marker="D", zorder=3)
-    for x0, x1 in zip(original, damaged):
-        # These short segments encode the one-to-one correspondence between
-        # each intact event and its corrupted counterpart. Arrowheads would
-        # add directionality already supplied by the row labels.
-        ax.plot([x0, x1], [0.65, 0.35], color="#8c8c8c", lw=0.7, zorder=1)
-    ax.text(-0.05, 0.72, "intact", ha="right", va="center", fontsize=7.2)
-    ax.text(-0.05, 0.28, "corrupted", ha="right", va="center", fontsize=7.2)
-    ax.set(xlim=(-0.25, 4.05), ylim=(-0.02, 1.02), xticks=[], yticks=[])
-    for spine in ax.spines.values():
-        spine.set_visible(False)
-
-    ax = fig.add_subplot(gs[0, 1])
-    ax.set_title("2  DOSE RESPONSE", loc="left", color=TEAL)
-    strength = np.arange(4)
-    ax.plot(strength, [1.0, 0.78, 0.52, 0.25], "o-", color=BLUE)
-    ax.plot(strength, [0.76, 0.75, 0.76, 0.74], "s--", color="#777777")
-    ax.plot(strength, [0.55, 0.62, 0.73, 0.88], "^--", color=VERMILLION)
-    ax.set(xticks=strength, xticklabels=["none", "low", "mid", "high"],
-           xlabel="corruption strength", ylabel="oriented measurement")
-    ax.set(xlim=(-0.15, 4.05), ylim=(0.1, 1.05))
-    ax.grid(axis="y", color="#e6e6e6", lw=0.6)
-    for y, label, color in (
-        (0.25, "target", BLUE),
-        (0.74, "insensitive", MID),
-        (0.88, "favorable", VERMILLION),
-    ):
-        ax.text(3.15, y, label, ha="left", va="center", fontsize=6.4,
-                color=color)
-    for spine in ("top", "right"):
-        ax.spines[spine].set_visible(False)
-
-    ax = fig.add_subplot(gs[0, 2])
-    ax.set_title("3  SEPARATE OUTPUTS", loc="left", color=PURPLE)
-    ax.set_axis_off()
-    outputs = [
-        ("Timing", BLUE),
-        ("Music response", TEAL),
-        ("Note sequence", PURPLE),
-        ("Repetition &\nform", GOLD),
-        ("Human-chart\ndistance", VERMILLION),
-        ("Difficulty &\nlimits", "#607d8b"),
-    ]
-    for i, (name, color) in enumerate(outputs):
-        col, row = i % 2, i // 2
-        x, y = 0.01 + col * 0.5, 0.68 - row * 0.31
-        box = FancyBboxPatch(
-            (x, y), 0.47, 0.23,
-            boxstyle="round,pad=0.012,rounding_size=0.025",
-            transform=ax.transAxes, facecolor="white", edgecolor=color, lw=0.9,
-        )
-        ax.add_patch(box)
-        ax.text(x + 0.235, y + 0.115, name, transform=ax.transAxes,
-                fontsize=6.5, fontweight="bold", ha="center", va="center",
-                color=INK, linespacing=1.2)
-    fig.subplots_adjust(left=0.065, right=0.975, bottom=0.24, top=0.86,
-                        wspace=0.35)
-    save(fig, out, "figV_validation_logic")
 
 
 # ---------------- figT: timing-reference schematic ----------------
@@ -1487,7 +1411,7 @@ def figCC(coverage, out, locale="en"):
                   shading="flat", rasterized=False)
     ax.set_ylim(len(courses) - 0.5, -0.5)
     ax.set_xticks(range(len(levels)))
-    ax.set_xticklabels([str(lv) for lv in levels], fontsize=7)
+    ax.set_xticklabels([str(lv) for lv in levels], fontsize=7.5)
     ax.set_yticks(range(len(courses)))
     ax.set_yticklabels(
         [f"{lab}  n={int(course_data[c]['n_charts'])}"
@@ -1498,7 +1422,7 @@ def figCC(coverage, out, locale="en"):
         for j in range(len(levels)):
             v = int(matrix[i, j])
             if v:
-                ax.text(j, i, str(v), ha="center", va="center", fontsize=5.4,
+                ax.text(j, i, str(v), ha="center", va="center", fontsize=6.5,
                         color="white" if matrix[i, j] > vmax * 0.55 else "#1a1a1a")
     _title(ax, text["t_a"], BLUE)
     _axis_label(ax, xlabel=text["x_a"])
@@ -1514,7 +1438,7 @@ def figCC(coverage, out, locale="en"):
     note = ax2.text(
         0.96, 0.95,
         text["note"].format(med=summary["p50"], lo=summary["min"], hi=summary["max"]),
-        transform=ax2.transAxes, ha="right", va="top", fontsize=6.0,
+        transform=ax2.transAxes, ha="right", va="top", fontsize=6.8,
         color=INK, linespacing=1.3,
     )
     if regular is not None:
@@ -1555,12 +1479,12 @@ def main():
     ap.add_argument(
         "--only",
         default=None,
-        help="comma list: fig0,figV,figT,figA,figB,figC,figD,figE,figM,figP,figCC",
+        help="comma list: fig0,figT,figA,figB,figC,figD,figE,figM,figP,figCC",
     )
     args = ap.parse_args()
 
     figure_names = {
-        "fig0", "figV", "figT", "figA", "figB", "figC", "figD", "figE",
+        "fig0", "figT", "figA", "figB", "figC", "figD", "figE",
         "figM", "figP", "figCC",
     }
     if args.only is None:
@@ -1596,8 +1520,6 @@ def main():
     if want("fig0"):
         fig0_thesis(out, "en")
         fig0_thesis(out, "zh-TW")
-    if want("figV"):
-        figV(out)
     if want("figT"):
         figT(out)
     if want("figA"):
