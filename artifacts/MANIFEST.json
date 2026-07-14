@@ -4,7 +4,7 @@
   "generated_at": "2026-07-12",
   "dataset_id": "JacobLinCool/taiko-1000-parsed-clean",
   "dataset_revision": "b72da4616d643018e81f372cea06ce51349285e0",
-  "total_bytes": 41865533,
+  "total_bytes": 41869369,
   "files": [
     {
       "path": "ARTIFACT_LICENSE.md",
@@ -236,6 +236,11 @@
       "path": "experiments/suite_v2_development/SPEC.md",
       "bytes": 17585,
       "sha256": "78bdc08cd414195af5e372c0b5c302f56040259d0689789ff135db1e7e1e948f"
+    },
+    {
+      "path": "artifacts/records/corpus_coverage.json",
+      "bytes": 3836,
+      "sha256": "9c37ca2192efc64c621b920f9ea28bf48990105d0380182ed441e2655c67139e"
     }
   ]
 }

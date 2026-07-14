@@ -32,7 +32,7 @@ pip install -e ".[data]"      # + datasets for the reproduction scripts
 pip install -e ".[dev]"       # everything (incl. pytest)
 ```
 
-Python 3.10-3.12. `madmom` is an *optional* downbeat-grid backend installed
+Python 3.10-3.14. `madmom` is an *optional* downbeat-grid backend installed
 separately (`pip install madmom`); it has no wheels for all Python versions, so
 it is not in an extra. When absent, `MadmomGrid` raises a clear `ImportError`.
 

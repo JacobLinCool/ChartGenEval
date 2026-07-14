@@ -6,6 +6,7 @@ and synthetic in-memory observations.
 
 from __future__ import annotations
 
+import platform
 import sys
 from pathlib import Path
 
@@ -16,6 +17,7 @@ WORKFLOW = ROOT / "experiments" / "confirmatory_holdout_v1"
 sys.path.insert(0, str(WORKFLOW))
 
 import analyze as confirmatory_analysis  # noqa: E402
+import contract as confirmatory_contract  # noqa: E402
 import run as confirmatory_run  # noqa: E402
 from contract import derive_rng_seed, load_contract, runtime_dependency_contract  # noqa: E402
 
@@ -48,11 +50,31 @@ def test_frozen_configs_validate(name, phase, start, stop):
     ]
 
 
-def test_runtime_is_repository_venv():
+def test_runtime_dependency_contract_accepts_frozen_environment(monkeypatch, tmp_path):
+    expected_venv = tmp_path / ".venv"
+    expected_venv.mkdir()
+    (expected_venv / "pyvenv.cfg").write_text("version = 3.11.14\n")
+
+    monkeypatch.setattr(confirmatory_contract, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(platform, "python_version", lambda: "3.11.14")
+    monkeypatch.setattr(sys, "prefix", str(expected_venv))
+
     runtime = runtime_dependency_contract()
     assert runtime["venv_path"] == ".venv"
     assert runtime["python_major_minor"] == "3.11"
     assert len(runtime["pyvenv_cfg_sha256"]) == 64
+
+
+@pytest.mark.parametrize("python_version", ["3.9.21", "3.13.9", "3.14.6"])
+def test_runtime_dependency_contract_rejects_other_python_versions(
+    monkeypatch, python_version
+):
+    monkeypatch.setattr(platform, "python_version", lambda: python_version)
+    major_minor = ".".join(python_version.split(".")[:2])
+    with pytest.raises(
+        RuntimeError, match=rf"unsupported experiment Python {major_minor}"
+    ):
+        runtime_dependency_contract()
 
 
 def test_replicate_seed_is_stable_and_changes_by_base_seed():

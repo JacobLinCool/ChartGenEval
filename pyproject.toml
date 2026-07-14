@@ -7,7 +7,7 @@ name = "chartgeneval"
 version = "0.1.0"
 description = "A multi-dimensional metric suite for rhythm-game chart generation"
 readme = "README.md"
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.10,<3.15"
 license = { text = "MIT" }
 authors = [{ name = "Jhen-Ke Lin", email = "jacoblincool@gmail.com" }]
 keywords = ["evaluation", "rhythm-game", "taiko", "chart-generation", "music-information-retrieval"]
@@ -15,13 +15,18 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "License :: OSI Approved :: MIT License",
     "Intended Audience :: Science/Research",
     "Topic :: Multimedia :: Sound/Audio :: Analysis",
 ]
 
 # Core is intentionally numpy-only. Everything else lives in an extra.
-dependencies = ["numpy>=1.23,<2.3"]
+dependencies = [
+    "numpy>=1.23,<2.3; python_version < '3.14'",
+    "numpy>=2.3.4,<2.5; python_version >= '3.14'",
+]
 
 [project.optional-dependencies]
 # Optimal-assignment matcher for the full timing family + Spearman p-values.

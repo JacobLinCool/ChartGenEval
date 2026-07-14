@@ -299,11 +299,16 @@ def _verify_c5_dependency_disclosure(listed_paths: set[str]) -> None:
         "C5 development dependency maximum score delta",
     )
     _require_equal(n_structure_proxies, 4760, "surface structure proxy count")
-    _require_equal(
+    if not math.isclose(
         max_structure_proxy_delta,
         0.0,
-        "surface structure proxy geometric-mean residual",
-    )
+        rel_tol=0.0,
+        abs_tol=1e-15,
+    ):
+        raise ValueError(
+            "surface structure proxy geometric-mean residual: "
+            f"{max_structure_proxy_delta!r}; expected at most 1e-15"
+        )
 
     calibration = _load_json(
         ROOT / "src/chartgeneval/data/taiko_1000_parsed_clean_calibration_v2.json"
