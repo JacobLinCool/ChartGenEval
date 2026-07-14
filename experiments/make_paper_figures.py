@@ -7,11 +7,10 @@ Figure set (visual protocol -- see ``chartgeneval.plots``):
   figT_timing_alignment.pdf  Why local nearest-grid matching can miss a global
                              shift and how a whole-chart offset search finds it.
 
-  figA_complementarity.pdf The bidirectional blindness exhibit: C5 improves
-                           both LM loss and its pattern-IC band score while one
-                           effective 4-gram repetition/uniqueness axis catches
-                           the collapse; C1s is
-                           absorbed by the timing lattice while grammar reacts.
+  figA_complementarity.pdf Two wrong-way incentives: C5 improves both LM loss
+                           and its pattern-IC band score, while C4 loop collapse
+                           increases self-similarity. The 4-gram typicality
+                           axis moves against both failures.
   figB_timing_tiers.pdf    Timing-error-range stacked bars (within 6 ms / 6-12 /
                            12-18 / >18 / unmatched) + a per-chart strip for the
                            evaluated systems.
@@ -509,12 +508,37 @@ def fig0_thesis(out, locale="en"):
 # ---------------- figT: timing-reference schematic ----------------
 
 
-def figT(out):
+def figT(out, locale="en"):
     """Show local re-pairing versus one chart-wide timing shift."""
+    labels = {
+        "en": {
+            "local": "LOCAL MATCHING",
+            "grid": "fixed grid",
+            "notes": "notes +60 ms",
+            "time": "time (ms)",
+            "whole": "WHOLE-CHART OFFSET",
+            "estimate": "estimate: +60 ms",
+            "candidate": "candidate chart offset (ms)",
+            "agreement": "grid agreement",
+        },
+        "zh-TW": {
+            "local": "局部配對",
+            "grid": "固定格線",
+            "notes": "音符 +60 ms",
+            "time": "時間（ms）",
+            "whole": "整譜偏移",
+            "estimate": "估計：+60 ms",
+            "candidate": "候選整譜偏移（ms）",
+            "agreement": "格線一致度",
+        },
+    }[locale]
+    regular, strong = locale_fonts(locale)
+    regular_kw = {"fontproperties": regular} if regular is not None else {}
+    strong_kw = {"fontproperties": strong} if strong is not None else {}
     fig, axes = plt.subplots(1, 2, figsize=(6.9, 2.35), gridspec_kw={"width_ratios": (1.2, 1)})
 
     ax = axes[0]
-    ax.set_title("LOCAL MATCHING", loc="left", color=BLUE)
+    ax.set_title(labels["local"], loc="left", color=BLUE, **strong_kw)
     fine = np.arange(0, 481, 30)
     major = np.arange(0, 481, 120)
     for x in fine:
@@ -530,16 +554,17 @@ def figT(out):
         # Pairing is an undirected nearest-grid relation. A short connector
         # communicates the match without an unnecessary arrowhead.
         ax.plot([x, x], [0.38, 0.60], color="#777777", lw=0.7, zorder=1)
-    ax.text(-82, 0.72, "fixed grid", ha="left", va="center",
-            fontsize=6.8, color=BLUE)
-    ax.text(-82, 0.32, "notes +60 ms", ha="left", va="center",
-            fontsize=6.8, color=VERMILLION)
-    ax.set(xlim=(-90, 500), ylim=(0, 1), xlabel="time (ms)", yticks=[])
+    ax.text(-82, 0.72, labels["grid"], ha="left", va="center",
+            fontsize=6.8, color=BLUE, **regular_kw)
+    ax.text(-82, 0.32, labels["notes"], ha="left", va="center",
+            fontsize=6.8, color=VERMILLION, **regular_kw)
+    ax.set(xlim=(-90, 500), ylim=(0, 1), yticks=[])
+    ax.set_xlabel(labels["time"], **regular_kw)
     for spine in ("top", "right", "left"):
         ax.spines[spine].set_visible(False)
 
     ax = axes[1]
-    ax.set_title("WHOLE-CHART OFFSET", loc="left", color=TEAL)
+    ax.set_title(labels["whole"], loc="left", color=TEAL, **strong_kw)
     shifts = np.linspace(-120, 120, 241)
     agreement = np.exp(-0.5 * ((shifts - 60) / 18) ** 2)
     agreement += 0.18 * np.exp(-0.5 * ((shifts + 60) / 25) ** 2)
@@ -547,15 +572,16 @@ def figT(out):
     ax.plot(shifts, agreement, color=BLUE, lw=1.8)
     ax.axvline(60, color=VERMILLION, lw=1, ls="--")
     ax.scatter([60], [1], color=VERMILLION, s=28, marker="D", zorder=3)
-    ax.text(60, 1.02, "estimate: +60 ms", ha="center", va="bottom",
+    ax.text(60, 1.02, labels["estimate"], ha="center", va="bottom",
             fontsize=7.2, bbox={"facecolor": "white", "edgecolor": "none",
-                               "pad": 1.0, "alpha": 1.0})
-    ax.set(xlabel="candidate chart offset (ms)", ylabel="grid agreement",
-           xlim=(-120, 120), ylim=(0, 1.08), yticks=[])
+                               "pad": 1.0, "alpha": 1.0}, **regular_kw)
+    ax.set(xlim=(-120, 120), ylim=(0, 1.08), yticks=[])
+    ax.set_xlabel(labels["candidate"], **regular_kw)
+    ax.set_ylabel(labels["agreement"], **regular_kw)
     for spine in ("top", "right", "left"):
         ax.spines[spine].set_visible(False)
     fig.tight_layout(pad=0.8, w_pad=1.3)
-    save(fig, out, "figT_timing_alignment")
+    save(fig, out, localized_name("figT_timing_alignment", locale))
 
 
 # ---------------- figA: bidirectional blindness ----------------
@@ -567,24 +593,44 @@ def _net_series(records, metric, probe):
     return [nd.get(d, float("nan")) for d in (1, 2, 3)]
 
 
-def figA(probe_records, cert_records, out):
+def figA(probe_records, borrowed_records, out, locale="en"):
     """Grouped horizontal bars of per-chart net direction (doses 1-3)."""
-    cert_meta = [r for r in cert_records if r.get("anchor_source") == "metadata"]
+    labels = {
+        "en": {
+            "c5": "C5 common-pattern rewrite",
+            "lm": "LM loss (lower looks better)",
+            "band": "pattern-IC band score",
+            "fourgram": "4-gram repetition / uniqueness",
+            "c4": "C4 loop collapse",
+            "selfsim": "self-similarity (higher looks better)",
+            "net": "Net direction vs. intact",
+        },
+        "zh-TW": {
+            "c5": "C5 常見模式改寫",
+            "lm": "LM loss（越低看似越好）",
+            "band": "pattern-IC 範圍分數",
+            "fourgram": "4-gram 重複／唯一性",
+            "c4": "C4 循環崩解",
+            "selfsim": "自相似度（越高看似越好）",
+            "net": "相對原譜的淨方向",
+        },
+    }[locale]
     panels = [
-        ("C5 common-pattern rewrite", [
-            ("LM loss (lower looks better)", BASE_C, _net_series(probe_records, "pattern_nll", "C5_blandification")),
-            ("pattern-IC band score", OURS_C, _net_series(probe_records, "pattern_ic_adequacy_score", "C5_blandification")),
-            ("4-gram repetition / uniqueness", TEAL,
+        (labels["c5"], [
+            (labels["lm"], BASE_C, _net_series(probe_records, "pattern_nll", "C5_blandification")),
+            (labels["band"], OURS_C, _net_series(probe_records, "pattern_ic_adequacy_score", "C5_blandification")),
+            (labels["fourgram"], TEAL,
              _net_series(probe_records, "repetition_adequacy_score", "C5_blandification")),
         ]),
-        ("C1s a few large timing errors", [
-            ("mean timing error", BASE_C, _net_series(cert_meta, "absolute_error_mean_ms", "C1s_sparse_jitter")),
-            ("notes within 6 ms", SKY, _net_series(cert_meta, "clean_rate", "C1s_sparse_jitter")),
-            ("note-sequence LM loss", BLUE,
-             _net_series(probe_records, "pattern_nll", "C1s_sparse_jitter")),
+        (labels["c4"], [
+            (labels["selfsim"], BASE_C,
+             _net_series(borrowed_records, "structureness_indicator_long", "C4_loop_collapse")),
+            (labels["fourgram"], TEAL,
+             _net_series(probe_records, "repetition_adequacy_score", "C4_loop_collapse")),
         ]),
     ]
-    fig, axes = plt.subplots(1, 2, figsize=(6.9, 2.65), sharex=True)
+    regular, strong = locale_fonts(locale)
+    fig, axes = plt.subplots(2, 1, figsize=(3.9, 4.1), sharex=True)
     plt.rcParams.update({})
     for ax, (title, series) in zip(axes, panels):
         ax.axvline(0, color="#a9b4ba", lw=0.7)
@@ -597,17 +643,19 @@ def figA(probe_records, cert_records, out):
             yticks.append(base_y)
             ylabels.append(label)
         ax.set_yticks(yticks)
-        ax.set_yticklabels(ylabels, fontsize=7.2)
+        ax.set_yticklabels(ylabels, fontsize=7.2, fontproperties=regular)
         ax.set_xlim(-1.05, 1.05)
         ax.set_xticks([-1, 0, 1])
         ax.tick_params(axis="x", labelsize=7)
-        ax.set_title(title, fontsize=8.2, loc="left", color=INK)
+        ax.set_title(title, fontsize=8.2, loc="left", color=INK,
+                     fontproperties=strong)
         for spine in ("top", "right", "left"):
             ax.spines[spine].set_visible(False)
         ax.tick_params(left=False)
-    fig.supxlabel("Net direction vs. intact", fontsize=8, y=0.025, color=INK)
-    fig.tight_layout(rect=(0, 0.06, 1, 1), pad=0.8, w_pad=1.2)
-    save(fig, out, "figA_complementarity")
+    fig.supxlabel(labels["net"], fontsize=8, y=0.025, color=INK,
+                  fontproperties=regular)
+    fig.tight_layout(rect=(0, 0.06, 1, 1), pad=0.8, h_pad=1.1)
+    save(fig, out, localized_name("figA_complementarity", locale))
 
 
 # ---------------- figB: perceptual tier bars (draft) ----------------
@@ -1509,7 +1557,6 @@ def main():
     root = Path(args.artifacts_root)
     records = root / "records"
     probe_rec = records / "corruption_probes_development.jsonl"
-    cert_rec = records / "timing_corruptions_clean.jsonl"
     ext_rec = records / "system_timing_clean.jsonl"
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -1521,9 +1568,13 @@ def main():
         fig0_thesis(out, "en")
         fig0_thesis(out, "zh-TW")
     if want("figT"):
-        figT(out)
+        figT(out, "en")
+        figT(out, "zh-TW")
     if want("figA"):
-        figA(jrows(probe_rec), jrows(cert_rec), out)
+        probe_rows = jrows(probe_rec)
+        borrowed_rows = jrows(records / "corruption_borrowed_metrics_clean.jsonl")
+        figA(probe_rows, borrowed_rows, out, "en")
+        figA(probe_rows, borrowed_rows, out, "zh-TW")
     if want("figB"):
         figB(jrows(ext_rec), out)
     if want("figC"):

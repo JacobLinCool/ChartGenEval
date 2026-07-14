@@ -1,7 +1,8 @@
 # Paper
 
-`paper.tex` is the source for *ChartGenEval: A Multi-Dimensional Metric Suite
-for Rhythm-Game Chart Generation*. `paper.pdf` is the release build.
+`paper.tex` is the source for *ChartGenEval: Corruption-Tested
+Multi-Dimensional Feedback for Rhythm-Game Chart Generation*. `paper.pdf` is
+the release build.
 `paper.zh-TW.tex` is the Traditional Chinese companion version.
 
 Build from this directory with:
@@ -17,32 +18,30 @@ arXiv submission metadata:
 - Cross-list: `eess.AS` (Audio and Speech Processing)
 - Submission license: arXiv.org perpetual, non-exclusive license 1.0
 
-Plain-text abstract for the arXiv metadata field (identical to the PDF
-abstract; 1,438 characters against the 1,920-character field limit):
+Plain-text abstract for the arXiv metadata field, identical to the PDF
+abstract:
 
-> A rhythm-game chart must fit its music and play well, yet one song admits
-> many valid note sequences. Agreement with one official chart therefore
-> conflates valid alternatives with errors. We introduce ChartGenEval, a
-> six-dimensional metric suite that uses the matched official chart only for
-> its authored timing map, never its note placements. For injected whole-chart
-> shifts of 15, 30, and 60 ms, its median grid-phase estimates match the true
-> shifts. By contrast, every primary chart-only output changes by less than
-> 0.03 human standard deviations.
+> A generated rhythm-game chart need not reproduce one official note
+> sequence: many note choices can fit the same song and difficulty.
+> Reference-note agreement therefore measures reconstruction, not the full
+> design problem. We introduce ChartGenEval, a six-question evaluation
+> framework with an automatic, corruption-tested core. It leaves note choice
+> open while anchoring timing to the song: the matched official chart supplies
+> only its authored timing map, never target notes.
 >
-> ChartGenEval reports this timing profile alongside five higher-level
-> dimensions: note sequence, repetition and form, response to music,
-> same-difficulty human-chart distance, and difficulty and playability limits.
-> The dimensions remain separate, with no overall total. Nine nonredundant
-> corruption--measurement pairs met prespecified sensitivity and invariance
-> criteria on 80 held-out song groups; all 32 applicable control checks
-> passed. The
-> stress tests also show why isolated proxies can be misleading:
-> common-pattern rewriting lowers language-model perplexity by 37%, while loop
-> collapse raises self-similarity by 62%. Together, this automated
-> six-dimensional profile can support fast comparison and iteration of
-> chart-generation models. Depending on their roles, its outputs can serve as
-> rewards, constraints, or monitoring signals in training methods such as
-> reinforcement learning.
+> We test each core output with dose-controlled failures rather than assume
+> that a familiar statistic measures chart quality. Across 80 held-out song
+> groups, seven output axes satisfy prespecified sensitivity and invariance
+> criteria in nine nonredundant tests. Complementary stress tests on the
+> 40-song development panel expose two broader lessons. A chart-wide phase
+> estimate recovers injected shifts of 15, 30, and 60 ms while chart-only
+> outputs remain essentially unchanged. Common-pattern rewriting lowers
+> mean language-model perplexity by 37%, and loop collapse raises mean
+> self-similarity by 62%.
+> ChartGenEval therefore reports separate, role-specific signals instead of one
+> proxy or total score. This profile provides automatic feedback for comparing
+> and iterating generators; selected outputs are candidate optimization targets
+> or constraints after task-specific stress testing.
 
 The public code and records artifact is
 <https://github.com/JacobLinCool/ChartGenEval>. Paper licensing is described in
