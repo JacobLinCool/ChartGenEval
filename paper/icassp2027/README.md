@@ -53,9 +53,10 @@ references.
 
 ## Submission metadata
 
-- Author: Jhen-Ke Lin
-- Affiliation: National Yang Ming Chiao Tung University
-- Email: jacob.cs14@nycu.edu.tw
-- ORCID: https://orcid.org/0009-0004-0311-5409
+- Authors (in order): Jhen-Ke Lin; Chung Chun Wang
+- Affiliation (both): National Yang Ming Chiao Tung University
+- Email: jacob.cs14@nycu.edu.tw; takalawang.cs14@nycu.edu.tw
+- ORCID: https://orcid.org/0009-0004-0311-5409 (Jhen-Ke Lin);
+  https://orcid.org/0009-0003-6370-8313 (Chung Chun Wang)
 - Abstract: `abstract.txt`, matching the manuscript's abstract.
 - Keywords: Music information retrieval; rhythm games; generation evaluation; timing.
