@@ -86,6 +86,16 @@ all namespaced family diagnostics. It intentionally does not average the axes
 into a universal chart-quality total; ranking requires a declared task-specific
 decision rule.
 
+Timing assignment and timing error are distinct: candidate matching gates are
+10–50 ms, whereas the absolute-error reporting band is 6 ms. The archival
+`absolute_error_p99_ms` field reports the within-chart p99 of
+`max(0, abs(offset) - 6 ms)`, called **excess-error p99** in the paper.
+`absolute_offset_abs_p99_ms` retains the raw absolute-offset p99.
+Relative excess error subtracts `max(6 ms, 0.025 * anchor_interval)` from
+the absolute change between neighboring signed offsets. These are
+psychophysics-motivated operating thresholds, not universal gameplay
+inaudibility guarantees or event-matching tolerances.
+
 ### Pluggable grid sources
 
 The timing and audio-coupled families need a beat grid, decoupled from any
@@ -102,7 +112,7 @@ Never evaluate a generator against a grid inferred from its own output.
 
 ## Corruption probes (C1, C1s, C2-C8)
 
-`chartgeneval.probes` implements nine construction-guaranteed degradations of a
+`chartgeneval.probes` implements nine targeted edits of a
 chart's event stream at three doses each, seeded deterministically from
 `(sid, course, probe, dose_index)`.
 
@@ -116,7 +126,13 @@ chart's event stream at three doses each, seeded deterministically from
 | C5 | blandification (LM argmax resample) | one effective 4-gram repetition/uniqueness test; the two frozen co-primary names are algebraically equivalent |
 | C6 | density scale (x0.5/1.5/2) | density / strain |
 | C7 | burst insert (dense clusters) | overload / spike / chaos |
-| C8 | bar shuffle (destroy global form) | structure / repetition |
+| C8 | fixed-window shuffle | local repetition / window-boundary transitions |
+
+C8 permutes selected occupied windows of duration `4 * 60 / BPM` seconds,
+starting at the first note. Fixed windows deliberately require no authored
+bar boundaries; the four-beat nominal scale does not imply alignment to
+musical bars or phrases. The frozen identifier `C8_bar_shuffle` remains the
+experiment/seed key; the operator and archived numerical results are unchanged.
 
 For every chart, `repeat_4gram_rate = 1 - unique_4gram_rate`. Their mirrored
 course bands and symmetric scoring therefore make `repetition_adequacy_score`
@@ -145,6 +161,12 @@ python experiments/verify_release_artifacts.py
 ```
 
 The paper source and compiled manuscript are under `paper/`.
+The September 2026 terminology and disclosure revision applies to the English
+manuscript; the Traditional Chinese companion has not yet been synchronized.
+The confirmatory release supports summary-level auditability, but the exact
+dirty source snapshot at freeze time and all raw confirmatory records are
+not packaged. Current code and hash manifests alone do not provide independent
+end-to-end reproduction of that frozen run.
 
 ## Reproducing the paper
 

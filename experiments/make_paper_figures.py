@@ -1283,7 +1283,7 @@ def figP(contract, out, locale="en"):
     metric_names = {
         "en": {
             "timing.clean_rate": "timing clean fraction",
-            "timing.absolute_error_p99_ms": "timing-error p99",
+            "timing.absolute_error_p99_ms": "excess-error p99",
             "timing.grid_phase_offset_abs_ms": "chart-wide phase offset",
             "transition_validity_score": "transition familiarity",
             "repetition_adequacy_score": "4-gram typicality",
@@ -1312,7 +1312,7 @@ def figP(contract, out, locale="en"):
             "C5_blandification": "C5  common-pattern rewrite",
             "C6_density_scale": "C6  note-rate scaling",
             "C7_burst_insert": "C7  local burst insertion",
-            "C8_bar_shuffle": "C8  bar-order shuffle",
+            "C8_bar_shuffle": "C8  fixed-window shuffle",
         },
         "zh-TW": {
             "C1_timing_jitter": "C1  密集時值抖動",

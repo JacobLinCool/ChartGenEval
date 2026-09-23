@@ -19,7 +19,6 @@
 \usepackage{booktabs}
 \usepackage{placeins}
 \usepackage{needspace}
-\usepackage{balance}
 \usepackage{titlesec}
 \titlespacing*{\section}{0pt}{1.1em}{0.5em}
 \titlespacing*{\subsection}{0pt}{0.9em}{0.4em}
@@ -115,9 +114,9 @@ outputs remain essentially unchanged. Common-pattern rewriting lowers
 mean language-model perplexity by 37\%, and loop collapse raises mean
 self-similarity by 62\%.
 ChartGenEval therefore reports separate, role-specific signals instead of one
-proxy or total score. This profile provides automatic feedback for comparing
-and iterating generators; selected outputs are candidate optimization targets
-or constraints after task-specific stress testing.
+proxy or total score. The profile compares measured properties of generator
+outputs; using these readings as optimization targets or constraints requires
+additional task-specific validation.
 \end{abstract}
 
 \section{Introduction}\label{sec:intro}
@@ -148,9 +147,10 @@ chart-wide timing shifts that interval- and type-based statistics cannot see.
 ChartGenEval organizes evaluation into the six questions in
 \figref{fig:overview}. Its corruption-tested core covers timing, local note
 sequence, local repetition, and difficulty or playability limits. Each output
-has a role: a directional signal can guide optimization, a feasibility check
-can impose a constraint, and a descriptive value can monitor model behavior.
-The profile does not collapse these roles into one score.
+has a role: a directional signal describes a change, a feasibility check flags
+a declared limit, and a descriptive value characterizes model behavior.
+These diagnostic roles do not by themselves establish safe optimization
+objectives or player-rated quality. The profile keeps them separate.
 
 We test the core outputs by injecting known failures at increasing strengths.
 A useful output should react to its target failure and remain unchanged under
@@ -165,9 +165,9 @@ self-similarity.
 Our contributions are:
 \begin{enumerate}
 \item \textbf{Automatic, dimension-specific feedback.} ChartGenEval
-  separates evaluation questions and output roles, allowing generators to be
-  compared and revised without treating one reference note sequence as the
-  only valid answer.
+  separates evaluation questions and output roles, so measured properties of
+  generator outputs can be compared without treating one reference note
+  sequence as the only valid answer.
 \item \textbf{Corruption-tested signals and reusable diagnostic lessons.}
   Nine nonredundant held-out tests support seven core output axes.
   Complementary development tests identify a translation blind spot in
@@ -196,9 +196,9 @@ takada2023genelive,wang2024mania}. ChartGenEval complements these approaches
 by testing whether automatic outputs respond to specified chart failures.
 
 \textbf{Metric stress tests show that a plausible statistic can miss a
-musical failure.} SCHmUBERT constructs
-non-musical piano rolls that match framewise self-similarity
-statistics~\cite{plasser2023schmubert}. Fr\'echet Music Distance is tested with
+musical failure.} SCHmUBERT gives a proof-of-concept piano roll with nearly
+indistinguishable framewise self-similarity statistics from its source,
+despite poor musical quality~\cite{plasser2023schmubert}. Fr\'echet Music Distance is tested with
 pitch and velocity perturbations, but remains a set-level embedding
 distance~\cite{retkowski2025fmd}. STRUM reports reference-onset F1 after
 a per-song global-offset search~\cite{opria2026strum}; ChartGenEval
@@ -226,9 +226,9 @@ repetition, requested note rate, and density spikes.
 \toprule
 Evaluation question & Automatic reading & Present evidence \\
 \midrule
-Timing & Timing clean rate, timing-error p99, and whole-chart grid-phase offset & C1, C1s, and C2 held-out tests \\
+Timing & Timing clean rate, excess-error p99, and whole-chart grid-phase offset & C1, C1s, and C2 held-out tests \\
 Note sequence & Transition familiarity: a one-sided score derived from the rate of unseen interval--type trigrams & C3 held-out test \\
-Repetition and form & Same-course typicality of repeated versus unique 4-grams & C4, C5, and C8 test local repetition; long-form readings remain exploratory \\
+Local repetition; long-form structure & Same-course typicality of repeated versus unique 4-grams & C4, C5, and C8 test local repetition; long-form readings remain exploratory \\
 Response to music & Bar-scale energy response and onset support & Exploratory development analysis; Appendix~\ref{app:visuals} \\
 Human-chart distance & Distance from the same-course training distribution & Exploratory development analysis; Appendix~\ref{app:visuals} \\
 Difficulty and limits & Same-course note-rate typicality and a local density-spike limit & C6 and C7 held-out tests \\
@@ -243,12 +243,12 @@ readings remain exploratory.}
 All outputs are automatic, but automation does not make them
 interchangeable. Grid-phase error and timing tails have a clear direction;
 density spikes provide a course-relative density constraint; transition familiarity and
-typicality are safer as soft targets or monitoring signals. Raw LM loss is
+typicality describe local patterns without establishing their quality. Raw LM loss is
 retained only as a description of model fit and as a stress-test baseline.
 In particular, an unseen transition is unfamiliar to the training corpus,
 not necessarily invalid.
 
-\subsection{Same-difficulty calibration}\label{sec:layers}
+\subsection{Same-course calibration}\label{sec:layers}
 
 Several chart properties have no universal ``more is better'' direction. A
 chart can be too sparse or too dense, and too little or too much repetition
@@ -270,7 +270,7 @@ s(x)&=\frac{1}{1+d(x)^2}.
 \label{eq:band}
 \end{equation}
 Thus $s(x)=1$ inside the band and decreases symmetrically outside it. This is
-a difficulty-conditioned typicality reading, not a verdict on creativity or
+a course-conditioned typicality reading, not a verdict on creativity or
 overall quality. One-sided limits, such as the density-spike check, remain
 separate because a severe local overload should not be canceled by another
 high score.
@@ -311,14 +311,66 @@ The note types are also unchanged. Chart-only measurements built from
 these intervals and types therefore cannot identify the shift. This
 translation symmetry explains the blind spot before any experiment is run.
 
-Local timing still needs both a common-error summary and a tail summary. We
-treat a note within 6\,ms of the authored grid as locally aligned, at the scale
-of published temporal discrimination for short
-intervals~\cite{friberg1995jnd}. Timing clean rate summarizes common errors;
-the 99th percentile of absolute error exposes rare large errors that a mean
-can hide. Unmatched generated notes remain in the denominator, so timing clean
-rate must be read with note rate. Full matching rules and the 6/12/18\,ms
-diagnostic ranges appear in Appendix~\ref{app:protocol}.
+\textbf{Event matching and timing quality serve different purposes.}
+Onset evaluation first decides whether an event was recovered:
+\texttt{mir\_eval} defaults to a $\pm50$\,ms matching
+window~\cite{mirevalOnset}, while chart-generation evaluations use, for
+example, $\pm20$\,ms in DDC and $\pm50$\,ms in
+Gen\'eLive!~\cite{donahue2017ddc,takada2023genelive}.
+These windows permit event association despite timing uncertainty.
+For fine-grained chart timing, however, deviations inside such a window still
+matter: matching credit alone does not describe how precisely a note follows
+the musical grid. We therefore separate assignment from the error scored
+after assignment.
+
+For a note at $t_i$ assigned to an authored-grid anchor $g_i$, let
+$e_i=t_i-g_i$ be its signed displacement and $[z]_+=\max(z,0)$.
+We report raw offsets separately from the tolerance-subtracted error
+\begin{equation}
+ a_i=[|e_i|-\tau_{\mathrm{abs}}]_+,\qquad
+ \tau_{\mathrm{abs}}=6\,\mathrm{ms}.
+ \label{eq:excess-error}
+\end{equation}
+The tolerance band assigns zero error to small deviations and measures only
+their excess beyond the chosen perceptual scale. Friberg and
+Sundberg~\cite{friberg1995jnd} report an approximately 6\,ms just-noticeable
+difference for a single displaced tone in short isochronous sequences.
+This motivates a stringent operating threshold, not a universal claim that
+all sub-6\,ms deviations in gameplay are inaudible. Its purpose is finer
+timing assessment than event-recovery credit; a smaller threshold alone does
+not establish greater perceptual validity.
+
+Timing clean rate is the fraction of all notes matched within this band.
+The \emph{excess-error p99} is the within-chart 99th percentile of $a_i$
+over matched notes, not the percentile of $|e_i|$ or the injected corruption
+magnitude. Unmatched notes remain in the clean-rate denominator and are
+reported separately. This tail reading complements the clean rate, which
+must also be read with note rate. Appendix~\ref{app:protocol} separates
+assignment gates from the 6/12/18\,ms reporting bands.
+
+\textbf{Relative timing measures interval distortion.}
+For consecutive matched notes with increasing anchor times, define
+$\Delta_i=g_{i+1}-g_i>0$ and
+\begin{equation}
+\begin{aligned}
+ r_i
+ &= |(t_{i+1}-t_i)-\Delta_i|
+  = |e_{i+1}-e_i|,\\
+ \theta_i&=\max(6\,\mathrm{ms},\,0.025\Delta_i),\qquad
+ q_i=[r_i-\theta_i]_+.
+\end{aligned}
+\label{eq:relative-excess}
+\end{equation}
+The envelope follows the approximately 6\,ms discrimination floor below
+240\,ms and 2.5\% relative threshold for longer intervals in the same
+psychophysical study~\cite{friberg1995jnd}.
+A shared displacement cancels in $r_i$, whereas opposite-signed neighboring
+offsets can compound. For example, offsets of $+4$ and $-4$\,ms across a
+200\,ms anchor interval produce 8\,ms of interval distortion and 2\,ms of
+excess, even though each absolute offset lies within the 6\,ms band.
+Absolute offset, relative distortion, and shared phase thus expose different
+timing failures. Relative summaries are complementary profile readings;
+the held-out C1s target is excess-error p99 from Equation~\ref{eq:excess-error}.
 
 Nearest-grid matching can miss a constant shift (\figref{fig:timing}).
 On a dense grid, each shifted note may simply be paired with another
@@ -337,12 +389,14 @@ S(\delta)
 \end{aligned}
 \label{eq:phase-offset}
 \end{equation}
-where $[z]_+=\max(z,0)$, $\tau=12$\,ms, and the bar, beat, and
+In Equation~\ref{eq:phase-offset}, $\tau=12$\,ms, and the bar, beat, and
 eighth-note weights are 0.2, 0.3, and 0.5. We search in 0.5\,ms steps.
 Combining three grid levels reduces periodic ties. The resulting
-$\hat\delta$ is a chart-level diagnostic: its magnitude says how far the
-chart must move to best align with the fixed musical-time framework. BPM alone
-provides a period but not a phase, so it cannot replace this anchor.
+$\hat\delta$ is the selected chart-level offset within the search window,
+not a guarantee of unique alignment: periodic aliases, near ties, and
+syncopated content can remain ambiguous. Recovery is established here only
+for the tested 15, 30, and 60\,ms shifts. BPM alone provides a period but not
+a phase, so it cannot replace this anchor.
 
 \begin{figure*}[t]
 \centering
@@ -393,27 +447,36 @@ Targeted failure & Core output & Dose trend [99.5\% CI] &
 Strongest-dose change [99.5\% CI] \\
 \midrule
 Dense timing jitter & timing clean rate & $-.744\;[-.815,-.667]$ & $-.502\;[-.558,-.446]$ \\
-Sparse 60\,ms timing errors & timing-error p99 & $-.234\;[-.344,-.134]$ & $-.306\;[-.508,-.144]$\,ms \\
+Sparse 60\,ms timing errors & excess-error p99 & $-.234\;[-.344,-.134]$ & $-.306\;[-.508,-.144]$\,ms \\
 Whole-chart shift & grid-phase offset & $-.916\;[-.981,-.826]$ & $-55.58\;[-61.43,-49.83]$\,ms \\
 Note-type shuffle & transition familiarity & $-.800\;[-.856,-.737]$ & $-.231\;[-.262,-.199]$ \\
 Loop collapse & 4-gram typicality & $-.445\;[-.573,-.312]$ & $-.165\;[-.226,-.108]$ \\
 Common-pattern rewrite & 4-gram typicality & $-.358\;[-.459,-.258]$ & $-.131\;[-.189,-.078]$ \\
 Note-rate scaling & note-rate typicality & $-.693\;[-.784,-.579]$ & $-.582\;[-.672,-.483]$ \\
 Local burst insertion & density-spike limit & $-.940\;[-.950,-.930]$ & $-.619\;[-.644,-.593]$ \\
-Bar-order shuffle & 4-gram typicality & $-.589\;[-.728,-.435]$ & $-.224\;[-.293,-.156]$ \\
+Fixed-window shuffle & 4-gram typicality & $-.589\;[-.728,-.435]$ & $-.224\;[-.293,-.156]$ \\
 \bottomrule
 \end{tabular}
 \caption{Held-out results on 80 song groups. Outputs are oriented so larger is
 better; a useful response is therefore negative as a failure becomes stronger.
-Every row meets both criteria, and all applicable controls pass. Intervals are
-family-wise 99.5\% song-cluster bootstrap intervals.
+Every row meets both criteria, and all applicable controls pass. Individual
+99.5\% song-cluster bootstrap intervals use a Bonferroni adjustment across ten
+prespecified rows; both endpoints must pass to support a row, controlling
+family-wise error at at most 5\%.
 The two originally named 4-gram variety and repetition scores are algebraic
 mirrors, so they appear once as one effective axis.}
 \label{tab:confirmation}
 \end{table*}
 
-Sparse errors show why a tail statistic is needed when most notes remain
-correct. Complete sample counts and exclusions appear in
+The sparse-error result measures excess beyond the 6\,ms band after grid
+assignment; its strongest-dose contrast is only 0.306\,ms on the
+larger-is-worse excess-error scale. It supports sensitivity under this protocol, not
+recovery of the injected 60\,ms displacement. Negative dose-rank association
+also need not imply strict monotonicity: C1 mean clean rates are 0.996, 0.616,
+0.408, and 0.495 from intact to strongest jitter. The highest-dose rebound is
+consistent with grid re-matching, although these data do not isolate its
+cause. The clean rate is therefore a threshold reading, not a monotonic
+severity loss. Complete sample counts and exclusions appear in
 Appendix~\ref{app:protocol}.
 
 \subsection{External time detects chart--audio shifts}
@@ -430,9 +493,11 @@ injected value.
 Local matching and global phase answer different questions. A dense grid can
 re-pair a shifted note to another subdivision and still report a small local
 error. The whole-chart estimate preserves the shared offset instead. The same
-principle explains sparse failures: the mean remains dominated by correct
-notes, whereas timing-error p99 exposes the tail. Timing evaluation therefore
-needs both a song-side anchor and summaries at more than one scale.
+principle also limits local tail summaries: their values depend on the
+selected grid assignments and tolerance band. Timing evaluation therefore
+keeps raw offsets, excess errors, relative intervals, and shared phase
+separate, so tolerance-subtracted values are not mistaken for absolute
+displacements.
 
 \subsection{Common proxies can reward the wrong behavior}
 \label{sec:reductio}
@@ -452,12 +517,13 @@ cycle~\cite{wu2020jazz}.
 4-gram typicality moves in the opposite direction. The practical rule is to
 stress-test a candidate reward against the failure it is meant to prevent.
 
-Automatic profiles shorten model-development feedback by identifying the
-failure mechanism that changed. Phase error and timing tails can guide
-minimization; density spikes provide a course-relative constraint; familiarity
-and typicality are soft targets or monitors. Optimization may use selected
-signals after task-specific stress testing, but no single number should become
-the reward.
+Automatic profiles expose which measured property changed during model
+development. Phase and excess-error summaries quantify distinct timing
+deviations; density spikes provide a course-relative constraint; familiarity
+and typicality describe local patterns. Using these readings as optimization
+targets requires additional task-specific stress testing, including the
+grid-aliasing behavior above. The present results establish responses to
+specified edits, not improvement in player judgments or optimization outcomes.
 
 \begin{figure}[H]
 \centering
@@ -494,7 +560,9 @@ wrong-song pairing or removal of musically important notes. The response-to-
 music, long-form, and human-distance extensions were designed on the
 development panel and remain exploratory.
 
-The human bands come from one Taiko corpus. Timing also requires an external
+The human bands come from one Taiko corpus. Song-cluster intervals assume
+exchangeability across songs; shared authors or sources across song groups
+are not separately modeled. Timing also requires an external
 grid; without an authored map or a reliable audio estimate, the timing outputs
 are unavailable. Finally, timing clean rate has no reference-note recall term,
 so deleting off-grid notes can improve it. This is why the profile reads clean
@@ -513,17 +581,25 @@ failures, so neither should be used alone as a quality score. The broader lesson
 automatic evaluation is most useful when each signal names a failure, survives
 a targeted stress test, and keeps its role visible to the model developer.
 
-\section*{Ethics Statement}
+\section*{Compliance with Ethical Standards}
 The study uses community-transcribed charts and associated audio
 gathered from online sources as described in \secref{sec:data}; these
 potentially copyrighted materials are not redistributed. The released
 materials exclude source charts, audio, personal data, and generators.
 Automated evaluation can lower the cost of content production, so high-volume
 deployment still requires platform policy and moderation.
+This study analyzes chart content, audio, and derived numerical records; it
+does not recruit participants or use player profiles, gameplay records, or
+interventions.
 
-\section*{AI Usage Statement}
-AI assistants were used for experiment orchestration, drafting, and
-editing under author direction; the author checked all reported values.
+\section*{Acknowledgments}
+This study received no external research funding, sponsorship, or donated
+computing resources. The author has no conflicts of interest to disclose.
+Anthropic Claude and OpenAI GPT models assisted manuscript drafting and
+revision across the text, and the preparation and revision of the figures.
+AI assistants also supported experiment orchestration under author direction.
+The author is responsible for the scientific definitions, numerical results,
+interpretations, and final presentation.
 
 \appendix
 
@@ -554,10 +630,19 @@ contains 140 source rows that resolve to 120 song groups. The underlying charts
 and audio may be copyrighted, so they are not redistributed.
 
 The primary timing grid uses authored per-bar timestamps, meter, and tempo.
+Notes are assigned one-to-one to grid anchors by minimum-cost matching.
+Candidate gates depend on anchor spacing and are bounded between 10 and
+50\,ms; these assignment gates are distinct from the 6\,ms error dead zone.
 For local timing diagnostics, every generated note is classified as within
 6\,ms, in the 6--12, 12--18, or above-18\,ms range, or unmatched. We also
 compare adjacent intervals with tolerance
-$\max(6\,\mathrm{ms},2.5\%\times\mathrm{IOI})$. An audio-downbeat estimate
+$\max(6\,\mathrm{ms},2.5\%\times\mathrm{IOI})$, where IOI is the interval
+between consecutive matched anchors. The public fields
+\texttt{absolute\_error\_p99\_ms} and \texttt{relative\_error\_p99\_ms}
+summarize the excess errors $a_i$ and $q_i$; raw absolute offsets and raw
+interval distortions are retained in separate fields. Percentiles are
+computed within each chart before the replicate, course, and song averages
+described below. An audio-downbeat estimate
 provides a development-stage alternative: its period is within 2\% of the
 metadata period on 39 of 40 development songs and differs by 2.39\% on the
 remaining song. Held-out absolute offsets use the authored grid because it
@@ -639,14 +724,14 @@ were excluded.
 Controlled corruption (strength) & Operational change & Prespecified response \\
 \midrule
 C1 timing jitter ($\pm$10/20/30\,ms) & all note times & timing clean rate $\downarrow$ \\
-C1s sparse timing errors (0.5/1/2\%, $\pm$60\,ms) & a few note times & timing-error p99 $\uparrow$ \\
+C1s sparse timing errors (0.5/1/2\%, $\pm$60\,ms) & a few note times & excess-error p99 $\uparrow$ \\
 C2 whole-chart shift (+15/30/60\,ms) & chart--song alignment & grid-phase offset $\uparrow$ \\
 C3 note-type shuffle ($p{=}0.2/0.4/0.8$) & local transitions & transition familiarity $\downarrow$ \\
 C4 loop collapse ($p{=}0.3/0.6/1$) & local repetition & 4-gram typicality $\downarrow$ \\
 C5 common-pattern rewrite ($p{=}0.3/0.6/1$) & pattern variety & 4-gram typicality $\downarrow$ \\
 C6 note-rate scaling ($\times$0.5/1.5/2) & difficulty fit & note-rate typicality $\downarrow$ \\
 C7 burst insertion (2/4/8 clusters) & local overload & density-spike limit $\downarrow$ \\
-C8 bar-order shuffle ($p{=}0.3/0.6/1$) & phrase order & 4-gram typicality $\downarrow$ \\
+C8 fixed-window shuffle ($p{=}0.3/0.6/1$) & fixed-window ordering & 4-gram typicality $\downarrow$ \\
 \bottomrule
 \end{tabular}
 \caption{Controlled corruptions, strengths, and target readings. The edits
@@ -664,11 +749,23 @@ each corruption and its prespecified target measurement.
 \caption{Controlled-corruption atlas. Blue marks the intact chart and
 orange marks edited events. Each panel shows the property targeted by one
 corruption and names the target measurement. C1--C2 target timing, C3
-targets transition familiarity, C4--C5 and C8 target repetition or
-form, and C6--C7 target difficulty fit and local load. These edits do
+targets transition familiarity, C4--C5 target local repetition, C8 rearranges
+fixed-duration windows, and C6--C7 target difficulty fit and local load. These edits do
 not exhaust chart quality.}
 \label{fig:corruptionatlas}
 \end{figure*}
+
+C8 deliberately uses fixed-duration windows so the operation can be applied
+when authored bar boundaries are unavailable. For a chart-level tempo $B$
+in beats per minute, the window length is $L=4\cdot60/B$ seconds, with origin
+at the first note. Each occupied window is selected with probability $p$;
+the selected windows are permuted, preserving note types and offsets within
+each window. The four-beat nominal duration sets a common analysis scale,
+not a claim of alignment to musical bars: meter changes, tempo changes, and
+pickups need not coincide with its boundaries. C8 tests sensitivity to
+reordering fixed windows and the resulting event transitions; musical-form
+validity requires separate evidence. The frozen records retain the
+identifier \texttt{C8\_bar\_shuffle} for this unchanged operator.
 
 The 170-chart development matrix uses one realization per nonzero cell,
 producing 4{,}760 variants including the originals. C1s moves
@@ -698,9 +795,9 @@ distance} measures the mean distance to the 20 nearest same-course training
 charts in a standardized 32-feature representation.
 
 Their development responses clarify their scope. Reciprocity reacts to loop
-collapse and bar shuffling; stagnation--alienation reacts most strongly to
+collapse and fixed-window shuffling; stagnation--alienation reacts most strongly to
 loop collapse. Run-head support detects whole-chart shifts, while
-density--energy response detects shuffled bars but is weak for short bursts.
+density--energy response detects reordered fixed windows but is weak for short bursts.
 Human-chart distance detects many distributional departures but does not say
 whether an unusual chart is poor or creative. These outputs are therefore
 reported as exploratory monitors rather than core rewards.
@@ -808,10 +905,14 @@ difficulty.}
 
 \section{Released Materials}
 
-Code, evaluation records, and plotting scripts are available at
-\artifacturl.
+Current code, released evaluation summaries and records, and plotting scripts
+are available at \artifacturl. The confirmatory release binds provenance
+through hashes, but does not package the exact dirty working-tree source
+snapshot at freeze time or all raw confirmatory records. It therefore supports
+summary-level auditability, not independent end-to-end reproduction of the
+confirmatory run from the released materials alone. No source charts or audio
+are distributed.
 
-\balance
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 

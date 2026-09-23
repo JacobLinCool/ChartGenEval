@@ -1,7 +1,7 @@
-"""Corruption probes C1-C8: targeted, seed-deterministic degradations.
+"""Corruption probes C1-C8: targeted, seed-deterministic edits.
 
-Each probe is a construction-guaranteed degradation of a chart's event stream,
-applied at three increasing doses. They operate purely on ``(t, class)`` events;
+Each probe targets a specified property of a chart's event stream,
+applied at three doses. They operate purely on ``(t, class)`` events;
 audio is untouched. Every probe is seeded deterministically from
 ``(sid, course, probe, dose_index)`` via SHA-256, so two runs with the same key
 produce bit-identical output.
@@ -9,14 +9,14 @@ produce bit-identical output.
 Probe -> target dimension (paper Table):
 
     C1 timing_jitter    -> timing / rhythm complexity
-    C1s sparse_jitter   -> timing tail (sparse severe outliers; mean-blind)
+    C1s sparse_jitter   -> timing tail (sparse 60 ms displacements)
     C2 anchor_shift     -> anchoring (designed chart-only blind control)
     C3 type_shuffle     -> transition validity / pattern IC
     C4 loop_collapse    -> repetition / variety / boredom
     C5 blandification   -> pattern IC (LM argmax resample; needs ctx['lm'])
     C6 density_scale    -> density / strain constraints
     C7 burst_insert     -> overload / spike / chaos
-    C8 bar_shuffle      -> global structure / repetition
+    C8 bar_shuffle      -> fixed-window order / local repetition (archival ID)
 
 Each operator returns ``(new_events, noop_flag)``; ``noop_flag`` is True when the
 chart is too short / degenerate for the probe to apply.
@@ -66,12 +66,11 @@ def c1_timing_jitter(hits, delta_ms, rng, bpm):
 
 
 def c1s_sparse_jitter(hits, p, rng, bpm, mag_ms=60.0):
-    """Sparse severe outliers: displace a fraction ``p`` of notes by a large,
-    clearly perceptible offset (10x the 6 ms relative-JND floor), random sign.
+    """Displace a fraction ``p`` of notes by 60 ms with random sign.
 
     The affected count is ``max(1, round(n * p))`` so the probe always applies.
-    Mean-based timing summaries barely move under this probe; tail statistics
-    (P99, violation rates) must respond.
+    This probes tail sensitivity, not recovery of injected displacement size:
+    scoring may reassign notes to different grid anchors.
     """
     n = len(hits)
     if n < 4:
@@ -214,6 +213,12 @@ def c7_burst_insert(hits, k, rng, bpm):
 
 
 def c8_bar_shuffle(hits, p, rng, bpm):
+    """Shuffle fixed-duration windows, not authored musical bars.
+
+    Windows span four nominal beats at the supplied scalar BPM and start at
+    the first hit. No meter, bar boundaries, or tempo map is required. The
+    function and registry key retain the frozen experiment identifier.
+    """
     if len(hits) < 4 or not bpm or bpm <= 0:
         return hits, True
     bar_s = 4.0 * 60.0 / bpm

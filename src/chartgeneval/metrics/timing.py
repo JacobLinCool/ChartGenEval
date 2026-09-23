@@ -27,14 +27,13 @@ from ..events import sorted_hits
 
 METRIC_NAME = "timing"
 
-# Perception-grounded thresholds (timing just-noticeable-difference literature).
-# These are perceptual constants, distinct from the matcher engineering
-# parameters (anchor gates 10-50 ms, merge window 4 ms) defined below.
-# The absolute tolerance is aligned with the relative JND floor: a single
-# 6 ms perceptual constant at the just-noticeable-difference scale. Violation
-# tiers are expressed as multiples of it (1x detectable, 2x/3x severity).
-TAU_ABS_S = 0.006  # absolute alignment tolerance (at the ~6 ms JND scale)
-REL_FLOOR_S = 0.006  # relative interval-distortion detection floor
+# JND-motivated operating thresholds (Friberg and Sundberg, 1995).
+# Their short isochronous-tone task motivates a 6 ms dead zone and a 2.5%
+# interval envelope; it does not establish universal gameplay detectability.
+# Assignment gates (10-50 ms) and anchor merging (4 ms) are separate engineering
+# parameters. Raw offsets and tolerance-subtracted errors are both returned.
+TAU_ABS_S = 0.006  # absolute-error dead zone
+REL_FLOOR_S = 0.006  # absolute floor of the interval-error dead zone
 REL_FRAC = 0.025  # Weber fraction of the local inter-anchor interval
 VIOLATION_TIERS = (1, 2, 3)  # exceedance tiers as multiples of the tolerance
 
