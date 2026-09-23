@@ -76,12 +76,13 @@ confirmatory evidence.
 | `records/corruption_set_metrics_clean.jsonl` | 125 | Set-level Self-BLEU and type-token-ratio records. |
 | `records/corruption_coupling_gap_clean.jsonl` | 4,760 | Audio-coupling and 32-dimensional, course-conditioned human-reference-gap records, bound to the dataset, spec, audio identities, and cached-feature manifest. The reference counts are Easy 923, Normal 924, Hard 924, Oni 924, and Ura 185. |
 | `records/structure_v2_development.jsonl` | 4,760 | ABAB-reciprocity and stagnation--alienation structure records on the same development variants, bound to the dataset, spec, and run manifest. |
-| `records/timing_corruptions_clean.jsonl` | 3,400 | Authored/estimated-grid timing records for C1, C1s, and C2. |
+| `records/timing_corruptions_clean.jsonl` | 3,400 | Timing records for C1, C1s, and C2 on two copies of the authored grid. `anchor_source=metadata` uses per-course TJA segments; `anchor_source=estimated` uses flattened downbeats from the grids artifact, which equal the authored TJA bar timestamps. No audio beat tracker produced them. |
 | `records/cross_lm_c5_clean.jsonl` | 171 | Cross-language-model C5 diagnostic archive. |
 
 `tables/c2_shift_recovery_clean.csv` is the alias-aware aggregate of the C2
 phase witness. The per-chart witness values remain in
-`timing_corruptions_clean.jsonl`.
+`timing_corruptions_clean.jsonl`. Its `estimated` rows share the caveat above:
+they are computed on authored timing, not on an audio-estimated grid.
 
 `tables/suite_v2_development_results.csv` is a deterministic 45-row summary of
 the five proposed development-only measurements. It reports pooled

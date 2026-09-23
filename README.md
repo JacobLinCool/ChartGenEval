@@ -100,8 +100,10 @@ inaudibility guarantees or event-matching tolerances.
 
 The timing and audio-coupled families need a beat grid, decoupled from any
 generation model (`chartgeneval.grid`). Use the song's authored per-bar timing
-metadata when it is available; use an audio-estimated grid for a new song.
-Never evaluate a generator against a grid inferred from its own output.
+metadata when it is available. The audio-based sources below can supply a grid
+for a new song, but audio-estimated grids are untested: every reported timing
+result uses an authored grid. Never evaluate a generator against a grid
+inferred from its own output.
 
 - `MetadataGrid` -- a synthetic or explicitly phase-zero constant-tempo map.
   It is useful for tests or audio known to begin on a downbeat; it is not the
@@ -162,7 +164,8 @@ python experiments/verify_release_artifacts.py
 
 The paper source and compiled manuscript are under `paper/`.
 The September 2026 terminology and disclosure revision applies to the English
-manuscript; the Traditional Chinese companion has not yet been synchronized.
+manuscript; the Traditional Chinese companion has been updated only for the
+timing-grid correction.
 The confirmatory release supports summary-level auditability, but the exact
 dirty source snapshot at freeze time and all raw confirmatory records are
 not packaged. Current code and hash manifests alone do not provide independent

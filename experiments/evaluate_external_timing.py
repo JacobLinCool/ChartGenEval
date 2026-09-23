@@ -6,7 +6,10 @@ reference tiers:
 
   * authored  -- per-course TJA segments from the dataset row (per-bar meter),
                  selected by the system's explicit reference-course map
-  * estimated -- beat-tracker downbeats from the features dir (``<sid>.beats.npz``)
+  * estimated -- downbeats read from the features dir (``<sid>.beats.npz``).
+                 Not verified as audio-derived: on official charts they give
+                 the same phase and clean rate as the authored-timing
+                 ``estimated`` rows of ``timing_corruptions_clean.jsonl``.
 
 Official charts are evaluated as the ``official`` reference system. Sample
 dirs follow the SoftChart sample format (``{gen: {hits: [{t, type}]}}``,

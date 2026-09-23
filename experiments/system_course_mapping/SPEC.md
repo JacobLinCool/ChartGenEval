@@ -10,8 +10,9 @@ versioned crosswalk.
 ## Experimental units
 
 - Timing: one system output for one song and native difficulty setting, with one
-  row against the declared metadata grid and one against the audio-estimated
-  grid.
+  row against the declared metadata grid and one against the `estimated` grid
+  from the features directory (not verified as audio-derived; see
+  `experiments/evaluate_external_timing.py`).
 - Music response: the same output with one row using the declared course's bar
   windows and the song's audio features.
 

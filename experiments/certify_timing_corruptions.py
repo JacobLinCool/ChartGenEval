@@ -1,5 +1,5 @@
 """Certify the timing family against C1 (dense jitter), C1s (sparse severe
-outliers), and C2 (global anchor shift) over authored + estimated grids.
+outliers), and C2 (global anchor shift) over two sources of authored timing.
 
 For each official test chart, applies all three operators at three doses and
 computes the full timing family on both grid sources. Dose-0 rows are the
@@ -8,7 +8,9 @@ field) plus paired per-chart direction consistency: tail-statistic evidence
 for C1/C1s and fixed-lattice shift-recovery evidence for C2.
 
 Grid input: the grids JSON artifact with per-sid ``est_downbeats`` /
-``meta_downbeats`` (authored timing metadata, not note positions).
+``meta_downbeats`` (authored timing metadata, not note positions). Despite the
+``est_`` prefix, ``est_downbeats`` in ``clean_grids_20260711.json`` equal the
+authored TJA bar timestamps; no audio beat tracker produced them.
 
 Requires the ``[data]`` extra and a local HF token for the gated dataset.
 """
@@ -53,7 +55,9 @@ TABLE_FIELDS = [
 def build_sources(g, course_struct):
     """Metadata source = per-course TJA segments (per-bar meter lattice, the
     authored-grid tier); flattened downbeat lists misanchor variable-meter
-    charts. Estimated source = beat-tracker downbeats from the grids artifact.
+    charts. Estimated source = the grids artifact's ``est_downbeats``, a
+    flattened copy of the authored bar timestamps (not audio-derived); the
+    ``estimated`` label is kept for record compatibility.
     """
     sources = {}
     segments = (course_struct or {}).get("segments")

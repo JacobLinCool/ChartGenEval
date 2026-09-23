@@ -292,13 +292,12 @@ than courses or corruption replicates, are the inferential units.
 Appendix~\ref{app:protocol} gives the corpus construction, completeness rules,
 and full analysis protocol.
 
-Timing requires a reference outside the generated event sequence. Our primary
-grid comes from the matched official file's authored bar timestamps, meter,
-and tempo. We never use its note times or note types as targets, and we never
+Timing requires a reference outside the generated event sequence. Our grid
+comes from the matched official file's authored bar timestamps, meter, and
+tempo. We never use its note times or note types as targets, and we never
 accept the grid declared by the generated chart. The first choice preserves
 freedom of note design; the second prevents a generator from redefining the
-clock against which it is evaluated. An audio-estimated alternative is
-reported in Appendix~\ref{app:protocol}.
+clock against which it is evaluated.
 
 \subsection{Measuring timing against the song}\label{sec:timingmethod}
 
@@ -486,9 +485,9 @@ Translation symmetry predicts that a chart can look internally plausible yet
 be late relative to the song. The 40-song development experiment confirms
 this mechanism. After shifting every note by 15, 30, or 60\,ms, no primary
 chart-only output changes by more than 0.03 human standard deviations. The
-phase estimator's median matches each injected shift. With either the authored
-or audio-estimated grid, at least 169 of 170 charts are within 3\,ms of the
-injected value.
+phase estimator's median matches each injected shift. With the authored grid,
+the phase estimate moves by the injected shift to within 3\,ms for 169 of 170
+charts.
 
 Local matching and global phase answer different questions. A dense grid can
 re-pair a shifted note to another subdivision and still report a small local
@@ -563,8 +562,8 @@ development panel and remain exploratory.
 The human bands come from one Taiko corpus. Song-cluster intervals assume
 exchangeability across songs; shared authors or sources across song groups
 are not separately modeled. Timing also requires an external
-grid; without an authored map or a reliable audio estimate, the timing outputs
-are unavailable. Finally, timing clean rate has no reference-note recall term,
+grid; timing without an authored map, for example against a grid estimated
+from audio, remains untested. Finally, timing clean rate has no reference-note recall term,
 so deleting off-grid notes can improve it. This is why the profile reads clean
 rate together with note rate and keeps feasibility checks separate.
 
@@ -629,7 +628,7 @@ resolve to 813 unique song groups and 3{,}880 course charts. The test split
 contains 140 source rows that resolve to 120 song groups. The underlying charts
 and audio may be copyrighted, so they are not redistributed.
 
-The primary timing grid uses authored per-bar timestamps, meter, and tempo.
+The timing grid uses authored per-bar timestamps, meter, and tempo.
 Notes are assigned one-to-one to grid anchors by minimum-cost matching.
 Candidate gates depend on anchor spacing and are bounded between 10 and
 50\,ms; these assignment gates are distinct from the 6\,ms error dead zone.
@@ -642,10 +641,7 @@ between consecutive matched anchors. The public fields
 summarize the excess errors $a_i$ and $q_i$; raw absolute offsets and raw
 interval distortions are retained in separate fields. Percentiles are
 computed within each chart before the replicate, course, and song averages
-described below. An audio-downbeat estimate
-provides a development-stage alternative: its period is within 2\% of the
-metadata period on 39 of 40 development songs and differs by 2.39\% on the
-remaining song. Held-out absolute offsets use the authored grid because it
+described below. Held-out absolute offsets use the authored grid because it
 fixes bar phase directly.
 
 \subsection{Panel construction and integrity}
