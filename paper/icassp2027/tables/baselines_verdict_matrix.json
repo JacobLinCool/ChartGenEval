@@ -1,0 +1,1741 @@
+{
+ "analysis": "POST_HOC_SECONDARY_heldout_baselines_FINAL",
+ "rows": [
+  "lm_perplexity",
+  "self_similarity",
+  "ioi_hist_js",
+  "onset_f1_50ms",
+  "onset_f1_20ms",
+  "chartgeneval_measurement"
+ ],
+ "cols": [
+  "C1_timing_jitter",
+  "C1s_sparse_jitter",
+  "C2_anchor_shift",
+  "C3_type_shuffle",
+  "C4_loop_collapse",
+  "C5_blandification",
+  "C8_bar_shuffle",
+  "C6_density_scale",
+  "C7_burst_insert"
+ ],
+ "matrix": {
+  "lm_perplexity": {
+   "C1_timing_jitter": "DETECTS",
+   "C1s_sparse_jitter": "DETECTS",
+   "C2_anchor_shift": "BLIND",
+   "C3_type_shuffle": "DETECTS",
+   "C4_loop_collapse": "REWARDS",
+   "C5_blandification": "REWARDS",
+   "C8_bar_shuffle": "DETECTS",
+   "C6_density_scale": "DETECTS",
+   "C7_burst_insert": "DETECTS"
+  },
+  "self_similarity": {
+   "C1_timing_jitter": "DETECTS",
+   "C1s_sparse_jitter": "DETECTS",
+   "C2_anchor_shift": "BLIND",
+   "C3_type_shuffle": "DETECTS",
+   "C4_loop_collapse": "REWARDS",
+   "C5_blandification": "REWARDS",
+   "C8_bar_shuffle": "DETECTS",
+   "C6_density_scale": "DETECTS",
+   "C7_burst_insert": "DETECTS"
+  },
+  "ioi_hist_js": {
+   "C1_timing_jitter": "DETECTS",
+   "C1s_sparse_jitter": "DETECTS",
+   "C2_anchor_shift": "BLIND",
+   "C3_type_shuffle": "N/A-by-design",
+   "C4_loop_collapse": "N/A-by-design",
+   "C5_blandification": "N/A-by-design",
+   "C8_bar_shuffle": "DETECTS",
+   "C6_density_scale": "DETECTS",
+   "C7_burst_insert": "DETECTS"
+  },
+  "onset_f1_50ms": {
+   "C1_timing_jitter": "BLIND",
+   "C1s_sparse_jitter": "DETECTS",
+   "C2_anchor_shift": "DETECTS",
+   "C3_type_shuffle": "N/A-by-design",
+   "C4_loop_collapse": "N/A-by-design",
+   "C5_blandification": "N/A-by-design",
+   "C8_bar_shuffle": "DETECTS",
+   "C6_density_scale": "DETECTS",
+   "C7_burst_insert": "DETECTS"
+  },
+  "onset_f1_20ms": {
+   "C1_timing_jitter": "DETECTS",
+   "C1s_sparse_jitter": "DETECTS",
+   "C2_anchor_shift": "DETECTS",
+   "C3_type_shuffle": "N/A-by-design",
+   "C4_loop_collapse": "N/A-by-design",
+   "C5_blandification": "N/A-by-design",
+   "C8_bar_shuffle": "DETECTS",
+   "C6_density_scale": "DETECTS",
+   "C7_burst_insert": "DETECTS"
+  },
+  "chartgeneval_measurement": {
+   "C1_timing_jitter": "DETECTS",
+   "C1s_sparse_jitter": "DETECTS",
+   "C2_anchor_shift": "DETECTS",
+   "C3_type_shuffle": "DETECTS",
+   "C4_loop_collapse": "DETECTS",
+   "C5_blandification": "DETECTS",
+   "C8_bar_shuffle": "DETECTS",
+   "C6_density_scale": "DETECTS",
+   "C7_burst_insert": "DETECTS"
+  }
+ },
+ "cells": {
+  "lm_perplexity|C1_timing_jitter": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.9110363133329618,
+   "dose_ci995": [
+    -0.9446286563846198,
+    -0.8718526532129244
+   ],
+   "contrast_mean": -33.44137374598058,
+   "contrast_ci995": [
+    -37.90829058574571,
+    -29.081603208314377
+   ],
+   "sham": "CTRL_identity:d0",
+   "sham_rule": "identity_fallback",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 8.923638557163788,
+    "d1": 10.812634728717075,
+    "d2": 24.19541876780711,
+    "d3": 42.36501230314436
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.4096096096096096,
+    "2": 0.16276276276276277,
+    "3": 0.08048048048048048
+   },
+   "raw_contrast_strongest_minus_control": [
+    33.44137374598058,
+    29.081603208314377,
+    37.90829058574571
+   ]
+  },
+  "lm_perplexity|C1s_sparse_jitter": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.9063091082047509,
+   "dose_ci995": [
+    -0.9413818255746567,
+    -0.8628119876648308
+   ],
+   "contrast_mean": -1.7346465977644598,
+   "contrast_ci995": [
+    -2.237856332807946,
+    -1.4695848182905358
+   ],
+   "sham": "CTRL_identity:d0",
+   "sham_rule": "identity_fallback",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 8.926708491766089,
+    "d1": 9.455195232928867,
+    "d2": 9.802153277359002,
+    "d3": 10.66135508953055
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.19879518072289157,
+    "2": 0.13734939759036144,
+    "3": 0.09759036144578313
+   },
+   "raw_contrast_strongest_minus_control": [
+    1.7346465977644598,
+    1.4695848182905358,
+    2.237856332807946
+   ]
+  },
+  "lm_perplexity|C2_anchor_shift": {
+   "label": "BLIND",
+   "frozen_rule_verdict": "REFUTED",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.016460179221381523,
+   "dose_ci995": [
+    -0.0629359793758705,
+    0.032920358442763045
+   ],
+   "contrast_mean": 0.0,
+   "contrast_ci995": [
+    0.0,
+    0.0
+   ],
+   "sham": "CTRL_joint_time_origin_shift:d0",
+   "sham_rule": "frozen",
+   "report_as": "exactly unchanged at every seed and strength",
+   "song_mean_by_dose": {
+    "official": 8.923638557163788,
+    "d1": 8.923638557163788,
+    "d2": 8.923638557163788,
+    "d3": 8.923638557163788
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 1.0,
+    "2": 1.0,
+    "3": 1.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.0,
+    -0.0,
+    -0.0
+   ]
+  },
+  "lm_perplexity|C3_type_shuffle": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.843,
+   "dose_ci995": [
+    -0.875625,
+    -0.8066246875
+   ],
+   "contrast_mean": -5.855257897213979,
+   "contrast_ci995": [
+    -6.992725116248335,
+    -4.873324861602568
+   ],
+   "sham": "C2_anchor_shift:d3",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 8.923638557163788,
+    "d1": 12.185181455735291,
+    "d2": 14.963658412102834,
+    "d3": 14.778896454377763
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.0,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    5.855257897213979,
+    4.873324861602568,
+    6.992725116248335
+   ]
+  },
+  "lm_perplexity|C4_loop_collapse": {
+   "label": "REWARDS",
+   "frozen_rule_verdict": "REFUTED",
+   "n_songs": 80,
+   "dose_statistic_mean": 0.4880117882311974,
+   "dose_ci995": [
+    0.3657729219918169,
+    0.6037522169705788
+   ],
+   "contrast_mean": 1.8495768829161459,
+   "contrast_ci995": [
+    1.187923904793347,
+    2.5213057177054576
+   ],
+   "sham": "C2_anchor_shift:d3",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 8.923638557163788,
+    "d1": 8.349852156075567,
+    "d2": 7.8029484833742115,
+    "d3": 7.07406167424764
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.0,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    -1.8495768829161459,
+    -2.5213057177054576,
+    -1.187923904793347
+   ]
+  },
+  "lm_perplexity|C5_blandification": {
+   "label": "REWARDS",
+   "frozen_rule_verdict": "REFUTED",
+   "n_songs": 80,
+   "dose_statistic_mean": 0.7587499999999999,
+   "dose_ci995": [
+    0.699625,
+    0.8135
+   ],
+   "contrast_mean": 3.033657872264583,
+   "contrast_ci995": [
+    2.451656439482185,
+    3.713409583537712
+   ],
+   "sham": "C2_anchor_shift:d3",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 8.923638557163788,
+    "d1": 8.742269763728254,
+    "d2": 8.307197588400546,
+    "d3": 5.889980684899203
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.0,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    -3.033657872264583,
+    -3.713409583537712,
+    -2.451656439482185
+   ]
+  },
+  "lm_perplexity|C8_bar_shuffle": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.9892500000000002,
+   "dose_ci995": [
+    -0.9958750000000001,
+    -0.9808746874999997
+   ],
+   "contrast_mean": -9.033552205560696,
+   "contrast_ci995": [
+    -10.996217195451546,
+    -7.269934551525936
+   ],
+   "sham": "C2_anchor_shift:d3",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 8.845476367971438,
+    "d1": 12.40473578850639,
+    "d2": 15.681130232237555,
+    "d3": 17.879028573532132
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.0,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    9.033552205560696,
+    7.269934551525936,
+    10.996217195451546
+   ]
+  },
+  "lm_perplexity|C6_density_scale": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.9338601215184745,
+   "dose_ci995": [
+    -0.9449280933290629,
+    -0.9178505967579869
+   ],
+   "contrast_mean": -50.50115064871082,
+   "contrast_ci995": [
+    -52.62906482406226,
+    -48.51018005990688
+   ],
+   "sham": "CTRL_identity:d0",
+   "sham_rule": "identity_fallback",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 8.923638557163788,
+    "d1": 36.48659252551748,
+    "d2": 27.340127352626393,
+    "d3": 59.424789205874596
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.0,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    50.50115064871082,
+    48.51018005990688,
+    52.62906482406226
+   ]
+  },
+  "lm_perplexity|C7_burst_insert": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.9962500000000001,
+   "dose_ci995": [
+    -1.0,
+    -0.9849906249999981
+   ],
+   "contrast_mean": -11.654133752099188,
+   "contrast_ci995": [
+    -13.916322963247683,
+    -10.123288209650957
+   ],
+   "sham": "CTRL_identity:d0",
+   "sham_rule": "identity_fallback",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 8.923638557163788,
+    "d1": 12.20302395489333,
+    "d2": 14.986536428899544,
+    "d3": 20.577772309262976
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.0,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    11.654133752099188,
+    10.123288209650957,
+    13.916322963247683
+   ]
+  },
+  "self_similarity|C1_timing_jitter": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.8301789362420973,
+   "dose_ci995": [
+    -0.8767715900756778,
+    -0.7814981071065965
+   ],
+   "contrast_mean": -0.05593608452480161,
+   "contrast_ci995": [
+    -0.06932292899256313,
+    -0.04492545953065861
+   ],
+   "sham": "CTRL_identity:d0",
+   "sham_rule": "identity_fallback",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 0.10332250053550043,
+    "d1": 0.0920646726793439,
+    "d2": 0.06437639775530109,
+    "d3": 0.047386416010698804
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.6288288288288288,
+    "2": 0.3165165165165165,
+    "3": 0.2
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.05593608452480161,
+    -0.06932292899256313,
+    -0.04492545953065861
+   ]
+  },
+  "self_similarity|C1s_sparse_jitter": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.7604244297223668,
+   "dose_ci995": [
+    -0.8138670040470254,
+    -0.7044339504924929
+   ],
+   "contrast_mean": -0.01314033298520823,
+   "contrast_ci995": [
+    -0.01576478797672708,
+    -0.010870007276512866
+   ],
+   "sham": "CTRL_identity:d0",
+   "sham_rule": "identity_fallback",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 0.10409191341428832,
+    "d1": 0.10026095097383296,
+    "d2": 0.09708517446578695,
+    "d3": 0.09095158042908007
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.6644578313253012,
+    "2": 0.5102409638554217,
+    "3": 0.3469879518072289
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.01314033298520823,
+    -0.01576478797672708,
+    -0.010870007276512866
+   ]
+  },
+  "self_similarity|C2_anchor_shift": {
+   "label": "BLIND",
+   "frozen_rule_verdict": "REFUTED",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.007745966692414834,
+   "dose_ci995": [
+    -0.051801152255524195,
+    0.03824571054379825
+   ],
+   "contrast_mean": 0.0,
+   "contrast_ci995": [
+    0.0,
+    0.0
+   ],
+   "sham": "CTRL_joint_time_origin_shift:d0",
+   "sham_rule": "frozen",
+   "report_as": "exactly unchanged at every seed and strength",
+   "song_mean_by_dose": {
+    "official": 0.10332250053550043,
+    "d1": 0.10332250053550043,
+    "d2": 0.10332250053550043,
+    "d3": 0.10332250053550043
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 1.0,
+    "2": 1.0,
+    "3": 1.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "self_similarity|C3_type_shuffle": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.56975,
+   "dose_ci995": [
+    -0.6155368387818584,
+    -0.5224454168871844
+   ],
+   "contrast_mean": -0.07250439727986382,
+   "contrast_ci995": [
+    -0.08486985514283714,
+    -0.06127879398249676
+   ],
+   "sham": "C2_anchor_shift:d3",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 0.10332250053550043,
+    "d1": 0.03056358597132408,
+    "d2": 0.017170315849912247,
+    "d3": 0.03081810325563661
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.01981981981981982,
+    "2": 0.015015015015015015,
+    "3": 0.018618618618618618
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.07250439727986382,
+    -0.08486985514283714,
+    -0.06127879398249676
+   ]
+  },
+  "self_similarity|C4_loop_collapse": {
+   "label": "REWARDS",
+   "frozen_rule_verdict": "REFUTED",
+   "n_songs": 80,
+   "dose_statistic_mean": 0.724803996708436,
+   "dose_ci995": [
+    0.6265696218797867,
+    0.8107009507131323
+   ],
+   "contrast_mean": 0.05086744767115142,
+   "contrast_ci995": [
+    0.04076856356069063,
+    0.06057137871823533
+   ],
+   "sham": "C2_anchor_shift:d3",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 0.10332250053550043,
+    "d1": 0.11017148830645937,
+    "d2": 0.12331981149483573,
+    "d3": 0.15418994820665186
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.3033033033033033,
+    "2": 0.13813813813813813,
+    "3": 0.07207207207207207
+   },
+   "raw_contrast_strongest_minus_control": [
+    0.05086744767115142,
+    0.04076856356069063,
+    0.06057137871823533
+   ]
+  },
+  "self_similarity|C5_blandification": {
+   "label": "REWARDS",
+   "frozen_rule_verdict": "REFUTED",
+   "n_songs": 80,
+   "dose_statistic_mean": 0.34319786090108373,
+   "dose_ci995": [
+    0.28497143593178875,
+    0.3991797439560319
+   ],
+   "contrast_mean": 0.04110150066476055,
+   "contrast_ci995": [
+    0.03264688575250313,
+    0.049984021566264414
+   ],
+   "sham": "C2_anchor_shift:d3",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 0.10332250053550043,
+    "d1": 0.07606246277170335,
+    "d2": 0.07617365037187404,
+    "d3": 0.14442400120026097
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.12612612612612611,
+    "2": 0.09309309309309309,
+    "3": 0.08708708708708708
+   },
+   "raw_contrast_strongest_minus_control": [
+    0.04110150066476055,
+    0.03264688575250313,
+    0.049984021566264414
+   ]
+  },
+  "self_similarity|C8_bar_shuffle": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.9401988644831072,
+   "dose_ci995": [
+    -0.9657434329490273,
+    -0.9074896560223673
+   ],
+   "contrast_mean": -0.09004032383512219,
+   "contrast_ci995": [
+    -0.11346178284989714,
+    -0.07300803726018058
+   ],
+   "sham": "C2_anchor_shift:d3",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 0.11024721644459134,
+    "d1": 0.049660149214015716,
+    "d2": 0.02756128099750555,
+    "d3": 0.020206892609469163
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.013333333333333334,
+    "2": 0.005454545454545455,
+    "3": 0.006060606060606061
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.09004032383512219,
+    -0.11346178284989714,
+    -0.07300803726018058
+   ]
+  },
+  "self_similarity|C6_density_scale": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.4885370824282349,
+   "dose_ci995": [
+    -0.5187764495937642,
+    -0.4572399583985122
+   ],
+   "contrast_mean": -0.09619050997992704,
+   "contrast_ci995": [
+    -0.1247255621537481,
+    -0.07647938104540054
+   ],
+   "sham": "CTRL_identity:d0",
+   "sham_rule": "identity_fallback",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 0.11024721644459134,
+    "d1": 0.005665410116027123,
+    "d2": 0.014984639828367684,
+    "d3": 0.014056706464664287
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.005454545454545455,
+    "2": 0.0018181818181818182,
+    "3": 0.0006060606060606061
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.09619050997992704,
+    -0.1247255621537481,
+    -0.07647938104540054
+   ]
+  },
+  "self_similarity|C7_burst_insert": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.9416373010090006,
+   "dose_ci995": [
+    -0.9760003125000003,
+    -0.8786613087795244
+   ],
+   "contrast_mean": -0.054802097077103484,
+   "contrast_ci995": [
+    -0.06670550480885988,
+    -0.0445152356480695
+   ],
+   "sham": "CTRL_identity:d0",
+   "sham_rule": "identity_fallback",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 0.10332250053550043,
+    "d1": 0.08211355503719464,
+    "d2": 0.0663755113202796,
+    "d3": 0.04852040345839694
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.012012012012012012,
+    "2": 0.009009009009009009,
+    "3": 0.009009009009009009
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.054802097077103484,
+    -0.06670550480885988,
+    -0.0445152356480695
+   ]
+  },
+  "ioi_hist_js|C1_timing_jitter": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.9300443583467466,
+   "dose_ci995": [
+    -0.9593239860773507,
+    -0.8919578756207567
+   ],
+   "contrast_mean": -0.09153769748900391,
+   "contrast_ci995": [
+    -0.10290260615982436,
+    -0.07994111345942057
+   ],
+   "sham": "CTRL_color_bijection:d0",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 0.0,
+    "d1": 0.0076291210787866135,
+    "d2": 0.04521785407126002,
+    "d3": 0.09153769748900391
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.4078078078078078,
+    "2": 0.16276276276276277,
+    "3": 0.08048048048048048
+   },
+   "raw_contrast_strongest_minus_control": [
+    0.09153769748900391,
+    0.07994111345942057,
+    0.10290260615982436
+   ]
+  },
+  "ioi_hist_js|C1s_sparse_jitter": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.9072813583488359,
+   "dose_ci995": [
+    -0.9424871286250353,
+    -0.8648930005207999
+   ],
+   "contrast_mean": -0.009449189860417668,
+   "contrast_ci995": [
+    -0.010369192936022297,
+    -0.00853580237064578
+   ],
+   "sham": "CTRL_color_bijection:d0",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 0.0,
+    "d1": 0.002615034756814672,
+    "d2": 0.004792013700159006,
+    "d3": 0.009449189860417668
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.20120481927710843,
+    "2": 0.14036144578313253,
+    "3": 0.1
+   },
+   "raw_contrast_strongest_minus_control": [
+    0.009449189860417668,
+    0.00853580237064578,
+    0.010369192936022297
+   ]
+  },
+  "ioi_hist_js|C2_anchor_shift": {
+   "label": "BLIND",
+   "frozen_rule_verdict": "REFUTED",
+   "n_songs": 80,
+   "dose_statistic_mean": 0.0,
+   "dose_ci995": [
+    0.0,
+    0.0
+   ],
+   "contrast_mean": 0.0,
+   "contrast_ci995": [
+    0.0,
+    0.0
+   ],
+   "sham": "CTRL_joint_time_origin_shift:d0",
+   "sham_rule": "frozen",
+   "report_as": "exactly unchanged at every seed and strength",
+   "song_mean_by_dose": {
+    "official": 0.0,
+    "d1": 0.0,
+    "d2": 0.0,
+    "d3": 0.0
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 1.0,
+    "2": 1.0,
+    "3": 1.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.0,
+    -0.0,
+    -0.0
+   ]
+  },
+  "ioi_hist_js|C3_type_shuffle": {
+   "label": "N/A-by-design",
+   "frozen_rule_verdict": "REFUTED",
+   "n_songs": 80,
+   "dose_statistic_mean": 0.0,
+   "dose_ci995": [
+    0.0,
+    0.0
+   ],
+   "contrast_mean": 0.0,
+   "contrast_ci995": [
+    0.0,
+    0.0
+   ],
+   "sham": "C2_anchor_shift:d3",
+   "sham_rule": "frozen",
+   "report_as": "exactly unchanged at every seed and strength",
+   "song_mean_by_dose": {
+    "official": 0.0,
+    "d1": 0.0,
+    "d2": 0.0,
+    "d3": 0.0
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 1.0,
+    "2": 1.0,
+    "3": 1.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.0,
+    -0.0,
+    -0.0
+   ]
+  },
+  "ioi_hist_js|C4_loop_collapse": {
+   "label": "N/A-by-design",
+   "frozen_rule_verdict": "REFUTED",
+   "n_songs": 80,
+   "dose_statistic_mean": 0.0,
+   "dose_ci995": [
+    0.0,
+    0.0
+   ],
+   "contrast_mean": 0.0,
+   "contrast_ci995": [
+    0.0,
+    0.0
+   ],
+   "sham": "C2_anchor_shift:d3",
+   "sham_rule": "frozen",
+   "report_as": "exactly unchanged at every seed and strength",
+   "song_mean_by_dose": {
+    "official": 0.0,
+    "d1": 0.0,
+    "d2": 0.0,
+    "d3": 0.0
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 1.0,
+    "2": 1.0,
+    "3": 1.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.0,
+    -0.0,
+    -0.0
+   ]
+  },
+  "ioi_hist_js|C5_blandification": {
+   "label": "N/A-by-design",
+   "frozen_rule_verdict": "REFUTED",
+   "n_songs": 80,
+   "dose_statistic_mean": 0.0,
+   "dose_ci995": [
+    0.0,
+    0.0
+   ],
+   "contrast_mean": 0.0,
+   "contrast_ci995": [
+    0.0,
+    0.0
+   ],
+   "sham": "C2_anchor_shift:d3",
+   "sham_rule": "frozen",
+   "report_as": "exactly unchanged at every seed and strength",
+   "song_mean_by_dose": {
+    "official": 0.0,
+    "d1": 0.0,
+    "d2": 0.0,
+    "d3": 0.0
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 1.0,
+    "2": 1.0,
+    "3": 1.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.0,
+    -0.0,
+    -0.0
+   ]
+  },
+  "ioi_hist_js|C8_bar_shuffle": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.9837499999999999,
+   "dose_ci995": [
+    -0.9921250000000003,
+    -0.9738750000000005
+   ],
+   "contrast_mean": -0.023162499451519977,
+   "contrast_ci995": [
+    -0.027642783089846912,
+    -0.018929646287186366
+   ],
+   "sham": "C2_anchor_shift:d3",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 0.0,
+    "d1": 0.01018248449958854,
+    "d2": 0.01828011860609651,
+    "d3": 0.023162499451519977
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.012727272727272728,
+    "2": 0.0006060606060606061,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    0.023162499451519977,
+    0.018929646287186366,
+    0.027642783089846912
+   ]
+  },
+  "ioi_hist_js|C6_density_scale": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.9467068745129087,
+   "dose_ci995": [
+    -0.9486832980505125,
+    -0.9388011803624865
+   ],
+   "contrast_mean": -0.3343756293938487,
+   "contrast_ci995": [
+    -0.34508763854482233,
+    -0.32393421903024183
+   ],
+   "sham": "CTRL_color_bijection:d0",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 0.0,
+    "d1": 0.15488281496041983,
+    "d2": 0.1951900275361571,
+    "d3": 0.3343756293938487
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.0,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    0.3343756293938487,
+    0.32393421903024183,
+    0.34508763854482233
+   ]
+  },
+  "ioi_hist_js|C7_burst_insert": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -1.0,
+   "dose_ci995": [
+    -1.0,
+    -1.0
+   ],
+   "contrast_mean": -0.17315732136097095,
+   "contrast_ci995": [
+    -0.20543578553998906,
+    -0.15278724133403554
+   ],
+   "sham": "CTRL_color_bijection:d0",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 0.0,
+    "d1": 0.05475750848809322,
+    "d2": 0.09971714263162024,
+    "d3": 0.17315732136097095
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.0,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    0.17315732136097095,
+    0.15278724133403554,
+    0.20543578553998906
+   ]
+  },
+  "onset_f1_50ms|C1_timing_jitter": {
+   "label": "BLIND",
+   "frozen_rule_verdict": "REFUTED",
+   "n_songs": 80,
+   "dose_statistic_mean": 0.0,
+   "dose_ci995": [
+    0.0,
+    0.0
+   ],
+   "contrast_mean": 0.0,
+   "contrast_ci995": [
+    0.0,
+    0.0
+   ],
+   "sham": "CTRL_color_bijection:d0",
+   "sham_rule": "frozen",
+   "report_as": "exactly unchanged at every seed and strength",
+   "song_mean_by_dose": {
+    "official": 1.0,
+    "d1": 1.0,
+    "d2": 1.0,
+    "d3": 1.0
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 1.0,
+    "2": 1.0,
+    "3": 1.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "onset_f1_50ms|C1s_sparse_jitter": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.9869116783112087,
+   "dose_ci995": [
+    -0.9926232271428698,
+    -0.9781691191810366
+   ],
+   "contrast_mean": -0.02026695112127356,
+   "contrast_ci995": [
+    -0.021463185496141613,
+    -0.019726717495112924
+   ],
+   "sham": "CTRL_color_bijection:d0",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 1.0,
+    "d1": 0.9938315426711959,
+    "d2": 0.9895859588587161,
+    "d3": 0.9797330488787264
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.0,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.02026695112127356,
+    -0.021463185496141613,
+    -0.019726717495112924
+   ]
+  },
+  "onset_f1_50ms|C2_anchor_shift": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.7745966692414834,
+   "dose_ci995": [
+    -0.7745966692414827,
+    -0.7745966692414827
+   ],
+   "contrast_mean": -0.8687359594388415,
+   "contrast_ci995": [
+    -0.8977064008726906,
+    -0.8379992491195908
+   ],
+   "sham": "CTRL_joint_time_origin_shift:d0",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 1.0,
+    "d1": 1.0,
+    "d2": 1.0,
+    "d3": 0.13126404056115842
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 1.0,
+    "2": 1.0,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.8687359594388415,
+    -0.8977064008726906,
+    -0.8379992491195908
+   ]
+  },
+  "onset_f1_50ms|C3_type_shuffle": {
+   "label": "N/A-by-design",
+   "frozen_rule_verdict": "REFUTED",
+   "n_songs": 80,
+   "dose_statistic_mean": 0.0,
+   "dose_ci995": [
+    0.0,
+    0.0
+   ],
+   "contrast_mean": 0.0,
+   "contrast_ci995": [
+    0.0,
+    0.0
+   ],
+   "sham": "CTRL_identity:d0",
+   "sham_rule": "identity_fallback",
+   "report_as": "exactly unchanged at every seed and strength",
+   "song_mean_by_dose": {
+    "official": 1.0,
+    "d1": 1.0,
+    "d2": 1.0,
+    "d3": 1.0
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 1.0,
+    "2": 1.0,
+    "3": 1.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "onset_f1_50ms|C4_loop_collapse": {
+   "label": "N/A-by-design",
+   "frozen_rule_verdict": "REFUTED",
+   "n_songs": 80,
+   "dose_statistic_mean": 0.0,
+   "dose_ci995": [
+    0.0,
+    0.0
+   ],
+   "contrast_mean": 0.0,
+   "contrast_ci995": [
+    0.0,
+    0.0
+   ],
+   "sham": "CTRL_identity:d0",
+   "sham_rule": "identity_fallback",
+   "report_as": "exactly unchanged at every seed and strength",
+   "song_mean_by_dose": {
+    "official": 1.0,
+    "d1": 1.0,
+    "d2": 1.0,
+    "d3": 1.0
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 1.0,
+    "2": 1.0,
+    "3": 1.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "onset_f1_50ms|C5_blandification": {
+   "label": "N/A-by-design",
+   "frozen_rule_verdict": "REFUTED",
+   "n_songs": 80,
+   "dose_statistic_mean": 0.0,
+   "dose_ci995": [
+    0.0,
+    0.0
+   ],
+   "contrast_mean": 0.0,
+   "contrast_ci995": [
+    0.0,
+    0.0
+   ],
+   "sham": "CTRL_identity:d0",
+   "sham_rule": "identity_fallback",
+   "report_as": "exactly unchanged at every seed and strength",
+   "song_mean_by_dose": {
+    "official": 1.0,
+    "d1": 1.0,
+    "d2": 1.0,
+    "d3": 1.0
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 1.0,
+    "2": 1.0,
+    "3": 1.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "onset_f1_50ms|C8_bar_shuffle": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -1.0,
+   "dose_ci995": [
+    -1.0,
+    -1.0
+   ],
+   "contrast_mean": -0.4277434315943278,
+   "contrast_ci995": [
+    -0.462404520165201,
+    -0.39489433335111274
+   ],
+   "sham": "CTRL_identity:d0",
+   "sham_rule": "identity_fallback",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 1.0,
+    "d1": 0.8698780431789768,
+    "d2": 0.7414639159836256,
+    "d3": 0.5722565684056722
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.0,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.4277434315943278,
+    -0.462404520165201,
+    -0.39489433335111274
+   ]
+  },
+  "onset_f1_50ms|C6_density_scale": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.8014875834913251,
+   "dose_ci995": [
+    -0.8211587117571261,
+    -0.7818376022450721
+   ],
+   "contrast_mean": -0.3333333333333334,
+   "contrast_ci995": [
+    -0.333333333333333,
+    -0.333333333333333
+   ],
+   "sham": "CTRL_color_bijection:d0",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 1.0,
+    "d1": 0.6663944028286852,
+    "d2": 0.800097019449753,
+    "d3": 0.6666666666666667
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.0,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.3333333333333334,
+    -0.333333333333333,
+    -0.333333333333333
+   ]
+  },
+  "onset_f1_50ms|C7_burst_insert": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -1.0,
+   "dose_ci995": [
+    -1.0,
+    -1.0
+   ],
+   "contrast_mean": -0.16278078242188354,
+   "contrast_ci995": [
+    -0.18791129128368772,
+    -0.14426834191715573
+   ],
+   "sham": "CTRL_color_bijection:d0",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 1.0,
+    "d1": 0.9498411454312645,
+    "d2": 0.9076073419976568,
+    "d3": 0.8372192175781166
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.0,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.16278078242188354,
+    -0.18791129128368772,
+    -0.14426834191715573
+   ]
+  },
+  "onset_f1_20ms|C1_timing_jitter": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.7745966692414834,
+   "dose_ci995": [
+    -0.7745966692414827,
+    -0.7745966692414827
+   ],
+   "contrast_mean": -0.33320110970264116,
+   "contrast_ci995": [
+    -0.3357250380824656,
+    -0.3309634786179783
+   ],
+   "sham": "CTRL_color_bijection:d0",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 1.0,
+    "d1": 1.0,
+    "d2": 1.0,
+    "d3": 0.6667988902973588
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 1.0,
+    "2": 1.0,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.33320110970264116,
+    -0.3357250380824656,
+    -0.3309634786179783
+   ]
+  },
+  "onset_f1_20ms|C1s_sparse_jitter": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.9869116783112087,
+   "dose_ci995": [
+    -0.9926257366672627,
+    -0.9780616240070584
+   ],
+   "contrast_mean": -0.020370402123583407,
+   "contrast_ci995": [
+    -0.02156546783152587,
+    -0.01986624153631621
+   ],
+   "sham": "CTRL_color_bijection:d0",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 1.0,
+    "d1": 0.993814029770453,
+    "d2": 0.9895506268179617,
+    "d3": 0.9796295978764167
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.0,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.020370402123583407,
+    -0.02156546783152587,
+    -0.01986624153631621
+   ]
+  },
+  "onset_f1_20ms|C2_anchor_shift": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.8583199866633711,
+   "dose_ci995": [
+    -0.868496542899145,
+    -0.8477517797897729
+   ],
+   "contrast_mean": -0.956167655019389,
+   "contrast_ci995": [
+    -0.974590849550931,
+    -0.9344964467903726
+   ],
+   "sham": "CTRL_joint_time_origin_shift:d0",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 1.0,
+    "d1": 1.0,
+    "d2": 0.0036505681816097132,
+    "d3": 0.04383234498061099
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 1.0,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.956167655019389,
+    -0.974590849550931,
+    -0.9344964467903726
+   ]
+  },
+  "onset_f1_20ms|C3_type_shuffle": {
+   "label": "N/A-by-design",
+   "frozen_rule_verdict": "REFUTED",
+   "n_songs": 80,
+   "dose_statistic_mean": 0.0,
+   "dose_ci995": [
+    0.0,
+    0.0
+   ],
+   "contrast_mean": 0.0,
+   "contrast_ci995": [
+    0.0,
+    0.0
+   ],
+   "sham": "CTRL_identity:d0",
+   "sham_rule": "identity_fallback",
+   "report_as": "exactly unchanged at every seed and strength",
+   "song_mean_by_dose": {
+    "official": 1.0,
+    "d1": 1.0,
+    "d2": 1.0,
+    "d3": 1.0
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 1.0,
+    "2": 1.0,
+    "3": 1.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "onset_f1_20ms|C4_loop_collapse": {
+   "label": "N/A-by-design",
+   "frozen_rule_verdict": "REFUTED",
+   "n_songs": 80,
+   "dose_statistic_mean": 0.0,
+   "dose_ci995": [
+    0.0,
+    0.0
+   ],
+   "contrast_mean": 0.0,
+   "contrast_ci995": [
+    0.0,
+    0.0
+   ],
+   "sham": "CTRL_identity:d0",
+   "sham_rule": "identity_fallback",
+   "report_as": "exactly unchanged at every seed and strength",
+   "song_mean_by_dose": {
+    "official": 1.0,
+    "d1": 1.0,
+    "d2": 1.0,
+    "d3": 1.0
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 1.0,
+    "2": 1.0,
+    "3": 1.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "onset_f1_20ms|C5_blandification": {
+   "label": "N/A-by-design",
+   "frozen_rule_verdict": "REFUTED",
+   "n_songs": 80,
+   "dose_statistic_mean": 0.0,
+   "dose_ci995": [
+    0.0,
+    0.0
+   ],
+   "contrast_mean": 0.0,
+   "contrast_ci995": [
+    0.0,
+    0.0
+   ],
+   "sham": "CTRL_identity:d0",
+   "sham_rule": "identity_fallback",
+   "report_as": "exactly unchanged at every seed and strength",
+   "song_mean_by_dose": {
+    "official": 1.0,
+    "d1": 1.0,
+    "d2": 1.0,
+    "d3": 1.0
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 1.0,
+    "2": 1.0,
+    "3": 1.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "onset_f1_20ms|C8_bar_shuffle": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -1.0,
+   "dose_ci995": [
+    -1.0,
+    -1.0
+   ],
+   "contrast_mean": -0.4574826587104354,
+   "contrast_ci995": [
+    -0.5020167564446474,
+    -0.4165675284961269
+   ],
+   "sham": "CTRL_identity:d0",
+   "sham_rule": "identity_fallback",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 1.0,
+    "d1": 0.8614874382439144,
+    "d2": 0.7243551050465993,
+    "d3": 0.5425173412895645
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.0,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.4574826587104354,
+    -0.5020167564446474,
+    -0.4165675284961269
+   ]
+  },
+  "onset_f1_20ms|C6_density_scale": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -0.8014875834913251,
+   "dose_ci995": [
+    -0.8203807149437432,
+    -0.7818934818114386
+   ],
+   "contrast_mean": -0.3333333333333334,
+   "contrast_ci995": [
+    -0.333333333333333,
+    -0.333333333333333
+   ],
+   "sham": "CTRL_color_bijection:d0",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 1.0,
+    "d1": 0.6663944028286852,
+    "d2": 0.800097019449753,
+    "d3": 0.6666666666666667
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.0,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.3333333333333334,
+    -0.333333333333333,
+    -0.333333333333333
+   ]
+  },
+  "onset_f1_20ms|C7_burst_insert": {
+   "label": "DETECTS",
+   "frozen_rule_verdict": "SURVIVES",
+   "n_songs": 80,
+   "dose_statistic_mean": -1.0,
+   "dose_ci995": [
+    -1.0,
+    -1.0
+   ],
+   "contrast_mean": -0.16278078242188354,
+   "contrast_ci995": [
+    -0.1879415456054075,
+    -0.1442071709676619
+   ],
+   "sham": "CTRL_color_bijection:d0",
+   "sham_rule": "frozen",
+   "report_as": "statistics",
+   "song_mean_by_dose": {
+    "official": 1.0,
+    "d1": 0.9498411454312645,
+    "d2": 0.9076073419976568,
+    "d3": 0.8372192175781166
+   },
+   "fraction_replicates_equal_unedited_by_dose": {
+    "1": 0.0,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "raw_contrast_strongest_minus_control": [
+    -0.16278078242188354,
+    -0.1879415456054075,
+    -0.1442071709676619
+   ]
+  }
+ },
+ "macros": {
+  "BlPplLoopAfter": {
+   "value": "\\ensuremath{7.07}",
+   "source": "lm_perplexity/C4_loop_collapse: song_mean_by_dose.d3"
+  },
+  "BlPplLoopPct": {
+   "value": "\\ensuremath{21}",
+   "source": "lm_perplexity/C4_loop_collapse: |strongest_minus_unedited_pct| (drop, %)"
+  },
+  "BlPplLoopDelta": {
+   "value": "\\ensuremath{-1.85}",
+   "source": "lm_perplexity/C4_loop_collapse: strongest minus matched control (raw units)"
+  },
+  "BlPplLoopDeltaCI": {
+   "value": "\\ensuremath{[-2.52,-1.19]}",
+   "source": "lm_perplexity/C4_loop_collapse: 99.5% CI of raw contrast"
+  },
+  "BlPplLoopRho": {
+   "value": "\\ensuremath{+0.488}",
+   "source": "lm_perplexity/C4_loop_collapse: oriented rank correlation (positive = toward better)"
+  },
+  "BlPplLoopRhoCI": {
+   "value": "\\ensuremath{[+0.366,+0.604]}",
+   "source": "lm_perplexity/C4_loop_collapse: 99.5% CI of oriented rho"
+  },
+  "BlPplCommonAfter": {
+   "value": "\\ensuremath{5.89}",
+   "source": "lm_perplexity/C5_blandification: song_mean_by_dose.d3"
+  },
+  "BlPplCommonPct": {
+   "value": "\\ensuremath{34}",
+   "source": "lm_perplexity/C5_blandification: |strongest_minus_unedited_pct| (drop, %)"
+  },
+  "BlPplCommonDelta": {
+   "value": "\\ensuremath{-3.03}",
+   "source": "lm_perplexity/C5_blandification: strongest minus matched control (raw units)"
+  },
+  "BlPplCommonDeltaCI": {
+   "value": "\\ensuremath{[-3.71,-2.45]}",
+   "source": "lm_perplexity/C5_blandification: 99.5% CI of raw contrast"
+  },
+  "BlPplCommonRho": {
+   "value": "\\ensuremath{+0.759}",
+   "source": "lm_perplexity/C5_blandification: oriented rank correlation (positive = toward better)"
+  },
+  "BlPplCommonRhoCI": {
+   "value": "\\ensuremath{[+0.700,+0.814]}",
+   "source": "lm_perplexity/C5_blandification: 99.5% CI of oriented rho"
+  },
+  "BlPplUnedited": {
+   "value": "\\ensuremath{8.92}",
+   "source": "lm_perplexity: song_mean_by_dose.official"
+  },
+  "BlPplCommonCrossMin": {
+   "value": "\\ensuremath{3.26}",
+   "source": "verify/crosslm_c5_heldout.json: min |delta_ppl_song_mean| over 3 separately fitted scorers"
+  },
+  "BlPplCommonCrossMax": {
+   "value": "\\ensuremath{3.50}",
+   "source": "verify/crosslm_c5_heldout.json: max |delta_ppl_song_mean| over 3 separately fitted scorers"
+  },
+  "BlPplCommonCrossWorstUpper": {
+   "value": "\\ensuremath{-2.64}",
+   "source": "verify/crosslm_c5_heldout.json: largest 99.5% upper bound of delta over 3 scorers"
+  },
+  "BlSelfSimLoopAfter": {
+   "value": "\\ensuremath{0.154}",
+   "source": "self_similarity/C4_loop_collapse: song_mean_by_dose.d3"
+  },
+  "BlSelfSimLoopPct": {
+   "value": "\\ensuremath{49}",
+   "source": "self_similarity/C4_loop_collapse: strongest_minus_unedited_pct (rise, %)"
+  },
+  "BlSelfSimCommonAfter": {
+   "value": "\\ensuremath{0.144}",
+   "source": "self_similarity/C5_blandification: song_mean_by_dose.d3"
+  },
+  "BlSelfSimCommonPct": {
+   "value": "\\ensuremath{40}",
+   "source": "self_similarity/C5_blandification: strongest_minus_unedited_pct (rise, %)"
+  },
+  "BlSelfSimUnedited": {
+   "value": "\\ensuremath{0.103}",
+   "source": "self_similarity: song_mean_by_dose.official"
+  },
+  "BlFOneFiftyJitter": {
+   "value": "\\ensuremath{1.000}",
+   "source": "onset_f1_50ms/C1: song mean at +-30 ms (every replicate exactly 1)"
+  },
+  "BlFOneFiftyShiftSixty": {
+   "value": "\\ensuremath{0.131}",
+   "source": "onset_f1_50ms/C2: song mean at 60 ms shift (exactly 1 at 15, 30 ms)"
+  },
+  "BlFOneTwentyJitter": {
+   "value": "\\ensuremath{0.667}",
+   "source": "onset_f1_20ms/C1: song mean at +-30 ms (exactly 1 at +-10, +-20 ms)"
+  },
+  "BlFOneTwentyJitterDelta": {
+   "value": "\\ensuremath{-0.333}",
+   "source": "onset_f1_20ms/C1: strongest minus matched control"
+  },
+  "BlFOneTwentyJitterDeltaCI": {
+   "value": "\\ensuremath{[-0.336,-0.331]}",
+   "source": "onset_f1_20ms/C1: 99.5% CI"
+  },
+  "BlDistinctFourShuffleDelta": {
+   "value": "\\ensuremath{+0.21}",
+   "source": "verify/distinct_ci.json: distinct_4|C3 delta (rise under note-type shuffle)"
+  },
+  "BlDistinctFourShuffleDeltaCI": {
+   "value": "\\ensuremath{[+0.20,+0.23]}",
+   "source": "verify/distinct_ci.json: distinct_4|C3 99.5% CI"
+  },
+  "BlNSongs": {
+   "value": "80",
+   "source": "n_songs (every cell)"
+  }
+ },
+ "source_sha256": "48e93c05d3f0928ebe9add55fdf4902eee7740bc9cabed123c7c79a3e8a6ac72"
+}

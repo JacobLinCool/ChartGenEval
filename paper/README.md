@@ -1,5 +1,11 @@
 # Paper
 
+## ICASSP 2027 submission
+
+The current five-page conference version is [icassp2027/paper.pdf](icassp2027/paper.pdf).
+Its source, official Paper Kit, build commands, and submission metadata are in
+[icassp2027/README.md](icassp2027/README.md). The files below remain the long-form version.
+
 `paper.tex` is the source for *ChartGenEval: Corruption-Tested
 Multi-Dimensional Feedback for Rhythm-Game Chart Generation*. `paper.pdf` is
 the release build.
@@ -14,6 +20,8 @@ latexmk -xelatex paper.zh-TW.tex
 
 arXiv submission metadata:
 
+- Author: Jhen-Ke Lin
+- ORCID: <https://orcid.org/0009-0004-0311-5409>
 - Primary category: `cs.SD` (Sound)
 - Cross-list: `eess.AS` (Audio and Speech Processing)
 - Submission license: arXiv.org perpetual, non-exclusive license 1.0
@@ -39,9 +47,9 @@ abstract:
 > mean language-model perplexity by 37%, and loop collapse raises mean
 > self-similarity by 62%.
 > ChartGenEval therefore reports separate, role-specific signals instead of one
-> proxy or total score. This profile provides automatic feedback for comparing
-> and iterating generators; selected outputs are candidate optimization targets
-> or constraints after task-specific stress testing.
+> proxy or total score. The profile compares measured properties of generator
+> outputs; using these readings as optimization targets or constraints requires
+> additional task-specific validation.
 
 The public code and records artifact is
 <https://github.com/JacobLinCool/ChartGenEval>. Paper licensing is described in

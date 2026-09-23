@@ -1,0 +1,31 @@
+\input{style.tex}
+\usepackage{helvet}
+\begin{document}
+\begin{tikzpicture}[orx,font=\sffamily\fontsize{10}{12}\selectfont,
+block/.append style={inner sep=3pt}]
+\node[muted,text width=78mm] (ref)
+{Reference matching: a valid alternative's added\\
+or omitted notes count as errors};
+\node[below=3mm of ref,text=orxblue,
+font=\sffamily\bfseries\fontsize{10}{12}\selectfont] (head)
+{ChartGenEval: test the measurement};
+\node[block,text width=78mm,below=2mm of head] (human)
+{Human chart at a chosen difficulty};
+\node[ours,text width=36.4mm,minimum height=23mm,inner ysep=4.5pt,anchor=north west] (edit)
+at ([yshift=-4mm]human.south west)
+{Target edit at 3 strengths\\e.g., whole-chart shift\\[2pt]
+\textcolor{orxblue}{\textbf{Measurement}}\\
+\textcolor{orxblue}{\textbf{must respond}}};
+\node[ours,text width=36.4mm,minimum height=23mm,inner ysep=4.5pt,anchor=north east] (ctrl)
+at ([yshift=-4mm]human.south east)
+{Matched control\\e.g., notes and grid\\shifted together\\[2pt]
+\textcolor{orxblue}{\textbf{Measurement}}\\
+\textcolor{orxblue}{\textbf{must stay unchanged}}};
+\draw[flow] (human.south -| edit.north) -- (edit.north);
+\draw[flow] (human.south -| ctrl.north) -- (ctrl.north);
+\node[below=2mm of edit.south east,anchor=north,align=center,
+text width=82mm] (split)
+{Design: 40 songs~$\rightarrow$~Test: 80 held-out songs,\\
+\textcolor{orxblue}{\textbf{all 9 tests pass}} (Table~1)};
+\end{tikzpicture}
+\end{document}

@@ -1,3 +1,5 @@
+*.shadow.md
+
 # Python
 __pycache__/
 *.py[cod]
@@ -42,3 +44,21 @@ paper/*.synctex.gz
 
 # Scratch PDF page renders (review only)
 /tmp/
+
+# ICASSP 2027 submission: LaTeX build artifacts (latexmk regenerates paper.bbl)
+paper/icassp2027/**/*.aux
+paper/icassp2027/**/*.bbl
+paper/icassp2027/**/*.blg
+paper/icassp2027/**/*.fdb_latexmk
+paper/icassp2027/**/*.fls
+paper/icassp2027/**/*.log
+paper/icassp2027/**/*.out
+paper/icassp2027/**/*.synctex.gz
+
+# ICASSP 2027 submission: internal working files (kept outside the repository)
+paper/icassp2027/AUTHOR_TODO.md
+paper/icassp2027/PROVENANCE*.md
+paper/icassp2027/REVISION_*.md
+paper/icassp2027/adversarial_review.md
+paper/icassp2027/official-kit/
+paper/icassp2027/verification.log

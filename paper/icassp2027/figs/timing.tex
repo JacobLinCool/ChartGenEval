@@ -1,0 +1,81 @@
+\input{style.tex}
+\usepackage{helvet}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+% Single-column Fig. 2 built at the printed width (<= 86 mm = \columnwidth, so
+% \includegraphics scales by ~1.0). Text 10 pt, as in Fig. 1. Print stroke
+% tiers shared with Fig. 1 through style.tex: guides 0.6 pt; arrows, axis and
+% connectors 0.8-0.9 pt; grid ticks and medians 1.2 pt; arrowheads 5.5 pt.
+% (b) plots data/fig2_offsets.dat and data/fig2_stats.tex, both written by
+% data/extract_offsets.py from artifacts/records/system_timing_clean.jsonl
+% (mapperatorinator, authored grid); values verbatim, vertical jitter only.
+\input{data/fig2_stats.tex}
+\newcommand{\figfont}{\sffamily\fontsize{10}{12}\selectfont}
+\newcommand{\AXH}{25mm}
+\begin{document}
+\begin{tikzpicture}[orx,font=\figfont]
+\tikzset{
+  plbl/.style={font=\sffamily\bfseries\fontsize{10}{12}\selectfont,inner sep=0pt},
+  rowlbl/.style={anchor=west,align=left,inner sep=0pt},
+  tick/.style={black,line width=1.2pt},
+  med/.style={line width=1.2pt},
+}
+% ---------------- (a) schematic ----------------
+\def\yg{0mm}\def\yo{-9mm}\def\ys{-18mm}
+\node[plbl,anchor=south west] at (0,4.8mm) {(a)};
+\node[rowlbl] at (0,\yg) {Authored\\beat grid};
+\node[rowlbl] at (0,\yo) {Original\\notes};
+\node[rowlbl] at (0,\ys) {Shifted\\notes};
+\draw[flow] (21mm,\yg) -- (75.6mm,\yg) node[right,inner sep=1pt] {Time};
+\foreach \x in {23,37,51,65} {
+  \draw[guide] (\x mm,2mm) -- (\x mm,-23mm);
+  \draw[tick] (\x mm,1.8mm) -- (\x mm,-1.8mm);
+  \fill (\x mm,\yo) circle (1.2mm);
+  \fill[orxblue] ($(\x mm,\ys)+(6mm,0)+(-1.2mm,-1.2mm)$)
+    rectangle ($(\x mm,\ys)+(6mm,0)+(1.2mm,1.2mm)$);
+}
+\draw[<->] (23mm,-12.7mm) -- node[fill=white,inner sep=1pt] {$\Delta t$} (37mm,-12.7mm);
+\draw[<->,orxblue] (29mm,-21.7mm) -- node[fill=white,inner sep=1pt] {$\Delta t$} (43mm,-21.7mm);
+\draw[<->,orxblue] (65mm,-14.3mm) -- node[above=0.2mm,inner sep=1pt] {$\delta$} (71mm,-14.3mm);
+% ---------------- (b) development offsets ----------------
+\node[plbl,anchor=north west] at (0,-26mm) {(b)};
+\begin{axis}[at={(21mm,-28.5mm)},anchor=north west,
+  scale only axis,width=60.7mm,height=\AXH,
+  xmin=\XMin,xmax=\XMax,ymin=-0.5,ymax=1.62,
+  xtick={-40,-20,0,20,40},
+  xticklabels={$-$40,$-$20,0,$+$20,$+$40},
+  ytick=\empty,
+  ticklabel style={font=\figfont},
+  xlabel={Signed offset from authored grid (ms)},
+  xlabel style={font=\figfont,yshift=1.5mm,xshift=-2mm},
+  axis x line*=bottom,axis y line=none,
+  x axis line style={line width=0.8pt,black!75,-},
+  every tick/.style={line width=0.8pt,black!75},
+  major tick length=3pt,tick align=outside,
+  clip=false,
+]
+\draw[guide] (axis cs:0,-0.5) -- (axis cs:0,1.62);
+\addplot[only marks,mark=*,mark size=1.2pt,
+  mark options={draw opacity=0,line width=0.6pt,fill=black,fill opacity=0.35}]
+  table[x=x,y expr=1+0.7*\thisrow{j},restrict expr to domain={\thisrow{row}}{1:1}]
+  {data/fig2_offsets.dat};
+\addplot[only marks,mark=*,mark size=1.2pt,
+  mark options={draw opacity=0,line width=0.6pt,fill=orxblue,fill opacity=0.45}]
+  table[x=x,y expr=0.7*\thisrow{j},restrict expr to domain={\thisrow{row}}{0:0}]
+  {data/fig2_offsets.dat};
+% medians over charts (values and labels from data/fig2_stats.tex)
+\draw[med] (axis cs:\MedAsg,0.58) -- (axis cs:\MedAsg,1.42);
+\node[anchor=south,inner sep=1pt,fill=white] at (axis cs:\MedAsg,1.42) {\MedAsgLbl};
+\draw[med,orxblue!75!black] (axis cs:\MedOff,-0.42) -- (axis cs:\MedOff,0.42);
+\node[anchor=south east,inner sep=1pt,text=orxblue!75!black] at (axis cs:\MedOff-0.35,0.42) {\MedOffLbl};
+% charts beyond the axis; pgfplots resets line width to 0.4 pt inside an
+% axis, so the print tier (0.9 pt) is set explicitly
+\draw[->,line width=0.9pt,orxblue!75!black] (axis cs:\XMin+10,0) -- (axis cs:\XMin,0);
+\node[anchor=south,inner sep=1pt,text=orxblue!75!black] at (axis cs:\XMin+5,0.1) {\NLeft};
+\draw[->,line width=0.9pt,orxblue!75!black] (axis cs:\XMax-10,0) -- (axis cs:\XMax,0);
+\node[anchor=south,inner sep=1pt,text=orxblue!75!black] at (axis cs:\XMax-5,0.1) {\NRight};
+\node[rowlbl] at ([xshift=-21mm]axis cs:\XMin,1) {Assigned\\notes};
+\node[rowlbl] at ([xshift=-21mm]axis cs:\XMin,0) {Chart\\offset};
+\end{axis}
+\end{tikzpicture}
+\end{document}
