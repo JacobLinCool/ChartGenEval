@@ -1,0 +1,80 @@
+{
+ "train_rows": 924,
+ "frozen_lm_fp": "07b82322f447a4a8442c3d19af216bf9d822d08b197c3b442273082fe90f3f6a",
+ "frozen_fp_in_manifest": true,
+ "c5_hash_fail": 0,
+ "frozen_nll_fail": 0,
+ "excluded_charts": 0,
+ "frozen": {
+  "n_songs": 80,
+  "n_charts": 333,
+  "rho_oriented_mean": 0.7587,
+  "rho_ci995": [
+   0.6991,
+   0.8124
+  ],
+  "delta_ppl_song_mean": -3.0337,
+  "delta_ci995": [
+   -3.7149,
+   -2.4411
+  ],
+  "official_ppl_song_mean": 8.9236,
+  "c5d3_ppl_song_mean": 5.89,
+  "chart_mean_official_ppl": 8.9107,
+  "chart_mean_c5d3_ppl": 5.8825
+ },
+ "A_even_tri": {
+  "n_songs": 80,
+  "n_charts": 333,
+  "rho_oriented_mean": 0.7414,
+  "rho_ci995": [
+   0.6781,
+   0.7968
+  ],
+  "delta_ppl_song_mean": -3.2633,
+  "delta_ci995": [
+   -3.9942,
+   -2.6385
+  ],
+  "official_ppl_song_mean": 9.5201,
+  "c5d3_ppl_song_mean": 6.2568,
+  "chart_mean_official_ppl": 9.5068,
+  "chart_mean_c5d3_ppl": 6.2472
+ },
+ "B_odd_tri": {
+  "n_songs": 80,
+  "n_charts": 333,
+  "rho_oriented_mean": 0.7585,
+  "rho_ci995": [
+   0.6993,
+   0.8149
+  ],
+  "delta_ppl_song_mean": -3.4983,
+  "delta_ci995": [
+   -4.2815,
+   -2.8023
+  ],
+  "official_ppl_song_mean": 9.6153,
+  "c5d3_ppl_song_mean": 6.1169,
+  "chart_mean_official_ppl": 9.6028,
+  "chart_mean_c5d3_ppl": 6.1092
+ },
+ "C_full_4gram": {
+  "n_songs": 80,
+  "n_charts": 333,
+  "rho_oriented_mean": 0.5816,
+  "rho_ci995": [
+   0.5049,
+   0.6491
+  ],
+  "delta_ppl_song_mean": -3.4463,
+  "delta_ci995": [
+   -4.3101,
+   -2.6735
+  ],
+  "official_ppl_song_mean": 9.7925,
+  "c5d3_ppl_song_mean": 6.3462,
+  "chart_mean_official_ppl": 9.8037,
+  "chart_mean_c5d3_ppl": 6.3369
+ }
+}

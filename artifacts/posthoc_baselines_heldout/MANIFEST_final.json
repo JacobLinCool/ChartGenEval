@@ -1,0 +1,31 @@
+{
+  "analysis": "POST_HOC_SECONDARY_heldout_baselines_FINAL",
+  "python": "../.venv311 (Python 3.11, numpy 2.2.6, scipy 1.17.1, datasets 5.0.0) + mir_eval 0.8.2 installed with uv",
+  "commands": [
+    "PYTHONDONTWRITEBYTECODE=1 ../.venv311/bin/python f1_maxmatch.py --start A --stop B --out shards/f1mm_A_B.jsonl  (A in 40,60,80,100)",
+    "PYTHONDONTWRITEBYTECODE=1 ../.venv311/bin/python analyze_final.py",
+    "python3 make_tex.py"
+  ],
+  "files": {
+    "PROVENANCE_new_sentences.md": "9d901de1fb83f6bc7ad9a07e61359790555bb9ac53d9e6f643bf140f95942012",
+    "analyze_final.log": "50b182837abc8efaf2e80e598fefc475b216edc88a22dd4280b543abc4195ae3",
+    "analyze_final.py": "b153d7ac79d21e84fec33f8ed9645e0fd8a29d625b6245b648d893db24d53052",
+    "baseline_final_results.json": "48e93c05d3f0928ebe9add55fdf4902eee7740bc9cabed123c7c79a3e8a6ac72",
+    "baseline_numbers.tex": "ffcc7328fae6dc316570173ff91d9a76127f4a51a18ddd0f1d7aec300b0c9320",
+    "f1_maxmatch.py": "b4a20644c5217900a29890a2bab917c2e8d24eac0a7bb8b09fed6cd46be1dd9b",
+    "make_tex.py": "d158e5ed87c5cbde7d1a610a7d33dde809f7ecda2f760ef0cb87440c481d8b4b",
+    "results_text_draft.tex": "a93725cb823bf87e9e489b08cc9ec3460ed5d63254cd2f437d4ab722fc201afd",
+    "shards/f1mm_100_120.jsonl": "3e5ea9142366c6dd7a7e1be326c4a5d9784ee8ece58002dcd3ebe3f846266290",
+    "shards/f1mm_100_120.log": "4cd3b01ea64baec41f8356076db36c546412adbe3a718befa15c87163bdfc381",
+    "shards/f1mm_40_60.jsonl": "fcf3177720c16e4d5f42d19aff3449997ee0ed19d4fad3a06b1182fd646911e9",
+    "shards/f1mm_40_60.log": "b177db94b9781aa5cf6f140392e6eccb738d4af697977eea225a225b864f6499",
+    "shards/f1mm_60_80.jsonl": "fb04dc959e7a82ff1643728b82329558c716f9b99dc606d1966ed0ed82ae8a14",
+    "shards/f1mm_60_80.log": "238dcabf520f28a2974606222413d2906ad8df126980dafd324c1eae5fc47796",
+    "shards/f1mm_80_100.jsonl": "ad54399f57286746cfbc11eb313d3ceee12acee9078fb687b77dd07a88c6635c",
+    "shards/f1mm_80_100.log": "0a5cf5d2c7e3c7099eb1e38924d8c09a1bda827975d526629263469ddb893feb",
+    "smoke_40_41.jsonl": "a03cc874624e5a1a7a508518c01ba32ce96afefa07233e12499fb4ba076783a5",
+    "table2_baselines.tex": "33c2037bf439cba40cdbe2540da7332964494e3e038c2559869431e79a6fd417",
+    "verdict_matrix.json": "06c4afcb185bed14837a74bb4842e9c6404633cd169e6b4057bdbb95e327ac51"
+  },
+  "note_top_level_scripts": "analyze_final.py, crosslm_c5_heldout.py, and distinct_ci.py were edited after the run only to use repo-relative paths and neutral comments; hashes above are for the edited copies. cge_baselines_records.tar.gz keeps the scripts exactly as run."
+}

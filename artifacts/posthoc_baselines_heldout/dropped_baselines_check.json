@@ -1,0 +1,170 @@
+{
+ "distinct_2|C2_anchor_shift": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.0,
+  "raw_rho_song_mean": -0.022,
+  "exactly_zero": false
+ },
+ "distinct_4|C2_anchor_shift": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.0,
+  "raw_rho_song_mean": -0.01,
+  "exactly_zero": false
+ },
+ "type_token_ratio|C2_anchor_shift": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.0,
+  "raw_rho_song_mean": -0.012,
+  "exactly_zero": false
+ },
+ "ioi_entropy_bits|C2_anchor_shift": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.0,
+  "raw_rho_song_mean": -0.009,
+  "exactly_zero": false
+ },
+ "ioi_cv|C2_anchor_shift": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.0,
+  "raw_rho_song_mean": 0.011,
+  "exactly_zero": false
+ },
+ "empty_beat_rate|C2_anchor_shift": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.0,
+  "raw_rho_song_mean": 0.0,
+  "exactly_zero": false
+ },
+ "groove_consistency|C2_anchor_shift": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.0,
+  "raw_rho_song_mean": -0.002,
+  "exactly_zero": false
+ },
+ "distinct_2|C4_loop_collapse": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.10118,
+  "raw_rho_song_mean": -0.819,
+  "exactly_zero": false
+ },
+ "distinct_4|C4_loop_collapse": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.1639,
+  "raw_rho_song_mean": -0.756,
+  "exactly_zero": false
+ },
+ "type_token_ratio|C4_loop_collapse": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.03585,
+  "raw_rho_song_mean": -0.873,
+  "exactly_zero": false
+ },
+ "ioi_entropy_bits|C4_loop_collapse": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.0,
+  "raw_rho_song_mean": -0.009,
+  "exactly_zero": false
+ },
+ "ioi_cv|C4_loop_collapse": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.0,
+  "raw_rho_song_mean": 0.011,
+  "exactly_zero": false
+ },
+ "empty_beat_rate|C4_loop_collapse": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.0,
+  "raw_rho_song_mean": 0.0,
+  "exactly_zero": false
+ },
+ "groove_consistency|C4_loop_collapse": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.0,
+  "raw_rho_song_mean": -0.002,
+  "exactly_zero": false
+ },
+ "distinct_2|C5_blandification": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.08854,
+  "raw_rho_song_mean": -0.428,
+  "exactly_zero": false
+ },
+ "distinct_4|C5_blandification": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.15791,
+  "raw_rho_song_mean": -0.379,
+  "exactly_zero": false
+ },
+ "type_token_ratio|C5_blandification": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.02982,
+  "raw_rho_song_mean": -0.727,
+  "exactly_zero": false
+ },
+ "ioi_entropy_bits|C5_blandification": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.0,
+  "raw_rho_song_mean": -0.009,
+  "exactly_zero": false
+ },
+ "ioi_cv|C5_blandification": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.0,
+  "raw_rho_song_mean": 0.011,
+  "exactly_zero": false
+ },
+ "empty_beat_rate|C5_blandification": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.0,
+  "raw_rho_song_mean": 0.0,
+  "exactly_zero": false
+ },
+ "groove_consistency|C5_blandification": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.0,
+  "raw_rho_song_mean": -0.002,
+  "exactly_zero": false
+ },
+ "distinct_2|C3_type_shuffle": {
+  "songs": 80,
+  "raw_delta_song_mean": 0.06342,
+  "raw_rho_song_mean": 0.609,
+  "exactly_zero": false
+ },
+ "distinct_4|C3_type_shuffle": {
+  "songs": 80,
+  "raw_delta_song_mean": 0.21255,
+  "raw_rho_song_mean": 0.589,
+  "exactly_zero": false
+ },
+ "type_token_ratio|C3_type_shuffle": {
+  "songs": 80,
+  "raw_delta_song_mean": 0.00898,
+  "raw_rho_song_mean": 0.544,
+  "exactly_zero": false
+ },
+ "ioi_entropy_bits|C3_type_shuffle": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.0,
+  "raw_rho_song_mean": -0.009,
+  "exactly_zero": false
+ },
+ "ioi_cv|C3_type_shuffle": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.0,
+  "raw_rho_song_mean": 0.011,
+  "exactly_zero": false
+ },
+ "empty_beat_rate|C3_type_shuffle": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.0,
+  "raw_rho_song_mean": 0.0,
+  "exactly_zero": false
+ },
+ "groove_consistency|C3_type_shuffle": {
+  "songs": 80,
+  "raw_delta_song_mean": -0.0,
+  "raw_rho_song_mean": -0.002,
+  "exactly_zero": false
+ }
+}
